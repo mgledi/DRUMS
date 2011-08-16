@@ -5,16 +5,17 @@ import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 
+
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;
-import com.unister.semweb.sdrum.buffer.Buffer;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
+import com.unister.semweb.sdrum.sync.SyncManager;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
 import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
 
 /**
- * It is an integration test for the {@link BucketContainer}, {@link Buffer} and
+ * It is an integration test for the {@link BucketContainer}, {@link SyncManager} and
  * the {@link Synchronizer}. Objects from these three classes are created and linked
  * together.
  * 
@@ -76,7 +77,7 @@ public class BucketContainerIntegrationTest {
         }
 
         BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(buckets, sizeOfWaitingQueue, hashFunction);
-        Buffer<DummyKVStorable> buffer = new Buffer<DummyKVStorable>(bucketContainer, numberOfSynchronizingThreads, TEMP_DIRECTORY, new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
+        SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, numberOfSynchronizingThreads, TEMP_DIRECTORY, new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
         buffer.start();
 
         StringBuilder sb = new StringBuilder();

@@ -1,4 +1,4 @@
-package com.unister.semweb.sdrum.buffer;
+package com.unister.semweb.sdrum.sync;
 
 import java.io.IOException;
 import java.util.Set;
@@ -12,18 +12,18 @@ import com.unister.semweb.sdrum.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
 
 /**
- * An instance of a {@link BufferThread}. Synchronizes a {@link Bucket} with the file system.
+ * An instance of a {@link SyncThread}. Synchronizes a {@link Bucket} with the file system.
  * 
  * @author m.gleditzsch
  */
-public class BufferThread<Data extends AbstractKVStorable<Data>> implements Runnable {
-    private static final Logger log = LoggerFactory.getLogger(BufferThread.class);
+public class SyncThread<Data extends AbstractKVStorable<Data>> implements Runnable {
+    private static final Logger log = LoggerFactory.getLogger(SyncThread.class);
 
-    /** It is used to share buckets between the {@link Buffer} and the {@link BufferThread}s. */
+    /** It is used to share buckets between the {@link SyncManager} and the {@link SyncThread}s. */
     private Bucket<Data> bucket;
 
     /**
-     * this variable is instantiated by the {@link Buffer} and shows which buckets are actually processed. If the
+     * this variable is instantiated by the {@link SyncManager} and shows which buckets are actually processed. If the
      * process of the actual <code>bucket</code> is done, its id is removed from this set.
      */
     private Set<Integer> actualProcessingBucketIds;
@@ -32,7 +32,7 @@ public class BufferThread<Data extends AbstractKVStorable<Data>> implements Runn
     private ISynchronizerFactory<Data> synchronizerFactory;
 
     /** The buffer that created this thread. */
-    private Buffer<Data> buffer;
+    private SyncManager<Data> buffer;
 
     /**
      * Constructor. The given {@link Bucket} will be processed.
@@ -45,7 +45,7 @@ public class BufferThread<Data extends AbstractKVStorable<Data>> implements Runn
      *            a {@link ISynchronizerFactory} for instantiating a {@link Synchronizer}. The latter is responsible for
      *            writing the {@link Bucket} to its corresponding file on HDD
      */
-    public BufferThread(Buffer<Data> buffer, Bucket<Data> bucket, Set<Integer> actualProcessingBucketIds,
+    public SyncThread(SyncManager<Data> buffer, Bucket<Data> bucket, Set<Integer> actualProcessingBucketIds,
             ISynchronizerFactory<Data> synchronizerFactory) {
         this.bucket = bucket;
         this.actualProcessingBucketIds = actualProcessingBucketIds;

@@ -1,4 +1,4 @@
-package com.unister.semweb.sdrum.buffer;
+package com.unister.semweb.sdrum.sync;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -19,18 +19,18 @@ import com.unister.semweb.sdrum.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
 
 /**
- * An instance of a {@link Buffer} is a thread, that handels the synchronization of {@link Bucket}s with their
+ * An instance of a {@link SyncManager} is a thread, that handels the synchronization of {@link Bucket}s with their
  * corresponding parts on HDD. The policy for synchronizing is the following one:<br>
  * <li>get the bucket with the most elements and synchronize it, if there are still resources<br> <li>try to synchronize
  * the next full bucket<br>
  * <br>
- * For synchronizing the {@link Buffer} instantiates new {@link BufferThread}s (each use special {@link Synchronizer}s
+ * For synchronizing the {@link SyncManager} instantiates new {@link SyncThread}s (each use special {@link Synchronizer}s
  * to move data from cache to HDD).
  * 
  * @author n.thieme, m.gleditzsch
  */
-public class Buffer<Data extends AbstractKVStorable<Data>> extends Thread {
-    private static final Logger log = LoggerFactory.getLogger(Buffer.class);
+public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
+    private static final Logger log = LoggerFactory.getLogger(SyncManager.class);
 
     /** Contains the buckets. */
     public final BucketContainer<Data> bucketContainer;
@@ -38,7 +38,7 @@ public class Buffer<Data extends AbstractKVStorable<Data>> extends Thread {
     /** the path to the files, where to store {@link AbstractKVStorable}s */
     private final String pathToDbFiles;
 
-    /** The factory to use by the {@link BufferThread}. */
+    /** The factory to use by the {@link SyncThread}. */
     private final ISynchronizerFactory<Data> synchronizerFactory;
 
     /**
@@ -50,7 +50,7 @@ public class Buffer<Data extends AbstractKVStorable<Data>> extends Thread {
     /** A set of bucketIds, which are actual in process */
     private Set<Integer> actualProcessingBucketIds;
 
-    /** The {@link ThreadPoolExecutor} handling all {@link BufferThread}s */
+    /** The {@link ThreadPoolExecutor} handling all {@link SyncThread}s */
     private ThreadPoolExecutor bufferThreads;
 
     /**
@@ -76,8 +76,8 @@ public class Buffer<Data extends AbstractKVStorable<Data>> extends Thread {
     private AtomicLong numberOfElementsUpdated;
 
     /**
-     * Instantiates a new {@link Buffer} with an already instantiated {@link BucketContainer}. The
-     * <code>numberOfBufferThreads</code> will show the number of allowed {@link BufferThread}s used to synchronize the
+     * Instantiates a new {@link SyncManager} with an already instantiated {@link BucketContainer}. The
+     * <code>numberOfBufferThreads</code> will show the number of allowed {@link SyncThread}s used to synchronize the
      * {@link AbstractKVStorable}s from the {@link Bucket}s in {@link BucketContainer} to the HDD.
      * 
      * @param {@link BucketContainer} bucketContainer
@@ -86,7 +86,7 @@ public class Buffer<Data extends AbstractKVStorable<Data>> extends Thread {
      *            pathToFiles
      * @param {@link ISynchronizerFactory}
      */
-    public Buffer(BucketContainer<Data> bucketContainer, int numberOfBufferThreads, String pathToFiles,
+    public SyncManager(BucketContainer<Data> bucketContainer, int numberOfBufferThreads, String pathToFiles,
             ISynchronizerFactory<Data> synchronizerFactory) {
         this.bucketContainer = bucketContainer;
         HashSet<Integer> tmpSet = new HashSet<Integer>();
@@ -183,10 +183,10 @@ public class Buffer<Data extends AbstractKVStorable<Data>> extends Thread {
     }
 
     /**
-     * Starts a new {@link BufferThread} with the given <code>bucketId</code>. Returns true if the {@link BufferThread}
+     * Starts a new {@link SyncThread} with the given <code>bucketId</code>. Returns true if the {@link SyncThread}
      * was successful started, false otherwise.<br>
      * <br>
-     * The {@link BufferThread} is not started, if the bucket is empty, already in process or does not exist.
+     * The {@link SyncThread} is not started, if the bucket is empty, already in process or does not exist.
      * 
      * @param bucketId
      */
@@ -221,7 +221,7 @@ public class Buffer<Data extends AbstractKVStorable<Data>> extends Thread {
             e.printStackTrace();
         }
 
-        BufferThread<Data> bufferThread = new BufferThread<Data>(this, oldBucket, actualProcessingBucketIds,
+        SyncThread<Data> bufferThread = new SyncThread<Data>(this, oldBucket, actualProcessingBucketIds,
                 synchronizerFactory);
         bufferThreads.execute(bufferThread);
         return true;

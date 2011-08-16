@@ -5,18 +5,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 
+
 import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.Bucket;
-import com.unister.semweb.sdrum.buffer.BufferThread;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.file.IndexForHeaderIndexFile;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
+import com.unister.semweb.sdrum.sync.SyncThread;
 
 /**
  * Takes a list of {@link AbstractKVStorable} and synchronizes them with a file. A {@link Synchronizer} is instantiated
- * by a {@link BufferThread}.
+ * by a {@link SyncThread}.
  * The core assumption is that the list of {@link AbstractKVStorable} and the entries in the file are sorted ascended.
  * 
  * @author n.thieme, m.gleditzsch

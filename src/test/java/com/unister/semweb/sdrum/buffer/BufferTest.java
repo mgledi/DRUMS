@@ -10,14 +10,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import com.unister.semweb.sdrum.TestUtils;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;
-import com.unister.semweb.sdrum.buffer.Buffer;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.storable.KVStorable;
+import com.unister.semweb.sdrum.sync.SyncManager;
 import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
 
 /** Here we tests whether the Buffer takes the messages from the BucketContainer. */
@@ -42,7 +43,7 @@ public class BufferTest {
         AbstractHashFunction bucketComputerFunction = new FirstBitHashFunction(2);
         BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
 
-        Buffer<DummyKVStorable> buffer = new Buffer<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
+        SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
         buffer.start();
         buffer.shutdown();
@@ -61,7 +62,7 @@ public class BufferTest {
         AbstractHashFunction bucketComputerFunction = new FirstBitHashFunction(8);
         BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
 
-        Buffer<DummyKVStorable> buffer = new Buffer<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
+        SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));buffer.start();
         buffer.shutdown();
         buffer.join();
@@ -79,7 +80,7 @@ public class BufferTest {
         AbstractHashFunction bucketComputerFunction = new FirstBitHashFunction(1);
         BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
 
-        Buffer<DummyKVStorable> buffer = new Buffer<DummyKVStorable>(bucketContainer, 2, TEMP_DIRECTORY_NAME,
+        SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 2, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));buffer.start();
                 
         buffer.shutdown();
@@ -101,7 +102,7 @@ public class BufferTest {
                 + bucketComputerFunction.getNumberOfBuckets());
         BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
 
-        Buffer<DummyKVStorable> buffer = new Buffer<DummyKVStorable>(bucketContainer, 4, TEMP_DIRECTORY_NAME,
+        SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 4, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
         buffer.start();
         buffer.shutdown();
@@ -120,7 +121,7 @@ public class BufferTest {
         AbstractHashFunction bucketComputerFunction = new FirstBitHashFunction(1);
         BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
 
-        Buffer<DummyKVStorable> buffer = new Buffer<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
+        SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
         buffer.start();
         buffer.shutdown();
@@ -139,7 +140,7 @@ public class BufferTest {
         AbstractHashFunction bucketComputerFunction = new FirstBitHashFunction(1);
         BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
 
-        Buffer<DummyKVStorable> buffer = new Buffer<DummyKVStorable>(bucketContainer, 4, TEMP_DIRECTORY_NAME,
+        SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 4, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
         buffer.start();
         Thread.sleep(1000);
@@ -159,7 +160,7 @@ public class BufferTest {
         AbstractHashFunction bucketComputerFunction = new FirstBitHashFunction(1);
         BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
 
-        Buffer<DummyKVStorable> buffer = new Buffer<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
+        SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
         buffer.start();
 

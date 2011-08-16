@@ -11,13 +11,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import com.unister.semweb.sdrum.TestUtils;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.BucketContainerException;
 import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;
-import com.unister.semweb.sdrum.buffer.Buffer;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
+import com.unister.semweb.sdrum.sync.SyncManager;
 import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
 
 /**
@@ -176,7 +177,7 @@ public class ParameterTest {
 
         System.out.println(directoryOfFiles);
         BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(buckets, sizeOfWaitingQueue, hashFunction);
-        Buffer<DummyKVStorable> buffer = new Buffer<DummyKVStorable>(bucketContainer, numberOfThreads, directoryOfFiles,
+        SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, numberOfThreads, directoryOfFiles,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
         buffer.start();
 

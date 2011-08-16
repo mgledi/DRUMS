@@ -20,7 +20,7 @@ import com.unister.semweb.sdrum.SynchronizerTest;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ BucketContainerTest.class, SynchronizerTest.class, SynchronizerPerformanceTest.class, BufferTest.class,
-        LinkDataMergeTest.class, HeaderIndexFileTest.class, UpdateOnlySynchronizerTest.class,
+        LinkDataMergeTest.class, HeaderIndexFileTest.class, UpdateOnlySynchronizerTest.class
          })
 public class AllTests {
 

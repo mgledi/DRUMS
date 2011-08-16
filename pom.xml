@@ -74,6 +74,16 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+			<version>1.6</version>
+		</dependency>
 		<!-- ################# Testing ################################## -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -89,12 +99,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.0.1</version>
-			<scope>test</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>commons-collections</groupId>
@@ -104,12 +108,6 @@
 		</dependency>
 
 
-		<dependency>
-			<groupId>commons-configuration</groupId>
-			<artifactId>commons-configuration</artifactId>
-			<version>1.6</version>
-			<scope>test</scope>
-		</dependency>
 
 		<!-- SPRING -->
 		<dependency>

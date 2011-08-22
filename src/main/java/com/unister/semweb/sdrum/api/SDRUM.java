@@ -19,11 +19,11 @@ import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.BucketContainerException;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
-import com.unister.semweb.sdrum.buffer.Buffer;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.file.IndexForHeaderIndexFile;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
+import com.unister.semweb.sdrum.sync.SyncManager;
 import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.UpdateOnlySynchronizer;
 
@@ -74,7 +74,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     private SynchronizerFactory<Data> synchronizerFactory;
 
     /** the buffer manages the different synchrinize-processes */
-    private Buffer<Data> buffer;
+    private SyncManager<Data> buffer;
 
     /** a prototype of the elements to store */
     private Data prototype;
@@ -86,33 +86,37 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * A private constructor.
      * 
      * @param databaseDirectory
-     * @param sizeOfMemoryBuckets
      * @param preQueueSize
      * @param numberOfSynchronizerThreads
      * @param hashFunction
      * @param prototype
      * @param accessMode
      */
-    private SDRUM(String databaseDirectory, int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads,
+    private SDRUM(String databaseDirectory, int preQueueSize, int numberOfSynchronizerThreads,
             AbstractHashFunction hashFunction, Data prototype, AccessMode accessMode) {
-        this.sizeOfBuckets = sizeOfMemoryBuckets;
-        this.sizeOfPreQueue = preQueueSize;
-        this.hashFunction = hashFunction;
         this.prototype = prototype;
         this.elementSize = prototype.getByteBufferSize();
         this.accessMode = accessMode;
         this.databaseDirectory = databaseDirectory;
 
-        buckets = new Bucket[hashFunction.getNumberOfBuckets()];
-        for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
-            buckets[i] = new Bucket<Data>(i, sizeOfBuckets, prototype);
+        if (accessMode == AccessMode.READ_WRITE) {
+            this.sizeOfPreQueue = preQueueSize;
+            this.hashFunction = hashFunction;
+
+            buckets = new Bucket[hashFunction.getNumberOfBuckets()];
+            for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
+                buckets[i] = new Bucket<Data>(i, hashFunction.getBucketSize(i), prototype);
+            }
+            bucketContainer = new BucketContainer<Data>(buckets, sizeOfPreQueue, hashFunction);
+            synchronizerFactory = new SynchronizerFactory<Data>(prototype);
+            buffer = new SyncManager<Data>(
+                    bucketContainer,
+                    numberOfSynchronizerThreads,
+                    databaseDirectory,
+                    synchronizerFactory);
+            buffer.start();
         }
 
-        bucketContainer = new BucketContainer<Data>(buckets, sizeOfPreQueue, hashFunction);
-
-        synchronizerFactory = new SynchronizerFactory<Data>(prototype);
-        buffer = new Buffer<Data>(bucketContainer, numberOfSynchronizerThreads, databaseDirectory, synchronizerFactory);
-        buffer.start();
     }
 
     /**
@@ -130,7 +134,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      *            the number of threads used for synchronizing
      * @param hashFunction
      *            the hash function, decides where to store/search elements
-     * 
      * @throws IOException
      *             is thrown if an error occurs or if the SDRUM already exists
      * @return new {@link SDRUM}-object
@@ -145,8 +148,8 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         // First we create the directory structure.
         new File(databaseDirectory).mkdirs();
 
-        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, sizeOfMemoryBuckets, preQueueSize,
-                numberOfSynchronizerThreads, hashFunction, prototype, AccessMode.READ_WRITE);
+        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, preQueueSize, numberOfSynchronizerThreads, hashFunction,
+                prototype, AccessMode.READ_WRITE);
 
         // We store the configuration parameters within the given configuration file.
         ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(hashFunction.getNumberOfBuckets(),
@@ -190,8 +193,8 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
                 prototype);
         configurationFile.writeTo(nameOfConfigurationFile);
 
-        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, sizeOfMemoryBuckets, preQueueSize,
-                numberOfSynchronizerThreads, hashFunction, prototype, AccessMode.READ_WRITE);
+        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, preQueueSize, numberOfSynchronizerThreads, hashFunction,
+                prototype, AccessMode.READ_WRITE);
         return table;
     }
 
@@ -220,8 +223,11 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      *            the AccessMode, how to access the SDRUM
      * @return the table
      */
-    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> openTable(String configurationFilename,
-            AccessMode accessMode, Data prototype) throws IOException, ClassNotFoundException {
+    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> openTable(
+            String configurationFilename,
+            AccessMode accessMode,
+            Data prototype)
+            throws IOException, ClassNotFoundException {
 
         ConfigurationFile<Data> configFile = ConfigurationFile.readFrom(configurationFilename);
 
@@ -234,9 +240,13 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
                     "The prototypes of the configuration file and the user given prototype were different. Consult the log file for more information");
         }
 
-        SDRUM<Data> table = new SDRUM<Data>(configFile.getDatabaseDirectory(), configFile.getBucketSize(),
-                configFile.getPreQueueSize(), configFile.getNumberOfSynchronizerThreads(),
-                configFile.getHashFunction(), configFile.getPrototype(), accessMode);
+        SDRUM<Data> table = new SDRUM<Data>(
+                configFile.getDatabaseDirectory(),
+                configFile.getBucketSize(),
+                configFile.getNumberOfSynchronizerThreads(),
+                configFile.getHashFunction(),
+                configFile.getPrototype(),
+                accessMode);
         return table;
     }
 

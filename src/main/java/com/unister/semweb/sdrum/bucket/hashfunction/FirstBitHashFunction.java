@@ -1,5 +1,7 @@
 package com.unister.semweb.sdrum.bucket.hashfunction;
 
+import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +13,6 @@ import com.unister.semweb.sdrum.storable.KVStorable;
  * This hashFunction maps an element dependent on its first n bits.
  * 
  * @author m.gleditzsch
- * 
  */
 public class FirstBitHashFunction extends AbstractHashFunction {
     private static final long serialVersionUID = 1144011836893651925L;
@@ -29,7 +30,8 @@ public class FirstBitHashFunction extends AbstractHashFunction {
      * Constructor. Needs only the number of buckets. Scales automatically to the next pow of 2, to estimate the needed
      * number of bits to represent those buckets.
      * 
-     * @param int buckets, the number of buckets
+     * @param buckets
+     *            the number of buckets
      */
     public FirstBitHashFunction(int buckets) {
         this.buckets = nextHighestPowerOfTwo(buckets);
@@ -41,6 +43,9 @@ public class FirstBitHashFunction extends AbstractHashFunction {
             log.info("Two much buckets wanted. Using {} instead.", maxBuckets);
         }
 
+        this.bucketSizes = new int[buckets];
+        Arrays.fill(bucketSizes, INITIAL_BUCKET_SIZE);
+        
         this.firstUsedBits = 0;
         int tmp = this.buckets;
         // TODO Is this right shift correct??? This right shift respect the leading sign of the number!!!

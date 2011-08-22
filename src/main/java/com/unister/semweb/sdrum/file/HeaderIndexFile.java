@@ -117,6 +117,27 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
         }
     }
 
+    /**
+     * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
+     * {@link AccessMode}. This is a weak constructor and therefore you can only have read-access.
+     * 
+     * @param <b>String</b> fileName, the filename of the underlying OSfile.
+     * @param <b>int</b> max_retries_connect, the number of retries to open a channel, if the file is locked
+     * @throws FileLockException
+     *             if the <code>max_retries_connect</code> is exceeded
+     * @throws IOException
+     *             if another error with the fileaccess occured
+     */
+    public HeaderIndexFile(String fileName, int max_retries_connect)
+            throws FileLockException, IOException {
+        this.osFile = new File(fileName);
+        this.max_retries_connect = max_retries_connect;
+        this.init();
+        if (closedSoftly == 0) {
+            logger.warn("File {} was not closed correctly and might be corrupted", osFile.getName());
+        }
+    }
+
     protected void init() throws FileLockException, IOException {
         this.contentStart = HEADER_SIZE + MAX_INDEX_SIZE_IN_BYTES;
         if (!osFile.exists()) {

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -40,6 +41,8 @@ public class RangeHashFunction extends AbstractHashFunction {
      * value. Remember: the array will be handled circular.
      * 
      * @param long[] rangeValues
+     * @param String
+     *            [] filenames
      */
     public RangeHashFunction(long[] rangeValues, String[] filenames) {
         this.buckets = rangeValues.length;
@@ -48,6 +51,10 @@ public class RangeHashFunction extends AbstractHashFunction {
 
         sortMachine = new RangeHashSorter(maxRangeValues, filenames);
         sortMachine.quickSort();
+
+        bucketSizes = new int[maxRangeValues.length];
+        Arrays.fill(bucketSizes, INITIAL_BUCKET_SIZE);
+
         generateBucketIds();
     }
 
@@ -67,12 +74,14 @@ public class RangeHashFunction extends AbstractHashFunction {
 
         maxRangeValues = new long[readData.size()];
         filenames = new String[readData.size()];
+        bucketSizes = new int[readData.size()];
 
         for (int i = 0; i < readData.size(); i++) {
             String[] oneCSVLine = readData.get(i);
             try {
                 maxRangeValues[i] = Long.valueOf(oneCSVLine[0]);
                 filenames[i] = oneCSVLine[2];
+                bucketSizes[i] = INITIAL_BUCKET_SIZE; // TODO: adapt file
             } catch (NullPointerException ex) {
                 log.error(
                         "The csv file has not the expected format. The format is: range bucketId filename. One column is missing",
@@ -97,14 +106,14 @@ public class RangeHashFunction extends AbstractHashFunction {
         bucketIds = new int[filenames.length];
 
         HashMap<String, Integer> tmpSeenFilenames = new HashMap<String, Integer>();
-        for(int i=0; i < filenames.length; i++) {
-            if(!tmpSeenFilenames.containsKey(filenames[i])) {
+        for (int i = 0; i < filenames.length; i++) {
+            if (!tmpSeenFilenames.containsKey(filenames[i])) {
                 tmpSeenFilenames.put(filenames[i], this.buckets++);
-            } 
+            }
             bucketIds[i] = tmpSeenFilenames.get(filenames[i]);
         }
     }
-    
+
     /** Gets the bucket id to the given <code>key</code>. */
     @Override
     public int getBucketId(long key) {

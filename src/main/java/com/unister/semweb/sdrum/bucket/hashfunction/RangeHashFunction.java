@@ -27,6 +27,7 @@ public class RangeHashFunction extends AbstractHashFunction {
 
     private static final long serialVersionUID = 1197410536026296596L;
 
+    /** the file where the hashfunction is stored human-readable */
     private File hashFunctionFile;
 
     private long[] maxRangeValues;
@@ -40,21 +41,30 @@ public class RangeHashFunction extends AbstractHashFunction {
      * only the maximal allowed value per bucket. The minimal value will be the direct successor of the previous maximal
      * value. Remember: the array will be handled circular.
      * 
-     * @param long[] rangeValues
-     * @param String
-     *            [] filenames
+     * @param rangeValues
+     *            the maximum keys for all buckets
+     * @param filenames
+     *            the filenames for all buckets
+     * @param bucketSizes
+     *            the sizes for all buckets
+     * @param file
+     *            the file where to store the hashfunction
      */
-    public RangeHashFunction(long[] rangeValues, String[] filenames) {
+    public RangeHashFunction(long[] rangeValues, String[] filenames, int[] bucketSizes, File file) {
+        this.hashFunctionFile = file;
         this.buckets = rangeValues.length;
         this.maxRangeValues = rangeValues;
         this.filenames = filenames;
 
-        sortMachine = new RangeHashSorter(maxRangeValues, filenames);
+        if (bucketSizes == null) {
+            this.bucketSizes = new int[maxRangeValues.length];
+            Arrays.fill(this.bucketSizes, INITIAL_BUCKET_SIZE);
+        } else {
+            this.bucketSizes = bucketSizes;
+        }
+
+        sortMachine = new RangeHashSorter(maxRangeValues, filenames, this.bucketSizes);
         sortMachine.quickSort();
-
-        bucketSizes = new int[maxRangeValues.length];
-        Arrays.fill(bucketSizes, INITIAL_BUCKET_SIZE);
-
         generateBucketIds();
     }
 
@@ -95,11 +105,25 @@ public class RangeHashFunction extends AbstractHashFunction {
             }
         }
 
-        sortMachine = new RangeHashSorter(maxRangeValues, filenames);
+        sortMachine = new RangeHashSorter(maxRangeValues, filenames, bucketSizes);
         sortMachine.quickSort();
         generateBucketIds();
+
     }
 
+    /**
+     * Returns the File, where the HashFunction is stored human-readable
+     * 
+     * @return File
+     */
+    public File getHashFunctionFile() {
+        return this.hashFunctionFile;
+    }
+
+    /**
+     * generates the correct index structure, namely the bucketIds to the already initialized filenames and
+     * maxRangeValues
+     */
     private void generateBucketIds() {
         // generate indexes for buckets, needed if two different ranges belong to the same file
         this.buckets = 0;
@@ -112,6 +136,11 @@ public class RangeHashFunction extends AbstractHashFunction {
             }
             bucketIds[i] = tmpSeenFilenames.get(filenames[i]);
         }
+    }
+
+    /** Returns the size of the bucket with the given bucket-id. */
+    public long getMaxRange(int bucketId) {
+        return maxRangeValues[bucketId];
     }
 
     /** Gets the bucket id to the given <code>key</code>. */

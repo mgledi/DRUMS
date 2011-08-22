@@ -210,4 +210,47 @@ public class TestUtils {
         dbfile.close();
         return true;
     }
+    
+    
+    
+    /** Creates <code>numberOfData</code> dummy {@link DummyKVStorable}. */
+    public static DummyKVStorable[] createDummyData(int numberOfData) {
+        DummyKVStorable[] result = new DummyKVStorable[numberOfData];
+        for (int i = 0; i < numberOfData; i++) {
+            DummyKVStorable newData = createDummyData(i + 1, i, 1d / i);
+            result[i] = newData;
+        }
+        return result;
+    }
+
+    /**
+     * Creates a set of {@link DummyKVStorable}. There are (lastKey - firstKey) {@link DummyKVStorable} be generated. The first
+     * {@link DummyKVStorable} has as key the <code>firstKey</code>, the last {@link DummyKVStorable} the <code>lastKey</code>.
+     * 
+     * @param firstKey
+     * @param lastKey
+     * @return
+     */
+    public static DummyKVStorable[] createDummyData(int firstKey, int lastKey) {
+        DummyKVStorable[] result = new DummyKVStorable[lastKey - firstKey];
+        for (int i = firstKey; i < lastKey; i++) {
+            DummyKVStorable oneDate = createDummyData(i, i + 1, 1d / i);
+            result[i - firstKey] = oneDate;
+        }
+        return result;
+    }
+
+    /** Creates a specific {@link DummyKVStorable} with the given key, parentCount and relevanceScore. */
+    public static DummyKVStorable createDummyData(long key, int parentCount, double relevanceScore) {
+        DummyKVStorable result = new DummyKVStorable();
+        result.setKey(key);
+        result.setParentCount(parentCount);
+        result.setRelevanceScore(relevanceScore);
+        return result;
+    }
+    
+    
+    
+    
+    
 }

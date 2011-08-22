@@ -14,12 +14,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.sdrum.api.SDRUM;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
-import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
+import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
+import com.unister.semweb.sdrum.TestUtils;
 
 /** Tests the SDrum API. */
 public class SDrumTest {
@@ -37,10 +37,10 @@ public class SDrumTest {
     public void initialise() throws Exception {
         long[] ranges = new long[] { 0, 10, 20, 30 };
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
-
+        int[] sizes = {1000,1000,1000,1000};
         FileUtils.deleteQuietly(new File(databaseDirectory));
 
-        hashFunction = new RangeHashFunction(ranges, filenames);
+        hashFunction = new RangeHashFunction(ranges, filenames, sizes, new File("/tmp/hash.hs"));
         prototype = new DummyKVStorable();
     }
 
@@ -51,7 +51,7 @@ public class SDrumTest {
     @Test
     public void createTableAndInsertTest() throws Exception {
         // Adding elements to the drum.
-        DummyKVStorable[] test = createDummyData(10);
+        DummyKVStorable[] test = TestUtils.createDummyData(10);
         SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(test);
@@ -74,14 +74,14 @@ public class SDrumTest {
     @Test
     public void insertDifferentRanges() throws Exception {
         List<DummyKVStorable> expectedFirstRange = new ArrayList<DummyKVStorable>();
-        DummyKVStorable firstRange = createLinkData(5, 1, 0.5);
+        DummyKVStorable firstRange = TestUtils.createDummyData(5, 1, 0.5);
         expectedFirstRange.add(firstRange);
 
-        DummyKVStorable secondRange = createLinkData(10, 12, 0.3);
+        DummyKVStorable secondRange = TestUtils.createDummyData(10, 12, 0.3);
         expectedFirstRange.add(secondRange);
 
         List<DummyKVStorable> expectedThirdRange = new ArrayList<DummyKVStorable>();
-        DummyKVStorable thirdRange = createLinkData(29, 9, 0.23);
+        DummyKVStorable thirdRange = TestUtils.createDummyData(29, 9, 0.23);
         expectedThirdRange.add(thirdRange);
 
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
@@ -108,7 +108,7 @@ public class SDrumTest {
     @Test
     public void selectTestSingleElement() throws Exception {
         List<DummyKVStorable> dataList = new ArrayList<DummyKVStorable>();
-        DummyKVStorable data = createLinkData(1, 1, 0.23);
+        DummyKVStorable data = TestUtils.createDummyData(1, 1, 0.23);
         dataList.add(data);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { data };
 
@@ -130,9 +130,9 @@ public class SDrumTest {
     @Test
     public void selectTestSeveralRanges() throws Exception {
         List<DummyKVStorable> rangeData = new ArrayList<DummyKVStorable>();
-        DummyKVStorable firstRange = createLinkData(2, 2, 0.24);
-        DummyKVStorable secondRange = createLinkData(10, 10, 0.23);
-        DummyKVStorable thirdRange = createLinkData(12, 19, 0.29);
+        DummyKVStorable firstRange = TestUtils.createDummyData(2, 2, 0.24);
+        DummyKVStorable secondRange = TestUtils.createDummyData(10, 10, 0.23);
+        DummyKVStorable thirdRange = TestUtils.createDummyData(12, 19, 0.29);
         rangeData.add(firstRange);
         rangeData.add(secondRange);
         rangeData.add(thirdRange);
@@ -157,7 +157,7 @@ public class SDrumTest {
      */
     @Test
     public void readTestSingleElement() throws Exception {
-        DummyKVStorable testElement = createLinkData(1, 2, 0.23);
+        DummyKVStorable testElement = TestUtils.createDummyData(1, 2, 0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { testElement };
         List<DummyKVStorable> expectedData = Arrays.asList(toAdd);
 
@@ -178,7 +178,7 @@ public class SDrumTest {
      */
     @Test
     public void readTestSeveralElements() throws Exception {
-        DummyKVStorable[] testdata = createDummyData(10);
+        DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
         SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
@@ -197,7 +197,7 @@ public class SDrumTest {
      */
     @Test
     public void readTestSeveralElementsDifferentElementOffset() throws Exception {
-        DummyKVStorable[] testdata = createDummyData(10);
+        DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
         SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
@@ -215,9 +215,9 @@ public class SDrumTest {
     /** Add test data of different ranges to the DRUM and read the corresponding buckets. */
     @Test
     public void readTestDifferentRanges() throws Exception {
-        DummyKVStorable[] testdata = createDummyData(1, 5);
-        DummyKVStorable[] secondRange = createDummyData(11, 19);
-        DummyKVStorable[] thirdRange = createDummyData(21, 29);
+        DummyKVStorable[] testdata = TestUtils.createDummyData(1, 5);
+        DummyKVStorable[] secondRange = TestUtils.createDummyData(11, 19);
+        DummyKVStorable[] thirdRange = TestUtils.createDummyData(21, 29);
 
         DummyKVStorable[] completeTestdata = ArrayUtils.addAll(testdata, secondRange);
         completeTestdata = ArrayUtils.addAll(completeTestdata, thirdRange);
@@ -262,45 +262,6 @@ public class SDrumTest {
         file.close();
 
         return readData;
-    }
-
-    /* ------------------------------------------------------- */
-    /* ------------------Test data creation ------------------ */
-    /* ------------------------------------------------------- */
-    /** Creates <code>numberOfData</code> dummy {@link DummyKVStorable}. */
-    private DummyKVStorable[] createDummyData(int numberOfData) {
-        DummyKVStorable[] result = new DummyKVStorable[numberOfData];
-        for (int i = 0; i < numberOfData; i++) {
-            DummyKVStorable newData = createLinkData(i + 1, i, 1d / i);
-            result[i] = newData;
-        }
-        return result;
-    }
-
-    /**
-     * Creates a set of {@link DummyKVStorable}. There are (lastKey - firstKey) {@link DummyKVStorable} be generated. The first
-     * {@link DummyKVStorable} has as key the <code>firstKey</code>, the last {@link DummyKVStorable} the <code>lastKey</code>.
-     * 
-     * @param firstKey
-     * @param lastKey
-     * @return
-     */
-    private DummyKVStorable[] createDummyData(int firstKey, int lastKey) {
-        DummyKVStorable[] result = new DummyKVStorable[lastKey - firstKey];
-        for (int i = firstKey; i < lastKey; i++) {
-            DummyKVStorable oneDate = createLinkData(i, i + 1, 1d / i);
-            result[i - firstKey] = oneDate;
-        }
-        return result;
-    }
-
-    /** Creates a specific {@link DummyKVStorable} with the given key, parentCount and relevanceScore. */
-    private DummyKVStorable createLinkData(long key, int parentCount, double relevanceScore) {
-        DummyKVStorable result = new DummyKVStorable();
-        result.setKey(key);
-        result.setParentCount(parentCount);
-        result.setRelevanceScore(relevanceScore);
-        return result;
     }
 
     /* ------------------------------------------------------- */

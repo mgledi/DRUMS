@@ -35,10 +35,15 @@ public class RangeHashSorter implements Serializable {
     /** The file names. */
     private String[] filenames;
 
+    /** The sizes of the buckets names. */
+    private int[] bucketSizes;
+    
+
     /** Creates a sorting machine with the three arrays. */
-    public RangeHashSorter(long[] ranges,  String[] filenames) {
+    public RangeHashSorter(long[] ranges,  String[] filenames, int[] bucketSizes) {
         this.ranges = ranges;
         this.filenames = filenames;
+        this.bucketSizes = bucketSizes;
     }
 
     /** Get the ranges. After sorting the ranges are in sorted order. */
@@ -139,10 +144,14 @@ public class RangeHashSorter implements Serializable {
 
     /** Swaps the elements of the ith position with the elements of the jth position of all three arrays. */
     public void swap(int i, int j) {
-        long temp = ranges[i];
+        long ltemp = ranges[i];
         ranges[i] = ranges[j];
-        ranges[j] = temp;
+        ranges[j] = ltemp;
 
+        int itemp = bucketSizes[i];
+        bucketSizes[i] = bucketSizes[j];
+        bucketSizes[j] = itemp;
+        
         String tempFilename = filenames[i];
         filenames[i] = filenames[j];
         filenames[j] = tempFilename;

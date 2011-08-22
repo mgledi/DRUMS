@@ -293,6 +293,7 @@ public abstract class AbstractHeaderFile {
     public void close() {
         logger.debug("Try to close accessFile and channel for file: " + osFile);
         if (headerBuffer != null) {
+            writeHeader();
             headerBuffer = null;
         }
 

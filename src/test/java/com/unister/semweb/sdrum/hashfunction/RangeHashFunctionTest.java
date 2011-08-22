@@ -34,7 +34,7 @@ public class RangeHashFunctionTest {
         long[] ranges = new long[] { -10, 0, 10, 20, 30 };
         String[] filenames = new String[] { "0", "1", "2", "3", "1" };
 
-        RangeHashFunction hashFunction = new RangeHashFunction(ranges, filenames);
+        RangeHashFunction hashFunction = new RangeHashFunction(ranges, filenames, null, null);
 
         int currentBucketId = -1;
         currentBucketId = hashFunction.getBucketId(5);
@@ -77,7 +77,7 @@ public class RangeHashFunctionTest {
         String[] filenames = generateUniqueFilenames(numberOfRanges);
 
         long overallTime = 0;
-        RangeHashFunction hashFunction = new RangeHashFunction(ranges, filenames);
+        RangeHashFunction hashFunction = new RangeHashFunction(ranges, filenames, null, null);
         for (int i = 0; i < numberOfKeysToSearchFor; i++) {
             long randomKey = randomGenerator.nextLong();
 
@@ -110,7 +110,7 @@ public class RangeHashFunctionTest {
         long[] rangeValues = new long[] { 1, 2, 3, 4, 5 };
         String[] filenames = new String[] { "f1", "f2", "f3", "f4", "f5" };
 
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, filenames);
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, filenames, null, null);
         Assert.assertEquals("f1", hashFunction.getFilename(0));
         Assert.assertEquals("f2", hashFunction.getFilename(1));
         Assert.assertEquals("f3", hashFunction.getFilename(2));
@@ -129,7 +129,7 @@ public class RangeHashFunctionTest {
         long[] rangeValues = new long[] { 1, 2, 3, 4, 5 };
         String[] filenames = new String[] { "f1", "f2", "f3", "f4", "f5" };
 
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, filenames);
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, filenames, null, null);
         hashFunction.getFilename(6);
     }
 

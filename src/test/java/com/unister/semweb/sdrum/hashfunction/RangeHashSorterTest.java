@@ -15,8 +15,9 @@ public class RangeHashSorterTest {
     public void rightOrderBeforeSearch() {
         long ranges[] = createRanges(10);
         String filenames[] = createFilenames(10);
+        int[] sizes = createSizes(10);
         
-        RangeHashSorter sorting = new RangeHashSorter(ranges, filenames);
+        RangeHashSorter sorting = new RangeHashSorter(ranges, filenames, sizes);
         sorting.quickSort();
         
         long sortRanges[] = sorting.getRanges();
@@ -33,9 +34,10 @@ public class RangeHashSorterTest {
     @Test
     public void randomOrderBeforeSearch() {
         long ranges[] = new long[]{34, 12, 81, 0, 199, 726384};
+        int sizes[] = new int[]{50, 10, 100, 50, 1000, 10000};
         String filenames[] = new String[]{"f1", "f2", "f3", "f4", "f5", "f6"};
         
-        RangeHashSorter sorting = new RangeHashSorter(ranges, filenames);
+        RangeHashSorter sorting = new RangeHashSorter(ranges, filenames, sizes);
         sorting.quickSort();
         
         long[] expectedRanges = new long[]{0, 12, 34, 81, 199, 726384};
@@ -44,6 +46,15 @@ public class RangeHashSorterTest {
         Assert.assertTrue(Arrays.equals(expectedRanges, sorting.getRanges()));
         Assert.assertTrue(Arrays.equals(expectedFilenames, sorting.getFilenames()));
         
+    }
+    
+    /** Creates an array of sizes from 0 to <code>till</code>.*/
+    public int[] createSizes(int till) {
+        int[] result = new int[till];
+        for(int i = 0; i < till; i++) {
+            result[i] = i;
+        }
+        return result;
     }
     
     /** Creates an array of ranges from 0 to <code>till</code>.*/

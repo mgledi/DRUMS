@@ -488,6 +488,11 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         return -1;
     }
 
+    /** Joins all the SDRUM. */
+    public void join() throws InterruptedException {
+        buffer.join();
+    }
+    
     /** Closes the SDRUM. */
     public void close() throws InterruptedException {
         buffer.shutdown();

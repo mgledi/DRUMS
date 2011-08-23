@@ -10,10 +10,13 @@ import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.storable.KVStorable;
 
 /**
+ * Deprecated: Use RangeHashFunction Instead<br><br>
+ * 
  * This hashFunction maps an element dependent on its first n bits.
  * 
  * @author m.gleditzsch
  */
+@Deprecated 
 public class FirstBitHashFunction extends AbstractHashFunction {
     private static final long serialVersionUID = 1144011836893651925L;
 

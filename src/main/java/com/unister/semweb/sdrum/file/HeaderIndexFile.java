@@ -366,12 +366,13 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
         size = headerBuffer.getLong();
         filledUpTo = headerBuffer.getLong();
         closedSoftly = headerBuffer.get();
-        ;
         readChunkSize = headerBuffer.getInt();
         elementSize = headerBuffer.getInt();
+        System.out.println("READ ("+osFile+")" + size + ", " + filledUpTo + ", " + elementSize);
     }
 
     protected void writeHeader() {
+        System.out.println("WRITE ("+osFile+")" + size + ", " + filledUpTo + ", " + elementSize);
         headerBuffer.rewind();
         headerBuffer.putLong(size);
         headerBuffer.putLong(filledUpTo);

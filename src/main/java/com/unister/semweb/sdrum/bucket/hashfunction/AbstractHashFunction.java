@@ -17,7 +17,7 @@ import com.unister.semweb.sdrum.storable.KVStorable;
 public abstract class AbstractHashFunction implements Serializable {
     private static final long serialVersionUID = -5299645747853624533L;
 
-    protected static int INITIAL_BUCKET_SIZE = 1000;
+    public static int INITIAL_BUCKET_SIZE = 1000;
 
     protected int[] bucketSizes;
 

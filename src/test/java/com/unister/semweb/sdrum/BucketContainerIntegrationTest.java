@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 
-
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;

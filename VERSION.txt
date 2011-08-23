@@ -1,0 +1,31 @@
+Version 0.1.0-SNAPSHOT
+  - The file storage was split into a base, named SDRUM, and the classes for the CrawlingFrontier
+  - RangeHashFunction was added: takes the function values from a file
+
+Version 0.0.18
+  - Bug fix at the UrlFile (while url is written to the database the length was computed incorrectly)
+
+Version 0.0.17 (Development version)
+
+Version 0.0.16
+  - There remain 5 temporary url files while working. The other files will be deleted.
+
+Version 0.0.15
+  - LinkData was adapted to need less memory in memory and hdd
+     * the relevance score is stroed in a byte
+     * the timestamp is stored in an integer (it represents the minutes till 2011/08/02)
+  - Adding UrlFile class
+     * it handles the access on files that stores url
+     * the format is /length url length url .../
+     
+Version 0.0.14
+  - adding JMX support for the UrlRepository
+     * Buffer: number of active threads, maximal number of threads
+     * UrlTempStorage: number of urls that were appended to temporary storage
+     * BucketContainer: number of elements lying in the pre queue
+
+Version 0.0.9
+   - the structure of the DBFile was changed (it is HeaderFile)
+
+Version 0.0.8
+   - temporary url storage uses DBFile, the files enlarges by a specified factor

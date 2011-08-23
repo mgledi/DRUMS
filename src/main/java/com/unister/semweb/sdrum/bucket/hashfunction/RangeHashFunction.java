@@ -90,7 +90,7 @@ public class RangeHashFunction extends AbstractHashFunction {
             String[] oneCSVLine = readData.get(i);
             try {
                 maxRangeValues[i] = Long.valueOf(oneCSVLine[0]);
-                filenames[i] = oneCSVLine[2];
+                filenames[i] = oneCSVLine[1];
                 bucketSizes[i] = INITIAL_BUCKET_SIZE; // TODO: adapt file
             } catch (NullPointerException ex) {
                 log.error(

@@ -198,6 +198,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
         if (key == 0) {
             return false;
         }
+        
         // if the last readChunk was full
         ByteBuffer toAdd = ByteBuffer.wrap(newData);
         long positionOfToAddInFile = writeOffset + bufferedWriter.position();

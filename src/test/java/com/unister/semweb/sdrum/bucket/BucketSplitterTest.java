@@ -41,7 +41,7 @@ public class BucketSplitterTest {
         this.prototype = new DummyKVStorable();
 
         // fill with data
-        table = SDRUM.createTable(configurationFile, databaseDirectory, 1000,
+        table = SDRUM.createTable( databaseDirectory, 1000,
                 10000, 1, hashFunction, prototype);
         table.insertOrMerge(TestUtils.createDummyData(-100, 1500));
         table.close();

@@ -74,16 +74,16 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
 
     /**
      * Loads the configuration from the given configuration file.
-     * @param <C>
+     * @param <Data>
      * @param configurationFilename
      * @return
      * @throws IOException
      * @throws ClassNotFoundException
      */
     @SuppressWarnings("unchecked")
-    public static <C extends AbstractKVStorable<C>> ConfigurationFile<C> readFrom(String configurationFilename)
+    public static <Data extends AbstractKVStorable<Data>> ConfigurationFile<Data> readFrom(String configurationFilename)
             throws IOException, ClassNotFoundException {
-        ConfigurationFile<C> result = null;
+        ConfigurationFile<Data> result = null;
         try {
             PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration(configurationFilename);
             int numberOfBuckets = propertiesConfiguration.getInt("numberOfBuckets");
@@ -95,9 +95,9 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
             String serialisedPrototype = propertiesConfiguration.getString("prototype");
 
             AbstractHashFunction hashFunction = (AbstractHashFunction) Base64.decodeToObject(serialisedHashFunction);
-            C prototype = (C) Base64.decodeToObject(serialisedPrototype);
+            Data prototype = (Data) Base64.decodeToObject(serialisedPrototype);
 
-            result = new ConfigurationFile<C>(numberOfBuckets, bucketSize, numberOfSynchronizerThreads, preQueueSize,
+            result = new ConfigurationFile<Data>(numberOfBuckets, bucketSize, numberOfSynchronizerThreads, preQueueSize,
                     readDatabaseDirectory, hashFunction, prototype);
         } catch (ConfigurationException ex) {
             throw new IOException(ex);

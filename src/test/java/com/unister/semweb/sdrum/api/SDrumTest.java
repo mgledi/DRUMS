@@ -14,12 +14,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.unister.semweb.sdrum.TestUtils;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
-import com.unister.semweb.sdrum.TestUtils;
 
 /** Tests the SDrum API. */
 public class SDrumTest {
@@ -52,7 +52,7 @@ public class SDrumTest {
     public void createTableAndInsertTest() throws Exception {
         // Adding elements to the drum.
         DummyKVStorable[] test = TestUtils.createDummyData(10);
-        SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM.createTable(databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(test);
         table.close();
@@ -86,7 +86,7 @@ public class SDrumTest {
 
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
 
-        SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM.createTable( databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
         table.close();
@@ -112,7 +112,7 @@ public class SDrumTest {
         dataList.add(data);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { data };
 
-        SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM.createTable( databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
         Thread.sleep(2000);
@@ -139,7 +139,7 @@ public class SDrumTest {
 
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
 
-        SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM.createTable( databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
 
@@ -161,7 +161,7 @@ public class SDrumTest {
         DummyKVStorable[] toAdd = new DummyKVStorable[] { testElement };
         List<DummyKVStorable> expectedData = Arrays.asList(toAdd);
 
-        SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM.createTable( databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
 
@@ -180,7 +180,7 @@ public class SDrumTest {
     public void readTestSeveralElements() throws Exception {
         DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
-        SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM.createTable( databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(testdata);
 
@@ -199,7 +199,7 @@ public class SDrumTest {
     public void readTestSeveralElementsDifferentElementOffset() throws Exception {
         DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
-        SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM.createTable( databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(testdata);
 
@@ -222,7 +222,7 @@ public class SDrumTest {
         DummyKVStorable[] completeTestdata = ArrayUtils.addAll(testdata, secondRange);
         completeTestdata = ArrayUtils.addAll(completeTestdata, thirdRange);
 
-        SDRUM<DummyKVStorable> table = SDRUM.createTable(configurationFile, databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM.createTable( databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(completeTestdata);
 

@@ -24,8 +24,8 @@ import com.unister.semweb.sdrum.synchronizer.Synchronizer;
  * <li>get the bucket with the most elements and synchronize it, if there are still resources<br> <li>try to synchronize
  * the next full bucket<br>
  * <br>
- * For synchronizing the {@link SyncManager} instantiates new {@link SyncThread}s (each use special {@link Synchronizer}s
- * to move data from cache to HDD).
+ * For synchronizing the {@link SyncManager} instantiates new {@link SyncThread}s (each use special {@link Synchronizer}
+ * s to move data from cache to HDD).
  * 
  * @author n.thieme, m.gleditzsch
  */
@@ -39,7 +39,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     private final String pathToDbFiles;
 
     /** The factory to use by the {@link SyncThread}. */
-    private final ISynchronizerFactory<Data> synchronizerFactory;
+    private ISynchronizerFactory<Data> synchronizerFactory;
 
     /**
      * true, if shutdown is initiated. So all buckets will written to HDD. Also the waiting Elements in
@@ -183,8 +183,8 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     }
 
     /**
-     * Starts a new {@link SyncThread} with the given <code>bucketId</code>. Returns true if the {@link SyncThread}
-     * was successful started, false otherwise.<br>
+     * Starts a new {@link SyncThread} with the given <code>bucketId</code>. Returns true if the {@link SyncThread} was
+     * successful started, false otherwise.<br>
      * <br>
      * The {@link SyncThread} is not started, if the bucket is empty, already in process or does not exist.
      * 
@@ -246,13 +246,22 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     }
 
     /**
+     * overwrites the SynchronizerFactory. Be very careful
+     * 
+     * @param factory
+     */
+    public void setSynchronizer(ISynchronizerFactory<Data> factory) {
+        this.synchronizerFactory = factory;
+    }
+
+    /**
      * Initiates the shutdown. All actual buckets with elements will be processed. Be careful. If someone refills the
      * buckets, the thread won't shut down.
      */
     public void shutdown() {
         shutDownInitiated = true;
     }
-    
+
     /** Returns the directory of the database files. */
     public String getPathToDbFiles() {
         return pathToDbFiles;

@@ -24,6 +24,7 @@ import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.file.IndexForHeaderIndexFile;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.sync.SyncManager;
+import com.unister.semweb.sdrum.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.UpdateOnlySynchronizer;
 
@@ -40,6 +41,8 @@ import com.unister.semweb.sdrum.synchronizer.UpdateOnlySynchronizer;
  */
 public class SDRUM<Data extends AbstractKVStorable<Data>> {
     private static final Logger log = LoggerFactory.getLogger(SDRUM.class);
+
+    public static final String CONFIG_FILE = "_sdrum.cfg";
 
     /** the accessmode for SDRUM */
     public enum AccessMode {
@@ -58,9 +61,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     /** The directory of the database files. */
     private String databaseDirectory;
 
-    /** the size of the buckets in memory */
-    private int sizeOfBuckets;
-
     /** the size of the pre queue, used if a specific bucket waits for synchronizing */
     private int sizeOfPreQueue;
 
@@ -71,10 +71,10 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     private BucketContainer<Data> bucketContainer;
 
     /** the Synchronizer factory, is needed to decide how to insert/update elements */
-    private SynchronizerFactory<Data> synchronizerFactory;
+    private ISynchronizerFactory<Data> synchronizerFactory;
 
     /** the buffer manages the different synchrinize-processes */
-    private SyncManager<Data> buffer;
+    private SyncManager<Data> syncManager;
 
     /** a prototype of the elements to store */
     private Data prototype;
@@ -92,8 +92,13 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * @param prototype
      * @param accessMode
      */
-    private SDRUM(String databaseDirectory, int preQueueSize, int numberOfSynchronizerThreads,
-            AbstractHashFunction hashFunction, Data prototype, AccessMode accessMode) {
+    private SDRUM(
+            String databaseDirectory,
+            int preQueueSize,
+            int numberOfSynchronizerThreads,
+            AbstractHashFunction hashFunction,
+            Data prototype,
+            AccessMode accessMode) {
         this.prototype = prototype;
         this.elementSize = prototype.getByteBufferSize();
         this.accessMode = accessMode;
@@ -109,12 +114,12 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             }
             bucketContainer = new BucketContainer<Data>(buckets, sizeOfPreQueue, hashFunction);
             synchronizerFactory = new SynchronizerFactory<Data>(prototype);
-            buffer = new SyncManager<Data>(
+            syncManager = new SyncManager<Data>(
                     bucketContainer,
                     numberOfSynchronizerThreads,
                     databaseDirectory,
                     synchronizerFactory);
-            buffer.start();
+            syncManager.start();
         }
 
     }
@@ -138,9 +143,13 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      *             is thrown if an error occurs or if the SDRUM already exists
      * @return new {@link SDRUM}-object
      */
-    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createTable(String nameOfConfigurationFile,
-            String databaseDirectory, int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads,
-            AbstractHashFunction hashFunction, Data prototype) throws IOException {
+    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createTable(
+            String databaseDirectory,
+            int sizeOfMemoryBuckets,
+            int preQueueSize,
+            int numberOfSynchronizerThreads,
+            AbstractHashFunction hashFunction,
+            Data prototype) throws IOException {
         File databaseDirectoryFile = new File(databaseDirectory);
         if (databaseDirectoryFile.exists()) {
             throw new IOException("The directory already exist. Can't create a SDRUM.");
@@ -148,21 +157,30 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         // First we create the directory structure.
         new File(databaseDirectory).mkdirs();
 
-        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, preQueueSize, numberOfSynchronizerThreads, hashFunction,
-                prototype, AccessMode.READ_WRITE);
+        SDRUM<Data> table = new SDRUM<Data>(
+                databaseDirectory, preQueueSize,
+                numberOfSynchronizerThreads,
+                hashFunction,
+                prototype,
+                AccessMode.READ_WRITE);
 
         // We store the configuration parameters within the given configuration file.
-        ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(hashFunction.getNumberOfBuckets(),
-                sizeOfMemoryBuckets, numberOfSynchronizerThreads, preQueueSize, databaseDirectory, hashFunction,
+        ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(
+                hashFunction.getNumberOfBuckets(),
+                sizeOfMemoryBuckets,
+                numberOfSynchronizerThreads,
+                preQueueSize,
+                databaseDirectory,
+                hashFunction,
                 prototype);
-        configurationFile.writeTo(nameOfConfigurationFile);
+        configurationFile.writeTo(CONFIG_FILE);
         return table;
     }
 
     /**
      * This method creates a new SDRUM object. The old SDRUM will be overwritten. <br/>
      * If the given directory doesn't exist, it will be created.<br/>
-     * A configuration file will be written to the <code>nameOfConfigurationFile</code> location.
+     * A configuration file will be written to the <code>CONFIG_FILE</code> location.
      * 
      * @param databaseDirectory
      *            the path, where to store the database files
@@ -177,21 +195,29 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * @throws IOException
      *             if an error occurs while writing the configuration file
      * @return new {@link SDRUM}-object
-     * @return
      */
-    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> forceCreateTable(String nameOfConfigurationFile,
-            String databaseDirectory, int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads,
-            AbstractHashFunction hashFunction, Data prototype) throws IOException {
+    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> forceCreateTable(
+            String databaseDirectory,
+            int sizeOfMemoryBuckets,
+            int preQueueSize,
+            int numberOfSynchronizerThreads,
+            AbstractHashFunction hashFunction,
+            Data prototype) throws IOException {
         File databaseDirectoryFile = new File(databaseDirectory);
         if (databaseDirectoryFile.exists()) {
             deleteDatabaseFilesWithinDirectory(databaseDirectory);
         }
 
         // We store the configuration parameters within the given configuration file.
-        ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(hashFunction.getNumberOfBuckets(),
-                sizeOfMemoryBuckets, numberOfSynchronizerThreads, preQueueSize, databaseDirectory, hashFunction,
+        ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(
+                hashFunction.getNumberOfBuckets(),
+                sizeOfMemoryBuckets,
+                numberOfSynchronizerThreads,
+                preQueueSize,
+                databaseDirectory,
+                hashFunction,
                 prototype);
-        configurationFile.writeTo(nameOfConfigurationFile);
+        configurationFile.writeTo(CONFIG_FILE);
 
         SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, preQueueSize, numberOfSynchronizerThreads, hashFunction,
                 prototype, AccessMode.READ_WRITE);
@@ -214,30 +240,43 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     }
 
     /**
+     * Checks if the given databaseDirecotry could be a SDRUM table
+     * 
+     * @param databaseDirectory
+     * @return boolean
+     */
+    public static <Data extends AbstractKVStorable<Data>> boolean tableExists(String databaseDirectory) {
+        File f = new File(databaseDirectory + "/" + CONFIG_FILE);
+        return f.exists();
+    }
+
+    /**
      * Opens an existing table. Only the database configuration file and the access are needed. All other information
      * are loaded from the configuration file.
      * 
-     * @param configurationFilename
-     *            the name of the configuration file of that SDRUM to open
+     * @param databaseDirectory
+     *            the folder of the SDRUM to open
      * @param accessMode
      *            the AccessMode, how to access the SDRUM
+     * @param prototype
+     *            a prototype of the elments stored in this drum
      * @return the table
      */
     public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> openTable(
-            String configurationFilename,
+            String databaseDirectory,
             AccessMode accessMode,
             Data prototype)
             throws IOException, ClassNotFoundException {
 
-        ConfigurationFile<Data> configFile = ConfigurationFile.readFrom(configurationFilename);
+        ConfigurationFile<Data> configFile = ConfigurationFile.readFrom(databaseDirectory + "/" + CONFIG_FILE);
 
         if (configFile.getPrototype().getByteBufferSize() != prototype.getByteBufferSize()) {
-            log.error("The protoype of the user was different from the prototype stored within the configuration file.");
-            log.error("It seems that the prototype has changed over time. To prevent damage at the data the opening process is aborted.");
-            log.error("Size of the user prototype: {}, size of the prototype loaded from configuration file: {}",
+            log.error("The protoype of the user was different from the prototype stored within the configuration file."
+                    +
+                    "Size of the user prototype: {}, size of the prototype loaded from configuration file: {}",
                     prototype.getByteBufferSize(), configFile.getPrototype().getByteBufferSize());
             throw new IOException(
-                    "The prototypes of the configuration file and the user given prototype were different. Consult the log file for more information");
+                    "The prototypes of the configuration file and the user given prototype were different in size.");
         }
 
         SDRUM<Data> table = new SDRUM<Data>(
@@ -248,6 +287,31 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
                 configFile.getPrototype(),
                 accessMode);
         return table;
+    }
+
+    /**
+     * Sets the {@link SynchronizerFactory}.
+     */
+    public void setSynchronizerFactory(ISynchronizerFactory<Data> factory) {
+        this.synchronizerFactory = factory;
+        this.syncManager.setSynchronizer(factory);
+    }
+
+    /**
+     * Returns a pointer to the local {@link BucketContainer}
+     * 
+     * @return
+     */
+    public BucketContainer<Data> getBucketContainer() {
+        return this.bucketContainer;
+    }
+
+    /** Returns a pointer to the local {@link SyncManager}
+     * 
+     * @return {@link SyncManager}
+     */
+    public SyncManager<Data> getSyncManager() {
+        return this.syncManager;
     }
 
     /**
@@ -490,12 +554,12 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
 
     /** Joins all the SDRUM. */
     public void join() throws InterruptedException {
-        buffer.join();
+        syncManager.join();
     }
-    
+
     /** Closes the SDRUM. */
     public void close() throws InterruptedException {
-        buffer.shutdown();
-        buffer.join();
+        syncManager.shutdown();
+        syncManager.join();
     }
 }

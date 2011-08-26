@@ -1,18 +1,15 @@
 package com.unister.semweb.sdrum.api;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
-import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
-import com.unister.semweb.sdrum.storable.DummyKVStorable;
 
 /**
  * This class instantiates an Read-Only-Iterator for a given SDRUM
@@ -48,6 +45,8 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
     /** for fast access, the number of buckets */
     private int numberOfBuckets = 0;
 
+    private int countElementsRead = 0;
+    
     private String directory;
     /**
      * Initialises the iterator with the hash function.
@@ -71,10 +70,13 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
     @Override
     public boolean hasNext() {
         if (readBuffer != null && readBuffer.remaining() != 0 ) {
+//            System.out.println("bytes in buffer remaining");
             return true;
-        } else if (actualFile != null && actualFile.getFilledUpFromContentStart() > actualFileOffset) {
+        } else if (actualFile != null && actualFileOffset < actualFile.getFilledUpFromContentStart()) {
+//            System.out.println("bytes in file remaining " + actualFileOffset + " " + actualFile.getFilledUpFromContentStart());
             return true;
-        } else if (actualBucketId < numberOfBuckets-1) { // TODO: this is weak, there could be empty buckets 
+        } else if (actualBucketId < numberOfBuckets-1) { // TODO: this is weak, there could be empty buckets
+//            System.out.println("files remaining");
             return true;
         }
         return false;
@@ -92,7 +94,7 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
             }
             readBuffer.get(actualDestination);
             Data d = prototype.fromByteBuffer(ByteBuffer.wrap(actualDestination));
-//            d.initFromByteBuffer(ByteBuffer.wrap(actualDestination));
+            countElementsRead ++;
             return d;
         } catch (FileLockException e) {
             // TODO Auto-generated catch block
@@ -104,11 +106,13 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
         return null;
     }
 
+    /** fills the ReadBuffer form the HeaderIndexFile */
     private void handleReadBuffer() throws IOException {
         if (readBuffer.remaining() == 0) {
+            readBuffer.clear();
             actualFile.read(actualFileOffset, readBuffer);
             actualFileOffset += readBuffer.limit();
-            readBuffer.rewind();
+            readBuffer.position(0); 
         }
     }
 
@@ -125,11 +129,10 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
             filename = directory + "/" + hashFunction.getFilename(actualBucketId);
             actualFile = new HeaderIndexFile<Data>(filename, 1);
             readBuffer = ByteBuffer.allocate(actualFile.getChunkSize());
+            readBuffer.clear();
             readBuffer.limit(0);
-            System.out.println(filename);
-        } else if (readBuffer.remaining() == 0 && actualFile.getFilledUpFromContentStart() >= actualFileOffset) {
+        } else if (readBuffer.remaining() == 0 && actualFileOffset >= actualFile.getFilledUpFromContentStart() ) {
             actualFile.close();
-            System.out.println("Changing file");
             actualBucketId++;
             if(actualBucketId >= numberOfBuckets) {
                 return false;
@@ -137,8 +140,8 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
             filename = directory + "/" + hashFunction.getFilename(actualBucketId);
             actualFile = new HeaderIndexFile<Data>(filename, 1);
             actualFileOffset = 0;
+            readBuffer.clear();
             readBuffer.limit(0);
-            System.out.println(filename);
         }
         return true;
     }

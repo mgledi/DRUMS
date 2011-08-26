@@ -49,7 +49,7 @@ public abstract class AbstractHeaderFile {
     public static final int HEADER_SIZE = 1024;
 
     /** the file to access */
-    protected File osFile;
+    public File osFile; //TODO:private
 
     /** the file to access */
     protected RandomAccessFile accessFile;

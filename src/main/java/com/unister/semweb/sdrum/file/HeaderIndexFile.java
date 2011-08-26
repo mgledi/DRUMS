@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
 /**
@@ -265,7 +264,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
             destBuffer.limit((int) (filledUpTo - offset));
         }
         offset = checkRegions(offset, destBuffer.limit());
-        channel.read(destBuffer, offset);
+        int bytes = channel.read(destBuffer, offset);
     }
 
     /**
@@ -368,11 +367,9 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
         closedSoftly = headerBuffer.get();
         readChunkSize = headerBuffer.getInt();
         elementSize = headerBuffer.getInt();
-        System.out.println("READ ("+osFile+")" + size + ", " + filledUpTo + ", " + elementSize);
     }
 
     protected void writeHeader() {
-        System.out.println("WRITE ("+osFile+")" + size + ", " + filledUpTo + ", " + elementSize);
         headerBuffer.rewind();
         headerBuffer.putLong(size);
         headerBuffer.putLong(filledUpTo);

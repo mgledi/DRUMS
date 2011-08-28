@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -111,7 +110,7 @@ public class SynchronizerTest {
 		Arrays.sort(secondAdd);
 		synchronizer.upsert(secondAdd);
 		
-		DummyKVStorable[] originalData = ArrayUtils.addAll(firstAdd, secondAdd);
+		DummyKVStorable[] originalData = (DummyKVStorable[]) TestUtils.addAll(firstAdd, secondAdd);
 		Arrays.sort(originalData);
 				
 		DummyKVStorable[] readLinkData = readInFile(testFilename);
@@ -130,7 +129,7 @@ public class SynchronizerTest {
 		synchronizer.upsert(toAdd);
 		
 		DummyKVStorable toUpdate = new DummyKVStorable();
-		toUpdate.setKey(toUpdateOriginal.getKey());
+		toUpdate.setKey(toUpdateOriginal.getLongKey());
 		toUpdate.setRelevanceScore(1.0);
 		toUpdate.setParentCount(1);
 		toUpdate.setTimestamp(toUpdateOriginal.getTimestamp());
@@ -139,16 +138,16 @@ public class SynchronizerTest {
 		synchronizer.upsert(toUpdateData);
 		
 		DummyKVStorable[] readLinkData = readInFile(testFilename);
-		DummyKVStorable searchResult = TestUtils.searchFor(readLinkData, toUpdate.getKey());
+		DummyKVStorable searchResult = TestUtils.searchFor(readLinkData, toUpdate.getLongKey());
 		if (searchResult == null) {
 			Assert.fail();
 		} else {
 			DummyKVStorable expectedLinkDate = new DummyKVStorable();
-			expectedLinkDate.setKey(toUpdateOriginal.getKey());
+			expectedLinkDate.setKey(toUpdateOriginal.getLongKey());
 			expectedLinkDate.setParentCount(toUpdateOriginal.getParentCount() + 1);
 			expectedLinkDate.setRelevanceScore(toUpdateOriginal.getRelevanceScore() * toUpdateOriginal.getParentCount() + toUpdate.getRelevanceScore() / (toUpdateOriginal.getParentCount() + 1));
 			
-			Assert.assertEquals(toUpdateOriginal.getKey(), searchResult.getKey());
+			Assert.assertEquals(toUpdateOriginal.getLongKey(), searchResult.getLongKey());
 			Assert.assertEquals(toUpdateOriginal.getUrlPosition(), searchResult.getUrlPosition());
 			Assert.assertEquals(toUpdateOriginal.getParentCount() + 1, searchResult.getParentCount());
 			Assert.assertEquals(true, toUpdateOriginal.getTimestamp() <= searchResult.getTimestamp());

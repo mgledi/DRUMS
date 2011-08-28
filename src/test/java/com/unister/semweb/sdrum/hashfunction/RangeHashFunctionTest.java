@@ -1,8 +1,6 @@
 package com.unister.semweb.sdrum.hashfunction;
 
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -12,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * Tests the the distribution of the {@link RangeHashFunction}, meaning that the key is mapped to the right bucket id.
@@ -31,36 +30,35 @@ public class RangeHashFunctionTest {
     /** Tests whether the key is mapped to the right bucket id. */
     @Test
     public void correctHashDistribution() {
-        long[] ranges = new long[] { -10, 0, 10, 20, 30 };
+        System.out.println("############ correctHashDistribution()");
+        long[] ranges = new long[] {5, 10, 20, 30, 40 };
+        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "0", "1", "2", "3", "1" };
 
-        RangeHashFunction hashFunction = new RangeHashFunction(ranges, filenames, null, null);
+        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null, null);
 
         int currentBucketId = -1;
-        currentBucketId = hashFunction.getBucketId(5);
-        Assert.assertEquals(2, currentBucketId);
-
-        currentBucketId = hashFunction.getBucketId(10);
-        Assert.assertEquals(2, currentBucketId);
-
         currentBucketId = hashFunction.getBucketId(11);
-        Assert.assertEquals(3, currentBucketId);
-
-        currentBucketId = hashFunction.getBucketId(19);
-        Assert.assertEquals(3, currentBucketId);
+        Assert.assertEquals(2, currentBucketId);
 
         currentBucketId = hashFunction.getBucketId(20);
+        Assert.assertEquals(2, currentBucketId);
+
+        currentBucketId = hashFunction.getBucketId(21);
+        Assert.assertEquals(3, currentBucketId);
+
+        currentBucketId = hashFunction.getBucketId(29);
+        Assert.assertEquals(3, currentBucketId);
+
+        currentBucketId = hashFunction.getBucketId(30);
         Assert.assertEquals(3, currentBucketId);
 
         currentBucketId = hashFunction.getBucketId(100);
         Assert.assertEquals(0, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(-10);
+        currentBucketId = hashFunction.getBucketId(4);
         Assert.assertEquals(0, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(25);
-        Assert.assertEquals(1, currentBucketId);
-        
         currentBucketId = hashFunction.getBucketId(Long.MAX_VALUE);
         Assert.assertEquals(0, currentBucketId);
 
@@ -70,17 +68,22 @@ public class RangeHashFunctionTest {
 
     @Test
     public void massiveTest() {
-        int numberOfRanges = 100000;
-        int numberOfKeysToSearchFor = 10000;
+        System.out.println("############ massiveTest()");
+        int numberOfRanges = 10000;
+        int numberOfKeysToSearchFor = 1000000;
 
         long[] ranges = generateUniqueRanges(numberOfRanges);
+        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = generateUniqueFilenames(numberOfRanges);
 
         long overallTime = 0;
-        RangeHashFunction hashFunction = new RangeHashFunction(ranges, filenames, null, null);
+        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null, null);
         for (int i = 0; i < numberOfKeysToSearchFor; i++) {
             long randomKey = randomGenerator.nextLong();
-
+            if(randomKey < 0 ) {
+                randomKey *= -1;
+            }
+            
             long startTime = System.currentTimeMillis();
             try {
                 hashFunction.getBucketId(randomKey);
@@ -108,9 +111,10 @@ public class RangeHashFunctionTest {
     @Test
     public void testSearchForBucketIdIndex() throws Exception {
         long[] rangeValues = new long[] { 1, 2, 3, 4, 5 };
+        byte[][] bRanges = KeyUtils.transformToByteArray(rangeValues);
         String[] filenames = new String[] { "f1", "f2", "f3", "f4", "f5" };
 
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, filenames, null, null);
+        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null, null);
         Assert.assertEquals("f1", hashFunction.getFilename(0));
         Assert.assertEquals("f2", hashFunction.getFilename(1));
         Assert.assertEquals("f3", hashFunction.getFilename(2));
@@ -127,35 +131,26 @@ public class RangeHashFunctionTest {
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void testSearchForBucketIdIndexInvalid() throws Exception {
         long[] rangeValues = new long[] { 1, 2, 3, 4, 5 };
+        byte[][] bRanges = KeyUtils.transformToByteArray(rangeValues);
         String[] filenames = new String[] { "f1", "f2", "f3", "f4", "f5" };
 
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, filenames, null, null);
+        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null, null);
         hashFunction.getFilename(6);
     }
 
     /* ******************************************** Data generator methods ******************** */
     /* **************************************************************************************** */
 
-    /** Generates the specified number of ranges. The ranges are unique. */
+    /** Generates the specified number of positive ranges. The ranges are unique. */
     private long[] generateUniqueRanges(int numberOfRanges) {
-        Set<Long> randomRanges = new HashSet<Long>();
-
-        do {
-            for (int i = 0; i < numberOfRanges; i++) {
-                randomRanges.add(randomGenerator.nextLong());
-            }
-        } while (randomRanges.size() < numberOfRanges);
-
         long[] result = new long[numberOfRanges];
-        int i = 0;
-        for (Long oneRange : randomRanges) {
-            result[i] = oneRange;
-            i++;
-            if (i >= numberOfRanges) {
-                break;
+        for (int i = 0; i < numberOfRanges; i++) {
+            long l= randomGenerator.nextLong();
+            if(l < 0 ) {
+                l*=-1;
             }
+            result[i] = l;
         }
-
         return result;
     }
 

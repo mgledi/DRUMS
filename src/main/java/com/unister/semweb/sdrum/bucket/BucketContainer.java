@@ -90,7 +90,7 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
     public void addToCache(Data... toAdd) throws BucketContainerException, InterruptedException {
         int throwBucketException = -1;
         for (Data linkData : toAdd) {
-            int indexOfCache = hashFunction.getBucketId(linkData.getKey());
+            int indexOfCache = hashFunction.getBucketId(linkData.getLongKey());
             // safety first, check if the bucket exists. If not, try to move on. Throw exception at the end
             if (indexOfCache < buckets.length) {
                 Bucket<Data> bucket = buckets[indexOfCache];
@@ -127,7 +127,7 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      */
     public boolean addToCacheWithoutBlocking(Data linkData) throws BucketContainerException,
             InterruptedException {
-        int indexOfCache = hashFunction.getBucketId(linkData.getKey());
+        int indexOfCache = hashFunction.getBucketId(linkData.getLongKey());
 
         if (indexOfCache < buckets.length) {
             Bucket<Data> bucket = buckets[indexOfCache];

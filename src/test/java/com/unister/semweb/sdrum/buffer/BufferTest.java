@@ -24,7 +24,7 @@ import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
 /** Here we tests whether the Buffer takes the messages from the BucketContainer. */
 public class BufferTest {
     private static final Logger log = LoggerFactory.getLogger(BufferTest.class);
-    private static final String TEMP_DIRECTORY_NAME = "/tmp";
+    private static final String TEMP_DIRECTORY_NAME = "/tmp/";
     private static final File TEMP_DIRECTORY = new File(TEMP_DIRECTORY_NAME);
 
     /** Deleting all database files from the temproary directory. */
@@ -117,9 +117,9 @@ public class BufferTest {
 
     @Test
     public void bufferSimpletTest1BucketLessThanThreshold() throws Exception {
-        Bucket[] testdata = TestUtils.generateBuckets(100, 1, 10);
+        Bucket<DummyKVStorable>[] testdata = TestUtils.generateBuckets(100, 1, 10);
         AbstractHashFunction bucketComputerFunction = new FirstBitHashFunction(1);
-        BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
+        BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(testdata, 100, bucketComputerFunction);
 
         SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
@@ -136,9 +136,9 @@ public class BufferTest {
 
     @Test
     public void bufferSimpletTest1BucketLessThanThreshold4Threads() throws Exception {
-        Bucket[] testdata = TestUtils.generateBuckets(100, 1, 10);
+        Bucket<DummyKVStorable>[] testdata = TestUtils.generateBuckets(100, 1, 10);
         AbstractHashFunction bucketComputerFunction = new FirstBitHashFunction(1);
-        BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
+        BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(testdata, 100, bucketComputerFunction);
 
         SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 4, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
@@ -156,9 +156,9 @@ public class BufferTest {
 
     @Test
     public void severalBucketAddings() throws Exception {
-        Bucket[] testdata = TestUtils.generateBuckets(100, 1, 10);
+        Bucket<DummyKVStorable>[] testdata = TestUtils.generateBuckets(100, 1, 10);
         AbstractHashFunction bucketComputerFunction = new FirstBitHashFunction(1);
-        BucketContainer bucketContainer = new BucketContainer(testdata, 100, bucketComputerFunction);
+        BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(testdata, 100, bucketComputerFunction);
 
         SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, 1, TEMP_DIRECTORY_NAME,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
@@ -167,6 +167,10 @@ public class BufferTest {
         DummyKVStorable[] newTestdata = TestUtils.generateTestdataDifferentFrom(
                 castKVStorableToLinkData(testdata[0].getBackend()), 100);
 
+        // wait until all elements where written
+        while(testdata[0].elementsInBucket != 0 ){
+            Thread.sleep(10);
+        }
         testdata[0].addAll(newTestdata);
         buffer.shutdown();
         buffer.join();

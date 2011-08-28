@@ -1,6 +1,8 @@
 package com.unister.semweb.sdrum.storable;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Abstract implementation of interface {@link KVStorable}. Extend this class to build your own objects, which have to
@@ -8,33 +10,57 @@ import java.io.Serializable;
  * 
  * @author m.gleditzsch
  */
-public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>> implements KVStorable<Data>, Serializable {
+public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
+        implements
+            KVStorable<Data>,
+            Serializable {
     /**
      * 
      */
     private static final long serialVersionUID = -3973787626582319301L;
-    /**
-     * key of the object. This key is very important for storing the objects in ascending order. It have to be coded in
-     * the first 8 bytes in the byte representation. The key is public for fast access.
-     */
-    public long key;
 
     /**
-     * sets the key of this object. Be careful by overwriting the old key.
-     * 
-     * @param long key
+     * key of the object. This key is very important for storing the objects in ascending order. It have to be coded in
+     * the first bytes in the byte representation. The key is public for fast access.
      */
-    public void setKey(long key) {
+    public byte[] key;
+
+    /**
+     * Sets the key of this object. Be careful by overwriting the old key.
+     * 
+     * @param key
+     */
+    public void setKey(byte[] key) {
         this.key = key;
     }
 
     @Override
-    public abstract Data clone() throws CloneNotSupportedException;
-
-    @Override
-    public long getKey() {
+    public byte[] getKey() {
         return key;
     }
+
+    /**
+     * sets the key of this object. Be careful by overwriting the old key.
+     * 
+     * @param key
+     */
+    public void setKey(long key) {
+        // TODO: if key is not 8 byte
+        ByteBuffer.wrap(this.key).putLong(key);
+    }
+
+    /**
+     * returns the key as long, if possible
+     * 
+     * @return
+     */
+    public long getLongKey() {
+        // TODO: if key is not 8 byte
+        return ByteBuffer.wrap(this.key).getLong();
+    }
+
+    @Override
+    public abstract Data clone() throws CloneNotSupportedException;
 
     @Override
     public abstract int getByteBufferSize();
@@ -62,6 +88,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>> 
      * @param {@link AbstractKVStorable}[] toAdd, the {@link AbstractKVStorable}s to merge
      * @return {@link AbstractKVStorable}[], the merged {@link AbstractKVStorable}s
      */
+    @SuppressWarnings("unchecked")
     public static <Data extends AbstractKVStorable<Data>> Data[] merge(Data[] toAdd) {
         if (toAdd.length == 1) {
             return toAdd;

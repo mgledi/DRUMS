@@ -3,22 +3,23 @@ package com.unister.semweb.sdrum.synchronizer;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 import java.util.LinkedList;
-
 
 import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.Bucket;
+import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.file.IndexForHeaderIndexFile;
-import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.sync.SyncThread;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * Takes a list of {@link AbstractKVStorable} and synchronizes them with a file. A {@link Synchronizer} is instantiated
- * by a {@link SyncThread}.
- * The core assumption is that the list of {@link AbstractKVStorable} and the entries in the file are sorted ascended.
+ * by a {@link SyncThread}. The core assumption is that the list of {@link AbstractKVStorable} and the entries in the
+ * file are sorted ascended.
  * 
  * @author n.thieme, m.gleditzsch
  */
@@ -48,7 +49,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
     private IndexForHeaderIndexFile header;
 
     /** the largest key in the actual chunk for writing */
-    private long largestKeyInChunk;
+    private byte[] largestKeyInChunk;
 
     /** The number of entries that were added to the file. */
     private long numberOfInsertedEntries;
@@ -59,10 +60,10 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
     LinkedList<byte[]> pendingElements = new LinkedList<byte[]>();
     private long filledUpToWhenStarted;
 
-    // TODO 
+    // TODO
     Data prototype;
 
-    //TODO: comment
+    // TODO: comment
     private int elementSize;
 
     /**
@@ -101,7 +102,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
             e.printStackTrace();
         }
         try {
-            toAdd = (Data[])AbstractKVStorable.merge(toAdd);
+            toAdd = (Data[]) AbstractKVStorable.merge(toAdd);
 
             readOffset = 0;
             writeOffset = 0;
@@ -114,17 +115,18 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
             // We take one AbstractKVStorable from the chunk. The chunk will be automatically incremented
             int indexOfToAdd = 0;
             byte[] dateFromDisk = getFromDisk();
-            long dateFromDiskKey; // temporary key, performance boost, because only once a convert from byte -> long
+            int keyLength = prototype.key.length;
             // if the date from disk is null, set key to 0
-            dateFromDiskKey = (dateFromDisk != null ? ByteBuffer.wrap(dateFromDisk).getLong() : 0);
 
             // handle all AbstractKVStorable (update or insert)
+            byte compare;
             for (indexOfToAdd = 0; indexOfToAdd < toAdd.length && dateFromDisk != null;) {
                 Data dateFromBucket = toAdd[indexOfToAdd];
 
+                compare = KeyUtils.compareKey(dateFromBucket.key, dateFromDisk, keyLength);
                 /* insert element from bucket */
-                if (dateFromBucket.key < dateFromDiskKey) {
-                    write(dateFromBucket.toByteBuffer().array(), dateFromBucket.key, false); // write date
+                if (compare == -1) {
+                    write(dateFromBucket.toByteBuffer().array(), false); // write date
                     indexOfToAdd++;// next dateFromBucket
 
                     // Incrementing the number of inserted entries.
@@ -133,26 +135,23 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
                 }
 
                 /* merges element from bucket and element from disk */
-                if (dateFromBucket.key == dateFromDiskKey) {
+                if (compare == 0) {
                     prototype.initFromByteBuffer(ByteBuffer.wrap(dateFromDisk));
                     Data newDate = prototype.merge(dateFromBucket);
-                    
-                    //TODO: think about update
-                    write(newDate.toByteBuffer().array(), newDate.key, true); // write date
+
+                    // TODO: think about update
+                    write(newDate.toByteBuffer().array(), true); // write date
                     indexOfToAdd++; // next dateFromBucket
                     dateFromDisk = getFromDisk(); // get next date from disk
-                    dateFromDiskKey = (dateFromDisk != null ? ByteBuffer.wrap(dateFromDisk).getLong() : 0);
-
                     // Incrementing the number of updated entries.
                     numberOfUpdateEntries++;
                     continue;
                 }
 
                 /* insert element from disk (pendingElements) */
-                if (dateFromBucket.key > dateFromDiskKey) {
-                    write(dateFromDisk, dateFromDiskKey, true); // write date
+                if (compare == 1) {
+                    write(dateFromDisk, true); // write date
                     dateFromDisk = getFromDisk(); // get next date from disk
-                    dateFromDiskKey = (dateFromDisk != null ? ByteBuffer.wrap(dateFromDisk).getLong() : 0);
                     continue;
                 }
             }
@@ -160,7 +159,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
             // end of the already stored elements, but there are still elements from bucket to insert
             if (dateFromDisk == null) {
                 for (; indexOfToAdd < toAdd.length; indexOfToAdd++) {
-                    write(toAdd[indexOfToAdd].toByteBuffer().array(), toAdd[indexOfToAdd].key, false);
+                    write(toAdd[indexOfToAdd].toByteBuffer().array(), false);
 
                     // Incrementing the number of inserted entries.
                     numberOfInsertedEntries++;
@@ -169,9 +168,8 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
 
             // all entries from bucket were added, but there are still pending elements .
             while (dateFromDisk != null) {
-                this.write(dateFromDisk, dateFromDiskKey, true);
+                this.write(dateFromDisk, true);
                 dateFromDisk = getFromDisk();
-                dateFromDiskKey = (dateFromDisk != null ? ByteBuffer.wrap(dateFromDisk).getLong() : 0);
             }
 
             // write the remaining elements from the bufferedWriter to the disk
@@ -189,21 +187,25 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
      * because it is not needed anymore to create all AbstractKVStorable from byte-arrays. The given byte-array contains
      * only one {@link AbstractKVStorable}.
      * 
-     * @param data
-     * @param channel
+     * @param newData
+     * @param key
+     * @param alreadyExist
+     * 
      * @throws IOException
      */
-    protected boolean write(byte[] newData, long key, boolean alreadyExist) throws IOException {
+    protected boolean write(byte[] newData, boolean alreadyExist) throws IOException {
         // If the link data is invalid.
-        if (key == 0) {
+        if (KeyUtils.isNull(newData, prototype.key.length)) {
             return false;
         }
-        
+
         // if the last readChunk was full
         ByteBuffer toAdd = ByteBuffer.wrap(newData);
         long positionOfToAddInFile = writeOffset + bufferedWriter.position();
         bufferedWriter.put(toAdd);
-        largestKeyInChunk = key; // elements are stored ordered so we can easily remember the largest key
+
+        largestKeyInChunk = Arrays.copyOfRange(newData, 0, prototype.key.length); // elements are stored ordered so we
+                                                                                  // can easily remember the largest key
 
         int chunkId = dataFile.getChunkIndex(positionOfToAddInFile);
         header.setLargestKey(chunkId, largestKeyInChunk);

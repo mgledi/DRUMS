@@ -2,6 +2,9 @@ package com.unister.semweb.sdrum.bucket.hashfunction;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+
+import org.apache.log4j.Logger;
 
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
@@ -21,6 +24,8 @@ public abstract class AbstractHashFunction implements Serializable {
 
     protected int[] bucketSizes;
 
+    public int keySize;
+    
     /** the number of buckets */
     protected int buckets;
 
@@ -30,8 +35,17 @@ public abstract class AbstractHashFunction implements Serializable {
     }
 
     /** returns the bucket-id belonging to the given key */
-    public abstract int getBucketId(long key);
+    public abstract int getBucketId(byte[] key);
 
+    public int getBucketId(long key) {
+        if(key < 0) {
+            Logger.getLogger(this.getClass()).warn("SDRUM handle only keys > 0 ");
+        }
+        byte[] b = new byte[8];
+        ByteBuffer.wrap(b).putLong(key);
+        return getBucketId(b);
+    }
+    
     /** returns the bucket-id belonging to the given {@link KVStorable} */
     public abstract int getBucketId(KVStorable<?> key);
 

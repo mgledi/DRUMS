@@ -19,6 +19,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * 
  * @author m.gleditzsch
  */
+//TODO: remember KeyComposition in RangeHashFunction
 public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
 
     String databaseDir;
@@ -34,7 +35,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         sourceFile = new HeaderIndexFile<Data>(databaseDir + "/" + fileName, 100);
 
         // determine new thresholds
-        long[] keysToInsert = determineNewLargestElements(numberOfPartitions);
+        byte[][] keysToInsert = determineNewLargestElements(numberOfPartitions);
 
         // adapt HashFunction
         newHashFunction = generateNewHashFunction(keysToInsert, bucketId);
@@ -102,10 +103,10 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
      * @param bucketId
      * @return
      */
-    protected RangeHashFunction generateNewHashFunction(long[] keysToInsert, int bucketId) {
+    protected RangeHashFunction generateNewHashFunction(byte[][] keysToInsert, int bucketId) {
         int numberOfPartitions = keysToInsert.length;
         int newSize = oldHashFunction.getNumberOfBuckets() - 1 + numberOfPartitions;
-        long[] newMaxRangeValues = new long[newSize];
+        byte[][] newMaxRangeValues = new byte[newSize][];
         int[] newBucketSizes = new int[newSize];
         String[] newFileNames = new String[newSize];
 
@@ -149,9 +150,9 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
      * 
      * @throws IOException
      */
-    protected long[] determineNewLargestElements(int numberOfPartitions) throws IOException {
+    protected byte[][] determineNewLargestElements(int numberOfPartitions) throws IOException {
         int elementsPerPart = determineElementsPerPart(numberOfPartitions);
-        long[] keysToInsert = new long[numberOfPartitions];
+        byte[][] keysToInsert = new byte[numberOfPartitions][];
         long offset;
         for (int i = 0; i < numberOfPartitions; i++) {
             if (i == numberOfPartitions - 1) {
@@ -159,10 +160,12 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
             } else {
                 offset = ((i + 1) * elementsPerPart - 1) * sourceFile.getElementSize();
             }
-            ByteBuffer keyBuffer = ByteBuffer.allocate(8);
+            
+            ByteBuffer keyBuffer = ByteBuffer.allocate(oldHashFunction.keySize);
             sourceFile.read(offset, keyBuffer);
             keyBuffer.position(0);
-            keysToInsert[i] = keyBuffer.getLong();
+            
+            keysToInsert[i] = keyBuffer.array();
         }
         return keysToInsert;
     }

@@ -21,6 +21,7 @@ public class UpdateOnlySynchronizerTest {
     @Test
     /** This function tests, if update will be stored correctly */
     public void updateTest() throws Exception {
+        System.out.println("============== updateTest()" );
         // ################ creating file with initial data
         String dbFileName = "/tmp/test.db";
         new File(dbFileName).delete();

@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,11 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.sdrum.TestUtils;
+import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /** Tests the SDrum API. */
 public class SDrumTest {
@@ -36,11 +37,12 @@ public class SDrumTest {
     @Before
     public void initialise() throws Exception {
         long[] ranges = new long[] { 0, 10, 20, 30 };
+        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
         int[] sizes = {1000,1000,1000,1000};
         FileUtils.deleteQuietly(new File(databaseDirectory));
 
-        hashFunction = new RangeHashFunction(ranges, filenames, sizes, new File("/tmp/hash.hs"));
+        hashFunction = new RangeHashFunction(bRanges, filenames, sizes, new File("/tmp/hash.hs"));
         prototype = new DummyKVStorable();
     }
 
@@ -60,10 +62,10 @@ public class SDrumTest {
         Thread.sleep(1000);
 
         List<DummyKVStorable> readData = readFrom(databaseDirectory + "/2.db", 10);
-
-        // Comparing of the expected data with the written data.
-        List<DummyKVStorable> testData = Arrays.asList(test);
-        Assert.assertTrue(equals(testData, readData));
+        SortMachine.quickSort(test);
+        for (int i = 0; i < test.length; i++) {
+            Assert.assertTrue(readData.get(i).equals(test[i]));
+        }
     }
 
     /**
@@ -218,9 +220,9 @@ public class SDrumTest {
         DummyKVStorable[] testdata = TestUtils.createDummyData(1, 5);
         DummyKVStorable[] secondRange = TestUtils.createDummyData(11, 19);
         DummyKVStorable[] thirdRange = TestUtils.createDummyData(21, 29);
-
-        DummyKVStorable[] completeTestdata = ArrayUtils.addAll(testdata, secondRange);
-        completeTestdata = ArrayUtils.addAll(completeTestdata, thirdRange);
+        
+        DummyKVStorable[] completeTestdata = (DummyKVStorable[]) TestUtils.addAll(testdata, secondRange);
+        completeTestdata = (DummyKVStorable[]) TestUtils.addAll(completeTestdata, thirdRange);
 
         SDRUM<DummyKVStorable> table = SDRUM_API.createTable( databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);

@@ -252,7 +252,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     @Override
     public void read(long offset, ByteBuffer destBuffer) throws IOException {
         offset += contentStart;
-        destBuffer.position(0);
+        destBuffer.clear();
         int length = destBuffer.capacity();
         if (offset > filledUpTo) {
             String errorMessage = "Tried to read data beginning at " + filledUpTo + " in File " + osFile.getName();
@@ -264,7 +264,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
             destBuffer.limit((int) (filledUpTo - offset));
         }
         offset = checkRegions(offset, destBuffer.limit());
-        int bytes = channel.read(destBuffer, offset);
+        channel.read(destBuffer, offset);
     }
 
     /**
@@ -345,6 +345,9 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
 
     public void close() {
         super.close();
+        if(this.index != null) {
+            index = null;
+        }
         if (indexBuffer != null) {
             indexBuffer = null;
         }

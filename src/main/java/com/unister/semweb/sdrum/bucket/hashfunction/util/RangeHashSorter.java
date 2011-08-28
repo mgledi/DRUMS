@@ -2,6 +2,7 @@ package com.unister.semweb.sdrum.bucket.hashfunction.util;
 
 import java.io.Serializable;
 
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * Code is copied from com.unister.semweb.superfast.storage.bucket.SortMachine to adapt it for the hash function.
@@ -30,24 +31,23 @@ public class RangeHashSorter implements Serializable {
     private static final long serialVersionUID = 5586007520316814952L;
 
     /** The ranges to sort for. */
-    private long[] ranges;
+    private byte[][] ranges;
 
     /** The file names. */
     private String[] filenames;
 
     /** The sizes of the buckets names. */
     private int[] bucketSizes;
-    
 
     /** Creates a sorting machine with the three arrays. */
-    public RangeHashSorter(long[] ranges,  String[] filenames, int[] bucketSizes) {
+    public RangeHashSorter(byte[][] ranges, String[] filenames, int[] bucketSizes) {
         this.ranges = ranges;
         this.filenames = filenames;
         this.bucketSizes = bucketSizes;
     }
 
     /** Get the ranges. After sorting the ranges are in sorted order. */
-    public long[] getRanges() {
+    public byte[][] getRanges() {
         return ranges;
     }
 
@@ -102,12 +102,14 @@ public class RangeHashSorter implements Serializable {
     private int partition(int left, int right) {
         int i = left;
         int j = right;
-        long pivot = ranges[(left + right) / 2];
+        byte[] pivot = ranges[(left + right) / 2];
         while (i <= j) {
-            while (ranges[i] < pivot)
+            while (KeyUtils.compareKey(ranges[i],pivot) < 0) {
                 i++;
-            while (ranges[j] > pivot)
+            }
+            while (KeyUtils.compareKey(ranges[j],pivot) > 0) {
                 j--;
+            }
 
             if (i <= j) {
                 swap(i, j);
@@ -128,12 +130,11 @@ public class RangeHashSorter implements Serializable {
      */
     private void insertionSort(int left, int right) {
         for (int p = left + 1; p <= right; p++) {
-            long tmpRange = ranges[p];
+            byte[] tmpRange = ranges[p];
             String tmpFilename = filenames[p];
 
             int j;
-
-            for (j = p; j > left && tmpRange < ranges[j - 1]; j--) {
+            for (j = p; j > left && KeyUtils.compareKey(tmpRange,ranges[j - 1]) < 0; j--) {
                 ranges[j] = ranges[j - 1];
                 filenames[j] = filenames[j - 1];
             }
@@ -144,14 +145,14 @@ public class RangeHashSorter implements Serializable {
 
     /** Swaps the elements of the ith position with the elements of the jth position of all three arrays. */
     public void swap(int i, int j) {
-        long ltemp = ranges[i];
+        byte[] ltemp = ranges[i];
         ranges[i] = ranges[j];
         ranges[j] = ltemp;
 
         int itemp = bucketSizes[i];
         bucketSizes[i] = bucketSizes[j];
         bucketSizes[j] = itemp;
-        
+
         String tempFilename = filenames[i];
         filenames[i] = filenames[j];
         filenames[j] = tempFilename;

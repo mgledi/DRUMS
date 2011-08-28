@@ -8,11 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.sdrum.bucket.Bucket;
+import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.file.IndexForHeaderIndexFile;
-import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * Takes a list of {@link AbstractKVStorable} and synchronizes them with a file. ONLY update are supported.
@@ -120,16 +121,16 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
         workingBuffer.position(indexInChunk);
         int minElement = indexInChunk / elementSize;
         int numberOfEntries = workingBuffer.limit() / elementSize;
-        long actualKey = data.key;
+        byte[] actualKey = data.key;
         // binary search
         int maxElement = numberOfEntries - 1;
         int midElement;
-        long midKey;
+        byte compare;
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
             indexInChunk = midElement * elementSize;
-            midKey = workingBuffer.getLong(indexInChunk);
-            if (actualKey == midKey) {
+            compare = KeyUtils.compareKey(actualKey, workingBuffer.array(), prototype.key.length);
+            if (compare == 0) {
                 // first read the old element
                 workingBuffer.position(indexInChunk);
                 byte[] b = new byte[elementSize];
@@ -141,7 +142,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
                 workingBuffer.position(indexInChunk);
                 workingBuffer.put(data.toByteBuffer());
                 return indexInChunk;
-            } else if (midKey > actualKey) {
+            } else if (compare == -1) {
                 maxElement = midElement - 1;
             } else {
                 minElement = midElement + 1;

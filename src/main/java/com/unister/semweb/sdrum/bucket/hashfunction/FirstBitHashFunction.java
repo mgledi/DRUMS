@@ -1,5 +1,6 @@
 package com.unister.semweb.sdrum.bucket.hashfunction;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
@@ -10,13 +11,14 @@ import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.storable.KVStorable;
 
 /**
- * Deprecated: Use RangeHashFunction Instead<br><br>
+ * Deprecated: Use RangeHashFunction Instead. This Hashfunction dont support keys with length != 8 byte<br>
+ * <br>
  * 
  * This hashFunction maps an element dependent on its first n bits.
  * 
  * @author m.gleditzsch
  */
-@Deprecated 
+@Deprecated
 public class FirstBitHashFunction extends AbstractHashFunction {
     private static final long serialVersionUID = 1144011836893651925L;
 
@@ -48,7 +50,7 @@ public class FirstBitHashFunction extends AbstractHashFunction {
 
         this.bucketSizes = new int[buckets];
         Arrays.fill(bucketSizes, INITIAL_BUCKET_SIZE);
-        
+
         this.firstUsedBits = 0;
         int tmp = this.buckets;
         // TODO Is this right shift correct??? This right shift respect the leading sign of the number!!!
@@ -58,7 +60,7 @@ public class FirstBitHashFunction extends AbstractHashFunction {
     }
 
     @Override
-    public int getBucketId(long key) {
+    public int getBucketId(byte[] key) {
         return getBucketId(key, firstUsedBits);
     }
 
@@ -68,8 +70,9 @@ public class FirstBitHashFunction extends AbstractHashFunction {
     }
 
     /** maps the given key, dependent on the first n bits to an int between 2^0 and 2^n */
-    public static int getBucketId(long key, int n) {
-        return (int) (key >>> (64 - n));
+    public static int getBucketId(byte[] key, int n) {
+        long k = ByteBuffer.wrap(key).getLong();
+        return (int) (k >>> (64 - n));
     }
 
     /**

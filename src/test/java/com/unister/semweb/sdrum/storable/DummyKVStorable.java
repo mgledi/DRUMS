@@ -1,9 +1,10 @@
 package com.unister.semweb.sdrum.storable;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
-import com.unister.semweb.sdrum.storable.AbstractKVStorable;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * This class is a DummyObject, copied from LinkData, and for test purpose only. represents data, which is linked to a
@@ -36,6 +37,7 @@ public class DummyKVStorable extends AbstractKVStorable<DummyKVStorable> impleme
      * <code>initFromByteBuffer(...)</code> and <code>toByteBuffer(...)</code>
      */
     public final int byteBufferSize = 26;
+    public final int keySize = 8;
 
     /** reflects a reference data in minutes. (2011-01-01 0:0) */
     private static final long START_TIME_IN_MINUTES = 21562500L;
@@ -59,6 +61,7 @@ public class DummyKVStorable extends AbstractKVStorable<DummyKVStorable> impleme
      */
     public DummyKVStorable() {
         this.relevanceScore = 0;
+        this.key = new byte[keySize];
     }
 
     /**
@@ -67,6 +70,7 @@ public class DummyKVStorable extends AbstractKVStorable<DummyKVStorable> impleme
      * @param ByteBuffer
      */
     public DummyKVStorable(ByteBuffer bytebuffer) {
+        this.key = new byte[keySize];
         this.initFromByteBuffer(bytebuffer);
     }
 
@@ -168,18 +172,14 @@ public class DummyKVStorable extends AbstractKVStorable<DummyKVStorable> impleme
      * Compares this object to the given {@link DummyKVStorable}-Object on the key.
      */
     public int compareTo(DummyKVStorable o) {
-        if (this.key < o.key)
-            return -1;
-        if (this.key == o.key)
-            return 0;
-        return 1;
+        return KeyUtils.compareKey(this.key, o.key);
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof DummyKVStorable) {
             DummyKVStorable toCompare = (DummyKVStorable) obj;
-            if (key != toCompare.key)
+            if (KeyUtils.compareKey(key, toCompare.key) != 0)
                 return false;
             if (relevanceScore != toCompare.relevanceScore)
                 return false;
@@ -255,7 +255,7 @@ public class DummyKVStorable extends AbstractKVStorable<DummyKVStorable> impleme
 
     @Override
     public String toString() {
-        return "One link date: fingerprint = " + key + ", relevanceScore = " + getRelevanceScore()
+        return "One link date: fingerprint = " + Arrays.toString(key) + ", relevanceScore = " + getRelevanceScore()
                 + ", parent count = " + parentCount + ", urlPoisition = " + urlPosition + ", timestamp = "
                 + getTimestamp();
     }
@@ -263,7 +263,7 @@ public class DummyKVStorable extends AbstractKVStorable<DummyKVStorable> impleme
     @Override
     public void initFromByteBuffer(ByteBuffer bytebuffer) {
         bytebuffer.position(0);
-        setKey(bytebuffer.getLong());
+        bytebuffer.get(key);
         setRelevanceScore(bytebuffer.getChar());
         setParentCount(bytebuffer.getInt());
         urlPosition = bytebuffer.getLong();
@@ -281,7 +281,7 @@ public class DummyKVStorable extends AbstractKVStorable<DummyKVStorable> impleme
     @Override
     public ByteBuffer toByteBuffer() {
         ByteBuffer bytebuffer = ByteBuffer.allocate(byteBufferSize);
-        bytebuffer.putLong(key).putChar(relevanceScore).putInt(parentCount).putLong(urlPosition).putInt(timestamp);
+        bytebuffer.put(key).putChar(relevanceScore).putInt(parentCount).putLong(urlPosition).putInt(timestamp);
         bytebuffer.flip();
         return bytebuffer;
     }

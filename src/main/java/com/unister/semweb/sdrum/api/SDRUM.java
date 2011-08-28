@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.carrotsearch.hppc.IntObjectOpenHashMap;
-import com.carrotsearch.hppc.LongArrayList;
 import com.carrotsearch.hppc.cursors.IntObjectCursor;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
@@ -24,6 +23,7 @@ import com.unister.semweb.sdrum.sync.SyncManager;
 import com.unister.semweb.sdrum.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.UpdateOnlySynchronizer;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * This class provides the interface for managing the storage of {@link AbstractKVStorable}s. The name SDRUM is a
@@ -197,7 +197,17 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             synchronizer.upsert(toUpdate);
         }
     }
-
+    /**
+     * Takes a list of long-keys and transform them byte[]-keys. Overloads <code>public List<Data> select(byte[]... keys)</code>
+     * 
+     * @param keys
+     * @return
+     * @throws FileStorageException
+     */
+    public List<Data> select(long... keys) throws FileStorageException {
+        byte[][] bKeys = KeyUtils.transformToByteArray(keys);
+        return this.select(bKeys);
+    }
     /**
      * Takes a list of keys and searches for that in all buckets. This method uses the <code>searchFor(...)</code>
      * method. If you want Data in a more sequential way (faster) try to use <code>read(...)</code> instead. <br>
@@ -208,19 +218,19 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      *            the keys to be search for
      * @return the to the keys corresponding data
      */
-    public List<Data> select(long... keys) throws FileStorageException {
+    public List<Data> select(byte[]... keys) throws FileStorageException {
         List<Data> result = new ArrayList<Data>();
-        IntObjectOpenHashMap<LongArrayList> bucketKeyMapping = searchForBuckets(keys);
+        IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = searchForBuckets(keys);
         String filename;
-        for (IntObjectCursor<LongArrayList> entry : bucketKeyMapping) {
+        for (IntObjectCursor<ArrayList<byte[]>> entry : bucketKeyMapping) {
             filename = databaseDirectory + "/" + hashFunction.getFilename(entry.key);
             HeaderIndexFile<Data> indexFile = null;
             try {
                 indexFile = new HeaderIndexFile<Data>(filename, HeaderIndexFile.AccessMode.READ_ONLY,
                         HEADER_FILE_LOCK_RETRY, elementSize);
 
-                LongArrayList keyList = entry.value;
-                result.addAll(searchForData(indexFile, keyList.toArray()));
+                ArrayList<byte[]> keyList = entry.value;
+                result.addAll(searchForData(indexFile, keyList.toArray(new byte[keyList.size()][])));
             } catch (FileLockException ex) {
                 log.error("Could not access the file {} within {} retries. The file seems to be locked.", filename,
                         HEADER_FILE_LOCK_RETRY);
@@ -282,13 +292,13 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      *            the keys to search for
      * @return
      */
-    private IntObjectOpenHashMap<LongArrayList> searchForBuckets(long... keys) {
-        IntObjectOpenHashMap<LongArrayList> bucketKeyMapping = new IntObjectOpenHashMap<LongArrayList>();
+    private IntObjectOpenHashMap<ArrayList<byte[]>> searchForBuckets(byte[]... keys) {
+        IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = new IntObjectOpenHashMap<ArrayList<byte[]>>();
         int bucketId;
-        for (long key : keys) {
+        for (byte[] key : keys) {
             bucketId = hashFunction.getBucketId(key);
             if (!bucketKeyMapping.containsKey(bucketId)) {
-                bucketKeyMapping.put(bucketId, new LongArrayList());
+                bucketKeyMapping.put(bucketId, new ArrayList<byte[]>());
             }
             bucketKeyMapping.get(bucketId).add(key);
         }
@@ -307,7 +317,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      *            the keys to search for
      * @return Arraylist which contains the found data. Can be less than the number of given keys
      */
-    public List<Data> searchForData(HeaderIndexFile<Data> indexFile, long[] keys) throws IOException {
+    public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[][] keys) throws IOException {
         Arrays.sort(keys);
         List<Data> result = new ArrayList<Data>();
 
@@ -317,7 +327,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         int indexInChunk = 0;
         ByteBuffer workingBuffer = ByteBuffer.allocate(indexFile.getChunkSize());
         byte[] tmpB = new byte[elementSize]; // stores temporarily the bytestream of an object 
-        for (long key : keys) {
+        for (byte[] key : keys) {
             // get actual chunkIndex
             actualChunkIdx = index.getChunkId(key);
             actualChunkOffset = index.getStartOffsetOfChunk(actualChunkIdx);
@@ -363,7 +373,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * @return the byteOffset where the key was found.<br>
      *         -1 if the key wasn't found
      */
-    private int findElementInReadBuffer(ByteBuffer workingBuffer, long key, int indexInChunk) {
+    private int findElementInReadBuffer(ByteBuffer workingBuffer, byte[] key, int indexInChunk) {
         workingBuffer.position(indexInChunk);
         int minElement = indexInChunk / elementSize;
         int numberOfEntries = workingBuffer.limit() / elementSize;
@@ -371,13 +381,14 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         int maxElement = numberOfEntries - 1;
         int midElement;
         long midKey;
+        byte comp;
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
             indexInChunk = midElement * elementSize;
-            midKey = workingBuffer.getLong(indexInChunk);
-            if (key == midKey) {
+            comp = KeyUtils.compareKey(key, workingBuffer.array(),prototype.key.length);
+            if (comp == 0) {
                 return indexInChunk;
-            } else if (midKey > key) {
+            } else if (comp < 0 ) {
                 maxElement = midElement - 1;
             } else {
                 minElement = midElement + 1;

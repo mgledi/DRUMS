@@ -16,6 +16,7 @@ import au.com.bytecode.opencsv.CSVReader;
 
 import com.unister.semweb.sdrum.bucket.hashfunction.util.RangeHashSorter;
 import com.unister.semweb.sdrum.storable.KVStorable;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * This hashFunction maps an element dependent on its range-bucket. It checks if given key falls in a specific range.
@@ -30,7 +31,10 @@ public class RangeHashFunction extends AbstractHashFunction {
     /** the file where the hashfunction is stored human-readable */
     private File hashFunctionFile;
 
-    private long[] maxRangeValues;
+    /** the key composition. E.g. 2 4 2 8 or char int char long */
+    private int keyComposition[];
+
+    private byte[][] maxRangeValues;
     private int[] bucketIds;
     private String[] filenames;
 
@@ -50,11 +54,14 @@ public class RangeHashFunction extends AbstractHashFunction {
      * @param file
      *            the file where to store the hashfunction
      */
-    public RangeHashFunction(long[] rangeValues, String[] filenames, int[] bucketSizes, File file) {
+    public RangeHashFunction(byte[][] rangeValues, String[] filenames, int[] bucketSizes, File file /* TODO: prototype */) {
         this.hashFunctionFile = file;
         this.buckets = rangeValues.length;
         this.maxRangeValues = rangeValues;
         this.filenames = filenames;
+        this.keySize = rangeValues[0].length;
+        this.keyComposition = new int[rangeValues[0].length];
+        Arrays.fill(keyComposition, 1);
 
         if (bucketSizes == null) {
             this.bucketSizes = new int[maxRangeValues.length];
@@ -82,15 +89,37 @@ public class RangeHashFunction extends AbstractHashFunction {
 
         List<String[]> readData = csvReader.readAll();
 
-        maxRangeValues = new long[readData.size()];
-        filenames = new String[readData.size()];
-        bucketSizes = new int[readData.size()];
+        maxRangeValues = new byte[readData.size() - 1][];
+        filenames = new String[readData.size() - 1];
+        bucketSizes = new int[readData.size() - 1];
 
-        for (int i = 0; i < readData.size(); i++) {
-            String[] oneCSVLine = readData.get(i);
+        // analyze header
+        String[] header = readData.get(0);
+        keySize = 0;
+        keyComposition = new int[header.length -1];
+        for (int i = 0; i < keyComposition.length; i++) {
+            int e = stringToByteCount(header[i]);
+            if(e == 0) {
+                throw new IOException("Header could not be read. Could not decode " + header[i]);
+            }
+            keyComposition[i] = e;
+            keySize += e;
+        }
+        
+        
+        for (int i = 1; i < readData.size(); i++) {
+            String[] Aline = readData.get(i);
             try {
-                maxRangeValues[i] = Long.valueOf(oneCSVLine[0]);
-                filenames[i] = oneCSVLine[1];
+                maxRangeValues[i] = new byte[keySize];
+                int byteOffset = 0;
+                for (int k = 0; k < keyComposition.length; k++) {
+                    long tmp = Long.parseLong(Aline[k]);
+                    for(int b = 0; b < keyComposition[k]; b++) {
+                        maxRangeValues[i][byteOffset] = (byte)tmp;
+                        tmp = tmp >> 1;
+                    }
+                }
+                filenames[i] = Aline[keyComposition.length];
                 bucketSizes[i] = INITIAL_BUCKET_SIZE; // TODO: adapt file
             } catch (NullPointerException ex) {
                 log.error(
@@ -110,7 +139,6 @@ public class RangeHashFunction extends AbstractHashFunction {
         generateBucketIds();
 
     }
-
     /**
      * Returns the File, where the HashFunction is stored human-readable
      * 
@@ -138,14 +166,14 @@ public class RangeHashFunction extends AbstractHashFunction {
         }
     }
 
-    /** Returns the size of the bucket with the given bucket-id. */
-    public long getMaxRange(int bucketId) {
+    /** Returns the maximal key in the bucket with the given bucketId. */
+    public byte[] getMaxRange(int bucketId) {
         return maxRangeValues[bucketId];
     }
 
     /** Gets the bucket id to the given <code>key</code>. */
     @Override
-    public int getBucketId(long key) {
+    public int getBucketId(byte[] key) {
         int index = searchBucketIndex(key, 0, maxRangeValues.length - 1);
         return bucketIds[index];
     }
@@ -154,16 +182,22 @@ public class RangeHashFunction extends AbstractHashFunction {
      * Searches for the index in maxRangeValues for the given <code>key</code>. This is done by a binary search. So we
      * need the left and right index. Remeber: this may not be the bucketId
      */
-    public int searchBucketIndex(long key, int leftIndex, int rightIndex) {
-        if (key > maxRangeValues[rightIndex]) {
+    public int searchBucketIndex(byte[] key, int leftIndex, int rightIndex) {
+        if (KeyUtils.compareKey(key, maxRangeValues[rightIndex]) > 0) {
             return 0;
         }
 
+        byte comp1, comp2;
         while (leftIndex <= rightIndex) {
             int midIndex = ((rightIndex - leftIndex) / 2) + leftIndex;
-            if (midIndex == 0 || maxRangeValues[midIndex - 1] < key && key <= maxRangeValues[midIndex]) {
+            if (midIndex == 0){
                 return midIndex;
-            } else if (key > maxRangeValues[midIndex]) {
+            }
+            comp1 = KeyUtils.compareKey(maxRangeValues[midIndex - 1], key);
+            comp2 = KeyUtils.compareKey(key, maxRangeValues[midIndex]);
+            if (comp1 < 0 && comp2 <= 0) {
+                return midIndex;
+            } else if (comp2 > 0) {
                 leftIndex = midIndex + 1;
             } else {
                 rightIndex = midIndex - 1;
@@ -187,7 +221,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         return filenames[bucketId];
     }
 
-    //TODO Must be tested.
+    // TODO Must be tested.
     /**
      * Writes the hash function, represented as tuples (range, filename) into the file that is linked with the
      * HashFunction. The content of the file is overwritten.
@@ -196,8 +230,8 @@ public class RangeHashFunction extends AbstractHashFunction {
         FileWriter fileWriter = new FileWriter(hashFunctionFile);
         BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
         for (int i = 0; i < maxRangeValues.length; i++) {
-            String oneCSVLine = makeOneLine(maxRangeValues[i], filenames[i]);
-            bufferedWriter.append(oneCSVLine);
+//            String oneCSVLine = makeOneLine(maxRangeValues[i], filenames[i]);
+//            bufferedWriter.append(oneCSVLine);
         }
 
         bufferedWriter.flush();
@@ -211,5 +245,47 @@ public class RangeHashFunction extends AbstractHashFunction {
         StringBuffer buffer = new StringBuffer();
         buffer.append(oneRange).append(" ").append(filename).append('\n');
         return buffer.toString();
+    }
+
+    /**
+     * The header of could contain characters which are not numbers. Some of them can be translated into bytes. E.g.
+     * char would be two byte.
+     * 
+     */
+    public static int stringToByteCount(String code) {
+        @SuppressWarnings("serial")
+        HashMap<String, Integer> codingMap = new HashMap<String, Integer>() {
+            {
+                put("b", 1);
+                put("byte", 1);
+                put("bool", 1);
+                put("boolean", 1);
+                put("c", 2);
+                put("char", 2);
+                put("character", 2);
+                put("i", 4);
+                put("int", 4);
+                put("integer", 4);
+                put("f", 4);
+                put("float", 4);
+                put("d", 8);
+                put("double", 8);
+                put("l", 8);
+                put("long", 8);
+                put("1", 1);
+                put("2", 2);
+                put("3", 3);
+                put("4", 4);
+                put("5", 5);
+                put("6", 6);
+                put("7", 7);
+                put("8", 8);
+            }
+        };
+        if (codingMap.containsKey(code)) {
+            return codingMap.get(code.toLowerCase());
+        } else {
+            return 0;
+        }
     }
 }

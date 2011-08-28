@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 public interface KVStorable<Data extends AbstractKVStorable<Data>> extends Cloneable {
 
     /** returns the key of the storable element */
-    public long getKey();
+    public byte[] getKey();
 
     /** returns the size of the ByteBuffer which might represent this object */
     int getByteBufferSize();

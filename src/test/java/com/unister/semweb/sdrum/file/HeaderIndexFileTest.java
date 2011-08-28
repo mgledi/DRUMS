@@ -2,8 +2,12 @@ package com.unister.semweb.sdrum.file;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
 
 import junit.framework.Assert;
@@ -13,8 +17,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.unister.semweb.sdrum.file.FileLockException;
-import com.unister.semweb.sdrum.file.HeaderIndexFile;
+import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 
 /**
@@ -179,7 +182,7 @@ public class HeaderIndexFileTest {
             b.putLong(i);
             file.append(b);
             int idx = file.getChunkIndex(oldOffset);
-            file.index.setLargestKey(idx, i);
+//            file.index.setLargestKey(idx, i);
             oldOffset += dst.length;
         }
         file.close();
@@ -190,5 +193,23 @@ public class HeaderIndexFileTest {
         System.out.println("======== deleteTest");
         file.delete();
         Assert.assertTrue(!(new File("test.db").exists()));
+    }
+    
+    @Test
+    public void test() throws Throwable {
+        HeaderIndexFile hif = new HeaderIndexFile("/test.db", AccessMode.READ_WRITE, 26, 1);
+        hif.delete();
+        
+        File osFile = new File("/test.db");
+        osFile.createNewFile();
+        RandomAccessFile raf = new RandomAccessFile(osFile, "rw");
+        FileChannel channel = raf.getChannel();
+        MappedByteBuffer bb = channel.map(MapMode.READ_WRITE, 0, 4);
+        bb = null;
+        channel.write(ByteBuffer.allocate(10).putLong(3));
+        raf.close();
+
+        System.gc();
+        System.out.println(osFile.delete());
     }
 }

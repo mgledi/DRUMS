@@ -17,7 +17,6 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 public class ConfigurationFile<T extends AbstractKVStorable<T>> {
     private static final Logger log = LoggerFactory.getLogger(ConfigurationFile.class);
 
-
     private int numberOfBuckets;
     private int bucketSize;
     private int numberOfSynchronizerThreads;

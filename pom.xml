@@ -4,7 +4,7 @@
 
 	<groupId>com.unister.semweb</groupId>
 	<artifactId>sdrum</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.1.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>sorted disk repository with update management</name>
@@ -52,13 +52,6 @@
 			<scope>compile</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>com.unister.semweb</groupId>
-			<artifactId>crawling-commons</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<optional>true</optional>
-		</dependency>
-
 		<!-- OpenCSV (handling of csv files) -->
 		<dependency>
 			<groupId>net.sf.opencsv</groupId>
@@ -93,48 +86,10 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.0-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-
-
-		<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>3.2.1</version>
 			<scope>test</scope>
-		</dependency>
-
-
-
-		<!-- SPRING -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>org.springframework.context</artifactId>
-			<version>${spring.version}</version>
-			<exclusions>
-				<!-- Exclude Commons Logging in favor of SLF4j -->
-				<exclusion>
-					<groupId>org.apache.commons</groupId>
-					<artifactId>com.springsource.org.apache.commons.logging
-                    </artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${spring.version}</version>
-			<scope>runtime</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 

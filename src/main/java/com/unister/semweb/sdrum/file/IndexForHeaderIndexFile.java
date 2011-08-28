@@ -2,6 +2,8 @@ package com.unister.semweb.sdrum.file;
 
 import java.nio.MappedByteBuffer;
 
+import com.unister.semweb.sdrum.utils.KeyUtils;
+
 /**
  * This class represents a sparse index for one {@link HeaderIndexFile}. It writes its updates to the given
  * {@link MappedByteBuffer}. A {@link IndexForHeaderIndexFile} knows for each defined chunk the largest key. If the
@@ -21,7 +23,7 @@ import java.nio.MappedByteBuffer;
 public class IndexForHeaderIndexFile {
 
     /** chunkId -> largest key in this chunk */
-    protected long maxKeyPerChunk[];
+    protected byte maxKeyPerChunk[][];
 
     /** the size of one chunk */
     protected int chunkSize;
@@ -35,6 +37,7 @@ public class IndexForHeaderIndexFile {
     /** reflects the largest initialized chunkIndex */
     private int filledUpTo;
 
+    private int keySize;
     /**
      * This constructor instantiates a new {@link IndexForHeaderIndexFile}. You need to give the number of the indexed
      * chunks, the chunksize and the {@link MappedByteBuffer}, where the index should be written to.
@@ -47,7 +50,7 @@ public class IndexForHeaderIndexFile {
         this.numberOfChunks = numberOfChunks;
         this.chunkSize = chunkSize;
         this.indexBuffer = indexBuffer;
-        this.maxKeyPerChunk = new long[numberOfChunks]; // init lookuparray
+        this.maxKeyPerChunk = new byte[numberOfChunks][]; // init lookuparray
         this.filledUpTo = 0; // init the actual indexed chunks
         this.fillIndexFromByteBuffer(); // fill eventual in indexBuffer contained informations
     }
@@ -57,9 +60,12 @@ public class IndexForHeaderIndexFile {
      */
     protected void fillIndexFromByteBuffer() {
         indexBuffer.rewind();
+        keySize = indexBuffer.getInt();
         for (int i = 0; i < numberOfChunks; i++) {
-            maxKeyPerChunk[i] = indexBuffer.getLong();
-            if (maxKeyPerChunk[i] == 0 && i > 0) {
+            maxKeyPerChunk[i] = new byte[keySize];
+            indexBuffer.get(maxKeyPerChunk[i]);
+
+            if (KeyUtils.isNull(maxKeyPerChunk[i]) && i > 0) {
                 filledUpTo = i - 1;
                 break;
             }
@@ -84,7 +90,7 @@ public class IndexForHeaderIndexFile {
      * 
      * @return long, the byte-offset of the chunk
      */
-    public long getStartOffsetOfChunkByKey(long key) {
+    public long getStartOffsetOfChunkByKey(byte[] key) {
         return getStartOffsetOfChunk(getChunkId(key));
     }
 
@@ -95,14 +101,20 @@ public class IndexForHeaderIndexFile {
      * @param long key, the key of the element to find
      * @return
      */
-    public int getChunkId(long key) {
+    public int getChunkId(byte[] key) {
         // adapted binary search
         int minElement = 0, maxElement = filledUpTo, midElement;
+        byte comp1, comp2;
         while (minElement <= maxElement) {
-            midElement = minElement + (int)(Math.ceil((maxElement - minElement) / 2d));
-            if (midElement == 0 || maxKeyPerChunk[midElement - 1] < key && key <= maxKeyPerChunk[midElement]) {
+            midElement = minElement + (int) (Math.ceil((maxElement - minElement) / 2d));
+            if(midElement == 0) {
                 return midElement;
-            } else if (key > maxKeyPerChunk[midElement]) {
+            }
+            comp1 = KeyUtils.compareKey(maxKeyPerChunk[midElement - 1], key);
+            comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement]);
+            if (comp1 < 0 && comp2 <= 0) {
+                return midElement;
+            } else if (comp1 > 0) {
                 minElement = midElement + 1;
             } else {
                 maxElement = midElement - 1;
@@ -117,10 +129,11 @@ public class IndexForHeaderIndexFile {
      * @param chunkIdx
      * @param largestKeyInChunk
      */
-    public void setLargestKey(int chunkIdx, long largestKeyInChunk) {
+    public void setLargestKey(int chunkIdx, byte[] largestKeyInChunk) {
         // System.out.println(maxKeyPerChunk.length + " <? " + chunkIdx);
         maxKeyPerChunk[chunkIdx] = largestKeyInChunk;
         filledUpTo = Math.max(filledUpTo, chunkIdx);
-        indexBuffer.putLong(chunkIdx * 8, largestKeyInChunk);
+        indexBuffer.position(chunkIdx * largestKeyInChunk.length + 4); // +4 cause of keySize stored in this buffer
+        indexBuffer.put(largestKeyInChunk);
     }
 }

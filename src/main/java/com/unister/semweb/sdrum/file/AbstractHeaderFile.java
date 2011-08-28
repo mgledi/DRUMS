@@ -302,7 +302,7 @@ public abstract class AbstractHeaderFile {
                 channel.close();
                 channel = null;
             }
-
+            
             if (accessFile != null) {
                 accessFile.close();
                 accessFile = null;
@@ -326,6 +326,7 @@ public abstract class AbstractHeaderFile {
                     e.printStackTrace();
                     logger.error("{} not deleted.", osFile);
                 }
+                System.gc();
                 deleted = osFile.delete();
             }
         }

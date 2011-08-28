@@ -11,7 +11,8 @@ import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
 
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.SortMachine;
@@ -82,7 +83,7 @@ public class TestUtils {
         for (int i = 0; i < numberToGenerate; i++) {
             DummyKVStorable oneEntry = new DummyKVStorable();
 
-            double dummyValue = Math.round(((randomGenerator.nextDouble() * 2 - 1) * (double) allowedUniqueElements))
+            double dummyValue = Math.round(((randomGenerator.nextDouble()) * (double) allowedUniqueElements))
                     / (double) allowedUniqueElements;
             long newKey = (long) (dummyValue * maximumValueForKey);
 
@@ -154,7 +155,7 @@ public class TestUtils {
     public static DummyKVStorable searchFor(DummyKVStorable[] toSearchIn, long idToSearch) {
         DummyKVStorable result = null;
         for (DummyKVStorable oneDate : toSearchIn) {
-            if (oneDate.getKey() == idToSearch) {
+            if (oneDate.getLongKey() == idToSearch) {
                 result = oneDate;
                 break;
             }
@@ -249,8 +250,16 @@ public class TestUtils {
         return result;
     }
     
-    
-    
-    
-    
+    /** merges the given two arrays to one */
+    public static Object[] addAll(Object[] o1, Object[] o2) {
+        Object[] all = new Object[o1.length + o2.length];
+        int k=0;
+        for(Object d : o1) {
+            all[k] = d;
+        }
+        for(Object d : o2) {
+            all[k] = d;
+        }
+        return all;
+    }
 }

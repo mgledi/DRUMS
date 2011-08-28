@@ -1,6 +1,7 @@
 package com.unister.semweb.sdrum.bucket;
 
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * This class is a container for some static functions to sort special Arrays containing {@link AbstractKVStorable}s.
@@ -83,9 +84,9 @@ public class SortMachine {
         int j = right;
         AbstractKVStorable<?> pivot = A[(left + right) / 2];
         while (i <= j) {
-            while (A[i].key < pivot.key)
+            while (KeyUtils.compareKey(A[i].key, pivot.key) < 0)
                 i++;
-            while (A[j].key > pivot.key)
+            while (KeyUtils.compareKey(A[j].key, pivot.key) > 0)
                 j--;
 
             if (i <= j) {
@@ -94,6 +95,7 @@ public class SortMachine {
                 j--;
             }
         }
+        
         return i;
     }
 
@@ -111,8 +113,7 @@ public class SortMachine {
         for (int p = left + 1; p <= right; p++) {
             AbstractKVStorable<?> tmp = A[p];
             int j;
-
-            for (j = p; j > left && tmp.key < A[j - 1].key; j--)
+            for (j = p; j > left && KeyUtils.compareKey(tmp.key, A[j - 1].key) == -1; j--)
                 A[j] = A[j - 1];
             A[j] = tmp;
         }

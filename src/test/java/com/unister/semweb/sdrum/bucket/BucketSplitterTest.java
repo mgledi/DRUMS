@@ -17,6 +17,7 @@ import com.unister.semweb.sdrum.api.SDRUM_API;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * This class is for Testing the BucketSplitter
@@ -32,12 +33,13 @@ public class BucketSplitterTest {
     
     @Before
     public void initialise() throws Exception {
-        long[] ranges = new long[] { 0, 10, 100, 1000 };
+        long[] ranges = new long[] { 1, 10, 100, 1000 };
+        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2", "3.db", "4.db" };
         int[] sizes = { 1000, 1000, 1000, 1000 };
         FileUtils.deleteQuietly(new File(databaseDirectory));
 
-        this.hashFunction = new RangeHashFunction(ranges, filenames, sizes, new File("/tmp/hash.hs"));
+        this.hashFunction = new RangeHashFunction(bRanges, filenames, sizes, new File("/tmp/hash.hs"));
         this.prototype = new DummyKVStorable();
 
         // fill with data

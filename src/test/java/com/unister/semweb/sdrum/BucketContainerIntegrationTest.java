@@ -7,6 +7,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
+import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.sync.SyncManager;
@@ -30,7 +31,7 @@ public class BucketContainerIntegrationTest {
      * The temporary directory that is used for the test. All files
      * that are created while testing are stored here.
      */
-    private static final String TEMP_DIRECTORY = "/data/tmp/filestorage/db/";
+    private static final String TEMP_DIRECTORY = "/tmp/";
 //    private static final File TEMP_DIRECTORY = new File("/data/mgledi/data");
 
     /** The maximum bucket size to be used. */
@@ -43,7 +44,7 @@ public class BucketContainerIntegrationTest {
     private static int numberOfSynchronizingThreads = 1;
 
     /** The overall number of buckets to be used. */
-    private static int numberOfBuckets = 16;
+    private static int numberOfBuckets = 4;
 
 
     /**
@@ -69,6 +70,8 @@ public class BucketContainerIntegrationTest {
     public static void main(String args[]) throws Exception {
         initialise();
         long startTime = System.currentTimeMillis();
+
+        AbstractHashFunction.INITIAL_BUCKET_SIZE = allowedElementsPerBucket;
         FirstBitHashFunction hashFunction = new FirstBitHashFunction(numberOfBuckets);
         Bucket<DummyKVStorable>[] buckets = new Bucket[hashFunction.getNumberOfBuckets()];
         for (int i = 0; i < buckets.length; i++) {
@@ -101,7 +104,5 @@ public class BucketContainerIntegrationTest {
         buffer.shutdown();
         buffer.join();
         System.out.println("Time needed: " + (System.currentTimeMillis() - startTime));
-
     }
-
 }

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +76,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         generateBucketIds();
     }
 
+    
     /**
      * This method instantiates a new {@link RangeHashFunction} by the given {@link File}. The File contains some long
      * values, which describe the maximal allowed values for the buckets. The minimal value will be the direct successor
@@ -84,19 +86,18 @@ public class RangeHashFunction extends AbstractHashFunction {
      */
     public RangeHashFunction(File file) throws IOException {
         this.hashFunctionFile = file;
+        String line;
         FileReader configFile = new FileReader(file);
-        CSVReader csvReader = new CSVReader(configFile, ' ');
-
-        List<String[]> readData = csvReader.readAll();
+        List<String> readData = IOUtils.readLines(configFile);
 
         maxRangeValues = new byte[readData.size() - 1][];
         filenames = new String[readData.size() - 1];
         bucketSizes = new int[readData.size() - 1];
 
         // analyze header
-        String[] header = readData.get(0);
+        String[] header = readData.get(0).split("\t");
         keySize = 0;
-        keyComposition = new int[header.length -1];
+        keyComposition = new int[header.length - 2];
         for (int i = 0; i < keyComposition.length; i++) {
             int e = stringToByteCount(header[i]);
             if(e == 0) {
@@ -107,33 +108,23 @@ public class RangeHashFunction extends AbstractHashFunction {
         }
         
         
-        for (int i = 1; i < readData.size(); i++) {
-            String[] Aline = readData.get(i);
-            try {
-                maxRangeValues[i] = new byte[keySize];
-                int byteOffset = 0;
-                for (int k = 0; k < keyComposition.length; k++) {
-                    long tmp = Long.parseLong(Aline[k]);
-                    for(int b = 0; b < keyComposition[k]; b++) {
-                        maxRangeValues[i][byteOffset] = (byte)tmp;
-                        tmp = tmp >> 1;
-                    }
+        for (int i = 0; i < readData.size()-1; i++) {
+            String[] Aline = readData.get(i+1).split("\t");
+            // TODO: format exception
+            maxRangeValues[i] = new byte[keySize];
+            int byteOffset = 0;
+            for (int k = 0; k < keyComposition.length; k++) {
+                long tmp = Long.parseLong(Aline[k]);
+                for(int b = 0; b < keyComposition[k]; b++) {
+                    maxRangeValues[i][byteOffset] = (byte)tmp;
+                    tmp = tmp >> 8;
+                    byteOffset++;
                 }
-                filenames[i] = Aline[keyComposition.length];
-                bucketSizes[i] = INITIAL_BUCKET_SIZE; // TODO: adapt file
-            } catch (NullPointerException ex) {
-                log.error(
-                        "The csv file has not the expected format. The format is: range bucketId filename. One column is missing",
-                        ex);
-                throw new IOException(ex);
-            } catch (ClassCastException ex) {
-                log.error(
-                        "The csv file has not the expected format. The format is: range bucketId filename. One column has the wrong type.",
-                        ex);
-                throw new IOException(ex);
             }
+            System.out.println(Arrays.toString(maxRangeValues[i]));
+            filenames[i] = Aline[keyComposition.length];
+            bucketSizes[i] = Integer.parseInt(Aline[keyComposition.length+1]); // TODO: adapt file
         }
-
         sortMachine = new RangeHashSorter(maxRangeValues, filenames, bucketSizes);
         sortMachine.quickSort();
         generateBucketIds();

@@ -1,5 +1,7 @@
 package com.unister.semweb.sdrum.hashfunction;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
 import junit.framework.Assert;
@@ -138,6 +140,16 @@ public class RangeHashFunctionTest {
         hashFunction.getFilename(6);
     }
 
+    @Test
+    public void loadHashFunctionFromFile() throws IOException {
+        File f = new File("src/test/resources/rangehash.hash");
+        RangeHashFunction rhf = new RangeHashFunction(f);
+        long l= 16L<<56;
+        Assert.assertEquals(0, rhf.getBucketId(l));
+        l++;
+        Assert.assertEquals(1, rhf.getBucketId(l));
+        Assert.assertEquals(7, rhf.getBucketId(Long.MAX_VALUE));
+    }
     /* ******************************************** Data generator methods ******************** */
     /* **************************************************************************************** */
 

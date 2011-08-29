@@ -6,6 +6,8 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import javax.swing.text.AbstractDocument.LeafElement;
+
 import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;

@@ -1,6 +1,7 @@
 package com.unister.semweb.sdrum.utils;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
@@ -91,8 +92,12 @@ public class KeyUtils {
      *         1 if key1 > key2
      */
     public static byte compareKey(byte[] key1, byte[] key2, int length) {
-        for (int k = 0; k < Math.min(key1.length, key2.length); k++) {
+        int minLength = Math.min(key1.length, key2.length);
+        for (int k = 0; k < minLength; k++) {
             if (key1[k] == key2[k]) {
+                if (k == length - 1) {
+                    return 0;
+                }
                 continue;
             }
             int k1 = key1[k] & 0xFF;
@@ -103,9 +108,7 @@ public class KeyUtils {
             if (k1 > k2) {
                 return +1;
             }
-            if (k == length) {
-                return 0;
-            }
+
         }
         if (key1.length < key2.length) {
             return -1;

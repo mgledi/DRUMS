@@ -1,6 +1,8 @@
 package com.unister.semweb.sdrum;
 
 import java.io.File;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
@@ -24,14 +26,14 @@ import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
  */
 public class BucketContainerIntegrationTest {
     /** The overall number of elements that will be add to the file storage. */
-    private static final long numberOfElementsToAdd = (long) 1e6;
+    private static final long numberOfElementsToAdd = (long) 1e7;
 
     public static final long differentElements = numberOfElementsToAdd;
     /**
      * The temporary directory that is used for the test. All files
      * that are created while testing are stored here.
      */
-    private static final String TEMP_DIRECTORY = "/tmp/";
+    private static final String TEMP_DIRECTORY = "/data/mgledi/data/";
 //    private static final File TEMP_DIRECTORY = new File("/data/mgledi/data");
 
     /** The maximum bucket size to be used. */
@@ -44,7 +46,7 @@ public class BucketContainerIntegrationTest {
     private static int numberOfSynchronizingThreads = 1;
 
     /** The overall number of buckets to be used. */
-    private static int numberOfBuckets = 4;
+    private static int numberOfBuckets = 32;
 
 
     /**
@@ -68,6 +70,17 @@ public class BucketContainerIntegrationTest {
      */
     // @Test
     public static void main(String args[]) throws Exception {
+        long l = -1L;
+        byte[] b = new byte[8];
+        ByteBuffer.wrap(b).putLong(l);
+        int[] inte = new int[8];
+        for (int j = 0; j < inte.length; j++) {
+            inte[j] = b[j] & 0xFF;
+        }
+        System.out.println(Arrays.toString(ByteBuffer.wrap(b).putLong(l).array()));
+        System.out.println(Arrays.toString(inte));
+        
+        System.exit(0);
         initialise();
         long startTime = System.currentTimeMillis();
 

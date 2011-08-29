@@ -181,11 +181,14 @@ public class RangeHashFunction extends AbstractHashFunction {
         byte comp1, comp2;
         while (leftIndex <= rightIndex) {
             int midIndex = ((rightIndex - leftIndex) / 2) + leftIndex;
+            comp2 = KeyUtils.compareKey(key, maxRangeValues[midIndex]);
             if (midIndex == 0){
-                return midIndex;
+                if(comp2 > 0) {
+                    return 1;
+                }
+                return 0;
             }
             comp1 = KeyUtils.compareKey(maxRangeValues[midIndex - 1], key);
-            comp2 = KeyUtils.compareKey(key, maxRangeValues[midIndex]);
             if (comp1 < 0 && comp2 <= 0) {
                 return midIndex;
             } else if (comp2 > 0) {

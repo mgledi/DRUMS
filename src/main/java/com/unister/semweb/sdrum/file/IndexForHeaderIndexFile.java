@@ -106,12 +106,15 @@ public class IndexForHeaderIndexFile {
         int minElement = 0, maxElement = filledUpTo, midElement;
         byte comp1, comp2;
         while (minElement <= maxElement) {
-            midElement = minElement + (int) (Math.ceil((maxElement - minElement) / 2d));
+            midElement = minElement + (maxElement - minElement) / 2;
+            comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement]);
             if(midElement == 0) {
-                return midElement;
+                if(comp2 > 0 ) {
+                    return 1;
+                }
+                return 0;
             }
             comp1 = KeyUtils.compareKey(maxKeyPerChunk[midElement - 1], key);
-            comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement]);
             if (comp1 < 0 && comp2 <= 0) {
                 return midElement;
             } else if (comp1 > 0) {

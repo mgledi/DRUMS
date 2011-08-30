@@ -46,7 +46,7 @@ public class BucketContainerIntegrationTest {
     private static int numberOfSynchronizingThreads = 1;
 
     /** The overall number of buckets to be used. */
-    private static int numberOfBuckets = 32;
+    private static int numberOfBuckets = 64;
 
 
     /**
@@ -70,17 +70,6 @@ public class BucketContainerIntegrationTest {
      */
     // @Test
     public static void main(String args[]) throws Exception {
-        long l = -1L;
-        byte[] b = new byte[8];
-        ByteBuffer.wrap(b).putLong(l);
-        int[] inte = new int[8];
-        for (int j = 0; j < inte.length; j++) {
-            inte[j] = b[j] & 0xFF;
-        }
-        System.out.println(Arrays.toString(ByteBuffer.wrap(b).putLong(l).array()));
-        System.out.println(Arrays.toString(inte));
-        
-        System.exit(0);
         initialise();
         long startTime = System.currentTimeMillis();
 

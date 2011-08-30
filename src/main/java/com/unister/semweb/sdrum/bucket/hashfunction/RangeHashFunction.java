@@ -13,8 +13,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.com.bytecode.opencsv.CSVReader;
-
 import com.unister.semweb.sdrum.bucket.hashfunction.util.RangeHashSorter;
 import com.unister.semweb.sdrum.storable.KVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
@@ -76,7 +74,6 @@ public class RangeHashFunction extends AbstractHashFunction {
         generateBucketIds();
     }
 
-    
     /**
      * This method instantiates a new {@link RangeHashFunction} by the given {@link File}. The File contains some long
      * values, which describe the maximal allowed values for the buckets. The minimal value will be the direct successor
@@ -100,36 +97,36 @@ public class RangeHashFunction extends AbstractHashFunction {
         keyComposition = new int[header.length - 2];
         for (int i = 0; i < keyComposition.length; i++) {
             int e = stringToByteCount(header[i]);
-            if(e == 0) {
+            if (e == 0) {
                 throw new IOException("Header could not be read. Could not decode " + header[i]);
             }
             keyComposition[i] = e;
             keySize += e;
         }
-        
-        
-        for (int i = 0; i < readData.size()-1; i++) {
-            String[] Aline = readData.get(i+1).split("\t");
+
+        for (int i = 0; i < readData.size() - 1; i++) {
+            String[] Aline = readData.get(i + 1).split("\t");
             // TODO: format exception
             maxRangeValues[i] = new byte[keySize];
             int byteOffset = 0;
             for (int k = 0; k < keyComposition.length; k++) {
                 long tmp = Long.parseLong(Aline[k]);
-                for(int b = 0; b < keyComposition[k]; b++) {
-                    maxRangeValues[i][byteOffset] = (byte)tmp;
+                for (int b = 0; b < keyComposition[k]; b++) {
+                    maxRangeValues[i][byteOffset] = (byte) tmp;
                     tmp = tmp >> 8;
                     byteOffset++;
                 }
             }
             System.out.println(Arrays.toString(maxRangeValues[i]));
             filenames[i] = Aline[keyComposition.length];
-            bucketSizes[i] = Integer.parseInt(Aline[keyComposition.length+1]); // TODO: adapt file
+            bucketSizes[i] = Integer.parseInt(Aline[keyComposition.length + 1]); // TODO: adapt file
         }
         sortMachine = new RangeHashSorter(maxRangeValues, filenames, bucketSizes);
         sortMachine.quickSort();
         generateBucketIds();
 
     }
+
     /**
      * Returns the File, where the HashFunction is stored human-readable
      * 
@@ -182,8 +179,8 @@ public class RangeHashFunction extends AbstractHashFunction {
         while (leftIndex <= rightIndex) {
             int midIndex = ((rightIndex - leftIndex) / 2) + leftIndex;
             comp2 = KeyUtils.compareKey(key, maxRangeValues[midIndex]);
-            if (midIndex == 0){
-                if(comp2 > 0) {
+            if (midIndex == 0) {
+                if (comp2 > 0) {
                     return 1;
                 }
                 return 0;
@@ -223,11 +220,14 @@ public class RangeHashFunction extends AbstractHashFunction {
     public void writeToFile() throws IOException {
         FileWriter fileWriter = new FileWriter(hashFunctionFile);
         BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        for (int i = 0; i < maxRangeValues.length; i++) {
-//            String oneCSVLine = makeOneLine(maxRangeValues[i], filenames[i]);
-//            bufferedWriter.append(oneCSVLine);
+        for (int i = 0; i < maxRangeValues[0].length; i++) {
+            bufferedWriter.append('b').append('\t');
         }
-
+        bufferedWriter.append("filename").append('\t').append("bucketSize");
+        for (int i = 0; i < maxRangeValues.length; i++) {
+            String oneCSVLine = makeOneLine(maxRangeValues[i], bucketSizes[i], filenames[i]);
+            bufferedWriter.append(oneCSVLine);
+        }
         bufferedWriter.flush();
         bufferedWriter.close();
     }
@@ -235,16 +235,18 @@ public class RangeHashFunction extends AbstractHashFunction {
     /**
      * Concatenates the given range value and the file name to one string. It is used to write the hash function file.
      */
-    private String makeOneLine(long oneRange, String filename) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(oneRange).append(" ").append(filename).append('\n');
-        return buffer.toString();
+    private String makeOneLine(byte[] value, int bucketSize, String filename) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < value.length; i++) {
+            sb.append(value[i]).append('\t');
+        }
+        sb.append(filename).append('\t').append(bucketSize).append('\n');
+        return sb.toString();
     }
 
     /**
      * The header of could contain characters which are not numbers. Some of them can be translated into bytes. E.g.
      * char would be two byte.
-     * 
      */
     public static int stringToByteCount(String code) {
         @SuppressWarnings("serial")

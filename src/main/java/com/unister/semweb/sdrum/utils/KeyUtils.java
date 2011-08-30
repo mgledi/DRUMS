@@ -117,4 +117,31 @@ public class KeyUtils {
         }
         return 0;
     }
+    
+    
+    public static void generateHashFunction(long min, long max, int buckets, int bucketSize, String suffix, String prefix){
+
+    	long range = (long) Math.ceil((double)(max - min) / buckets);
+    	StringBuilder sb = new StringBuilder();
+    	
+    	long val=min;
+    	for (int i=0; i<buckets; ++i){
+    		val += range;
+    		if (val >= max){
+    			val = max;
+    		}
+        	byte[] bval = ByteBuffer.allocate(8).putLong(val).array();
+        	for (int j = 0; j < bval.length; j++) {
+        		int k = bval[j] & 0xff;
+				sb.append(k + "\t");
+			}
+        	sb.append(prefix + i + suffix + "\t" + bucketSize + "\n");
+    	}
+    	System.out.println(sb.toString());
+    	
+    }
+    
+    public static void main(String[] args) {
+		generateHashFunction(-150, 100, 5, 12, ".db", "/data/frontier/db");
+	}
 }

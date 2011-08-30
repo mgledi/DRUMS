@@ -140,7 +140,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     protected void init() throws FileLockException, IOException {
         this.contentStart = HEADER_SIZE + MAX_INDEX_SIZE_IN_BYTES;
         if (!osFile.exists()) {
-            logger.warn("File {} not found. Initialise new File.", osFile.getAbsolutePath());
+            logger.debug("File {} not found. Initialise new File.", osFile.getAbsolutePath());
             this.createFile();
         } else {
             logger.debug("File {} exists. Try to open it.", osFile.getAbsolutePath());
@@ -255,7 +255,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
         destBuffer.clear();
         int length = destBuffer.capacity();
         if (offset > filledUpTo) {
-            String errorMessage = "Tried to read data beginning at " + filledUpTo + " in File " + osFile.getName();
+            String errorMessage = "Tried to read data beginning at " + offset + " in File (max=" + filledUpTo+") " + osFile.getName();
             logger.debug(errorMessage);
             throw new IOException(errorMessage);
         } else if (offset + length > filledUpTo) {

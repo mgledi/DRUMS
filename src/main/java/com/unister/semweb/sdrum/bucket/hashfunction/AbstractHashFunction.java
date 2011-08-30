@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-import org.apache.log4j.Logger;
-
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.KVStorable;
@@ -38,9 +36,6 @@ public abstract class AbstractHashFunction implements Serializable {
     public abstract int getBucketId(byte[] key);
 
     public int getBucketId(long key) {
-//        if(key < 0) {
-//            Logger.getLogger(this.getClass()).warn("SDRUM handle only keys > 0 ");
-//        }
         byte[] b = new byte[8];
         ByteBuffer.wrap(b).putLong(key);
         return getBucketId(b);

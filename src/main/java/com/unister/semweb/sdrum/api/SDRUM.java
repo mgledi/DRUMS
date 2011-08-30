@@ -66,7 +66,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     /** the Synchronizer factory, is needed to decide how to insert/update elements */
     private ISynchronizerFactory<Data> synchronizerFactory;
 
-    /** the buffer manages the different synchrinize-processes */
+    /** the buffer manages the different synchronize-processes */
     private SyncManager<Data> syncManager;
 
     /** a prototype of the elements to store */
@@ -347,6 +347,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             // find offset in workingBuffer
             indexInChunk = findElementInReadBuffer(workingBuffer, key, indexInChunk);
             if (indexInChunk == -1) {
+                indexInChunk = 0;
                 continue;
             }
             // read element from workingBuffer
@@ -382,7 +383,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         // binary search
         int maxElement = numberOfEntries - 1;
         int midElement;
-        long midKey;
         byte comp;
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;

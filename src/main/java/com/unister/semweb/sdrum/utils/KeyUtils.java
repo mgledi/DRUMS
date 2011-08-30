@@ -1,11 +1,6 @@
 package com.unister.semweb.sdrum.utils;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-
-import org.apache.log4j.Logger;
-
-import com.unister.semweb.sdrum.TestUtils;
 
 public class KeyUtils {
 

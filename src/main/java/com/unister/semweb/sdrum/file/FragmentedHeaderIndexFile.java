@@ -3,7 +3,6 @@ package com.unister.semweb.sdrum.file;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 /**
  * This class represents a file, which contains a bunch of datasets. The file also contains a header with some

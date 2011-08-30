@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
-import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;

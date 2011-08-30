@@ -14,6 +14,7 @@ import com.carrotsearch.hppc.cursors.IntObjectCursor;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.BucketContainerException;
+import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
@@ -191,9 +192,10 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
 
         for (IntObjectCursor<ArrayList<Data>> entry : bucketDataMapping) {
             UpdateOnlySynchronizer<Data> synchronizer = new UpdateOnlySynchronizer<Data>(
-                    hashFunction.getFilename(entry.index), prototype);
+                    hashFunction.getFilename(entry.key), prototype);
             @SuppressWarnings("unchecked")
             Data[] toUpdate = (Data[]) entry.value.toArray(new AbstractKVStorable[entry.value.size()]);
+            SortMachine.quickSort(toUpdate);
             synchronizer.upsert(toUpdate);
         }
     }

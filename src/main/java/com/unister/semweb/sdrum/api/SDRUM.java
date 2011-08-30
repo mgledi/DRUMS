@@ -421,4 +421,20 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         syncManager.shutdown();
         syncManager.join();
     }
+
+    public int getElementSize() {
+        return this.elementSize;
+    }
+
+    public AbstractHashFunction getHashFunction() {
+        return this.hashFunction;
+    }
+
+    public String getDatabaseDirectory() {
+        return this.databaseDirectory;
+    }
+
+    public int getElementKeySize() {
+        return this.keySize;
+    }
 }

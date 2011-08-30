@@ -103,7 +103,6 @@ public class RangeHashFunction extends AbstractHashFunction {
             keyComposition[i] = e;
             keySize += e;
         }
-
         for (int i = 0; i < readData.size() - 1; i++) {
             String[] Aline = readData.get(i + 1).split("\t");
             // TODO: format exception
@@ -174,9 +173,9 @@ public class RangeHashFunction extends AbstractHashFunction {
         if (KeyUtils.compareKey(key, maxRangeValues[rightIndex]) > 0) {
             return 0;
         }
-
+        
         byte comp1, comp2;
-        while (leftIndex <= rightIndex) {
+        while (leftIndex <= rightIndex) {        	
             int midIndex = ((rightIndex - leftIndex) / 2) + leftIndex;
             comp2 = KeyUtils.compareKey(key, maxRangeValues[midIndex]);
             if (midIndex == 0) {

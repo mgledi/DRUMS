@@ -38,9 +38,9 @@ public abstract class AbstractHashFunction implements Serializable {
     public abstract int getBucketId(byte[] key);
 
     public int getBucketId(long key) {
-        if(key < 0) {
-            Logger.getLogger(this.getClass()).warn("SDRUM handle only keys > 0 ");
-        }
+//        if(key < 0) {
+//            Logger.getLogger(this.getClass()).warn("SDRUM handle only keys > 0 ");
+//        }
         byte[] b = new byte[8];
         ByteBuffer.wrap(b).putLong(key);
         return getBucketId(b);

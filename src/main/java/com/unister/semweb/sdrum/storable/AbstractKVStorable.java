@@ -2,7 +2,8 @@ package com.unister.semweb.sdrum.storable;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
+
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * Abstract implementation of interface {@link KVStorable}. Extend this class to build your own objects, which have to
@@ -96,7 +97,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
         // estimate number of uniques
         int count = 1;
         for (int i = 0; i < toAdd.length - 1; i++) {
-            if (toAdd[i].key != toAdd[i + 1].key) {
+            if (KeyUtils.compareKey(toAdd[i].key,toAdd[i + 1].key) != 0) {
                 count++;
             }
         }
@@ -106,7 +107,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
         // merge Elements in toAdd
         AbstractKVStorable<Data> first = toAdd[0];
         for (int k = 1; k < toAdd.length; k++) {
-            while (k < toAdd.length && toAdd[k].key == first.key) {
+            while (k < toAdd.length && KeyUtils.compareKey(toAdd[k].key,first.key) == 0) {
                 first = first.merge(toAdd[k]);
                 k++;
             }
@@ -115,7 +116,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
                 first = toAdd[k];
             }
         }
-        if (count < realToAdd.length && realToAdd[realToAdd.length - 2].key != first.key) {
+        if (count < realToAdd.length && KeyUtils.compareKey(realToAdd[realToAdd.length - 2].key, first.key) != 0) {
             realToAdd[count++] = first;
         }
         return (Data[]) realToAdd;

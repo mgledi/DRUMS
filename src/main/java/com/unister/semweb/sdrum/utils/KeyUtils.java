@@ -14,9 +14,9 @@ public class KeyUtils {
     public static byte[][] transformToByteArray(long[] l) {
         byte[][] b = new byte[l.length][8];
         for (int i = 0; i < b.length; i++) {
-            if(l[i] <= 0) {
-                Logger.getLogger(TestUtils.class).warn("SDRUM only handles keys > 0.");
-            }
+//            if(l[i] <= 0) {
+//                Logger.getLogger(TestUtils.class).warn("SDRUM only handles keys > 0.");
+//            }
             ByteBuffer.wrap(b[i]).putLong(l[i]);
         }
         return b;

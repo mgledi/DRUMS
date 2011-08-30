@@ -156,7 +156,8 @@ public class SynchronizerTest {
 	
 	private DummyKVStorable[] readInFile(String filename) throws IOException, FileLockException {
 	    List<DummyKVStorable> retrievedLinkData = new ArrayList<DummyKVStorable>();
-	    HeaderIndexFile<DummyKVStorable> file = new HeaderIndexFile<DummyKVStorable>(filename, AccessMode.READ_WRITE, 100, new DummyKVStorable().byteBufferSize);
+	    DummyKVStorable prototype = new DummyKVStorable();
+	    HeaderIndexFile<DummyKVStorable> file = new HeaderIndexFile<DummyKVStorable>(filename, AccessMode.READ_WRITE, 100, prototype.keySize, prototype.byteBufferSize);
 	    long offset = 0;
 	    while(offset < file.getFilledUpFromContentStart()) {
 	        ByteBuffer linkBuffer = ByteBuffer.allocate(new DummyKVStorable().byteBufferSize);

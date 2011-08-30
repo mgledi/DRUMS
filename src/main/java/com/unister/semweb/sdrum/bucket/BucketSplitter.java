@@ -63,7 +63,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
                     tmp.close();
                 }
                 String fileName = workingDir + "/" + targetHashfunction.getFilename(newBucket);
-                tmp = new HeaderIndexFile<Data>(fileName, AccessMode.READ_WRITE, 100, source.getElementSize());
+                tmp = new HeaderIndexFile<Data>(fileName, AccessMode.READ_WRITE, 100, targetHashfunction.keySize, source.getElementSize());
                 oldBucket = newBucket;
             }
             

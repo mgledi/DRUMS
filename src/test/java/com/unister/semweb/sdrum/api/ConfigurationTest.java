@@ -4,7 +4,6 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.unister.semweb.sdrum.api.ConfigurationFile;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;

@@ -1,5 +1,6 @@
 package com.unister.semweb.sdrum.file;
 
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 
 import com.unister.semweb.sdrum.utils.KeyUtils;
@@ -46,7 +47,8 @@ public class IndexForHeaderIndexFile {
      * @param <b>int chunkSize</b>, the size of one chunk
      * @param <b>MappedByteBuffer indexBuffer</b>, the buffer were to write the indexinformations
      */
-    public IndexForHeaderIndexFile(final int numberOfChunks, final int chunkSize, final MappedByteBuffer indexBuffer) {
+    public IndexForHeaderIndexFile(final int numberOfChunks, final int keySize, final int chunkSize, final MappedByteBuffer indexBuffer) {
+        this.keySize = keySize;
         this.numberOfChunks = numberOfChunks;
         this.chunkSize = chunkSize;
         this.indexBuffer = indexBuffer;
@@ -60,11 +62,9 @@ public class IndexForHeaderIndexFile {
      */
     protected void fillIndexFromByteBuffer() {
         indexBuffer.rewind();
-        keySize = indexBuffer.getInt();
         for (int i = 0; i < numberOfChunks; i++) {
             maxKeyPerChunk[i] = new byte[keySize];
             indexBuffer.get(maxKeyPerChunk[i]);
-
             if (KeyUtils.isNull(maxKeyPerChunk[i]) && i > 0) {
                 filledUpTo = i - 1;
                 break;
@@ -107,13 +107,10 @@ public class IndexForHeaderIndexFile {
         byte comp1, comp2;
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
-            comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement]);
             if(midElement == 0) {
-                if(comp2 > 0 ) {
-                    return 1;
-                }
                 return 0;
             }
+            comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement]);
             comp1 = KeyUtils.compareKey(maxKeyPerChunk[midElement - 1], key);
             if (comp1 < 0 && comp2 <= 0) {
                 return midElement;
@@ -136,7 +133,7 @@ public class IndexForHeaderIndexFile {
         // System.out.println(maxKeyPerChunk.length + " <? " + chunkIdx);
         maxKeyPerChunk[chunkIdx] = largestKeyInChunk;
         filledUpTo = Math.max(filledUpTo, chunkIdx);
-        indexBuffer.position(chunkIdx * largestKeyInChunk.length + 4); // +4 cause of keySize stored in this buffer
+        indexBuffer.position(chunkIdx * keySize);
         indexBuffer.put(largestKeyInChunk);
     }
 }

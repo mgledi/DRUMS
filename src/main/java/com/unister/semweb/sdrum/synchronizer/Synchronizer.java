@@ -96,7 +96,8 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
     public void upsert(Data[] toAdd) throws IOException {
         try {
             /* Another thread can have access to this file in parallel. So we must wait to get exclusive access. */
-            dataFile = new HeaderIndexFile<Data>(dataFilename, AccessMode.READ_WRITE, Integer.MAX_VALUE, elementSize);
+            dataFile = new HeaderIndexFile<Data>(dataFilename, AccessMode.READ_WRITE, Integer.MAX_VALUE,
+                    prototype.key.length, prototype.getByteBufferSize());
             header = dataFile.getIndex(); // Pointer to the Index
         } catch (FileLockException e) {
             e.printStackTrace();
@@ -190,7 +191,6 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
      * @param newData
      * @param key
      * @param alreadyExist
-     * 
      * @throws IOException
      */
     protected boolean write(byte[] newData, boolean alreadyExist) throws IOException {

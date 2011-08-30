@@ -12,7 +12,6 @@ import java.util.concurrent.BlockingQueue;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.log4j.Logger;
 
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.SortMachine;
@@ -36,8 +35,10 @@ public class TestUtils {
      * @param numberOfDataPerBucket
      * @return
      */
-    public static Bucket<DummyKVStorable>[] generateBuckets(int bucketSize, int numberOfBuckets, int numberOfDataPerBucket) {
-        List<Bucket<DummyKVStorable>> bucketList = generateBucketList(bucketSize, numberOfBuckets, numberOfDataPerBucket);
+    public static Bucket<DummyKVStorable>[] generateBuckets(int bucketSize, int numberOfBuckets,
+            int numberOfDataPerBucket) {
+        List<Bucket<DummyKVStorable>> bucketList = generateBucketList(bucketSize, numberOfBuckets,
+                numberOfDataPerBucket);
         Bucket<DummyKVStorable>[] result = new Bucket[bucketList.size()];
         result = bucketList.toArray(result);
         return result;
@@ -48,11 +49,15 @@ public class TestUtils {
      * number of buckets points to a multiply of 2. For example: if the given number of buckets is 1000, you will get
      * 1024 buckets.
      * 
-     * @param bucketSize the size of the bucket that will initialise the bucket
-     * @param numberOfBuckets at least numberOfBuckets buckets, but it is always a multiply of 2
-     * @param numberOfDataPerBucket number of generated entries per bucket
+     * @param bucketSize
+     *            the size of the bucket that will initialise the bucket
+     * @param numberOfBuckets
+     *            at least numberOfBuckets buckets, but it is always a multiply of 2
+     * @param numberOfDataPerBucket
+     *            number of generated entries per bucket
      */
-    public static List<Bucket<DummyKVStorable>> generateBucketList(int bucketSize, int numberOfBuckets, int numberOfDataPerBucket) {
+    public static List<Bucket<DummyKVStorable>> generateBucketList(int bucketSize, int numberOfBuckets,
+            int numberOfDataPerBucket) {
         AbstractHashFunction hashFunction = new FirstBitHashFunction(numberOfBuckets);
         List<Bucket<DummyKVStorable>> result = new ArrayList<Bucket<DummyKVStorable>>();
         for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
@@ -78,7 +83,8 @@ public class TestUtils {
         return result;
     }
 
-    public static DummyKVStorable[] generateTestdata(int numberToGenerate, long maximumValueForKey, long allowedUniqueElements) {
+    public static DummyKVStorable[] generateTestdata(int numberToGenerate, long maximumValueForKey,
+            long allowedUniqueElements) {
         DummyKVStorable[] result = new DummyKVStorable[numberToGenerate];
         for (int i = 0; i < numberToGenerate; i++) {
             DummyKVStorable oneEntry = new DummyKVStorable();
@@ -98,7 +104,8 @@ public class TestUtils {
         return result;
     }
 
-    public static DummyKVStorable[] generateTestdataDifferentFrom(BlockingQueue<DummyKVStorable> notToInclude, int numberOfNewTestdata) {
+    public static DummyKVStorable[] generateTestdataDifferentFrom(BlockingQueue<DummyKVStorable> notToInclude,
+            int numberOfNewTestdata) {
         List<DummyKVStorable> notIncludeList = new ArrayList<DummyKVStorable>();
         notIncludeList.addAll(notToInclude);
 
@@ -106,14 +113,16 @@ public class TestUtils {
         return result;
     }
 
-    public static DummyKVStorable[] generateTestdataDifferentFrom(DummyKVStorable[] notToInclude, int numberOfNewTestdata) {
+    public static DummyKVStorable[] generateTestdataDifferentFrom(DummyKVStorable[] notToInclude,
+            int numberOfNewTestdata) {
         List<DummyKVStorable> notIncludeList = Arrays.asList(notToInclude);
 
         DummyKVStorable[] result = generateTestdataDifferentFromList(notIncludeList, numberOfNewTestdata);
         return result;
     }
 
-    public static DummyKVStorable[] generateTestdataDifferentFromList(List<DummyKVStorable> notToInclude, int numberOfNewTestdata) {
+    public static DummyKVStorable[] generateTestdataDifferentFromList(List<DummyKVStorable> notToInclude,
+            int numberOfNewTestdata) {
         Collection<DummyKVStorable> subtraction = new ArrayList<DummyKVStorable>();
 
         while (subtraction.size() != numberOfNewTestdata) {
@@ -193,7 +202,8 @@ public class TestUtils {
             FileLockException {
         // load file
         DummyKVStorable prototype = new DummyKVStorable();
-        HeaderIndexFile<DummyKVStorable> dbfile = new HeaderIndexFile<DummyKVStorable>(dbFileName, AccessMode.READ_ONLY, 1, prototype.byteBufferSize);
+        HeaderIndexFile<DummyKVStorable> dbfile = new HeaderIndexFile<DummyKVStorable>(dbFileName,
+                AccessMode.READ_ONLY, 1, prototype.keySize, prototype.byteBufferSize);
         ByteBuffer buffer = ByteBuffer.allocate(prototype.byteBufferSize);
         long offset = 0;
         int k = 0;
@@ -201,6 +211,8 @@ public class TestUtils {
             dbfile.read(offset, buffer);
             buffer.flip();
             DummyKVStorable newLinkData = new DummyKVStorable(buffer);
+//            System.out.println(newLinkData);
+//            System.out.println(linkDataList[k]);
             if (!newLinkData.equals(linkDataList[k])) {
                 return false;
             }
@@ -211,9 +223,7 @@ public class TestUtils {
         dbfile.close();
         return true;
     }
-    
-    
-    
+
     /** Creates <code>numberOfData</code> dummy {@link DummyKVStorable}. */
     public static DummyKVStorable[] createDummyData(int numberOfData) {
         DummyKVStorable[] result = new DummyKVStorable[numberOfData];
@@ -225,8 +235,9 @@ public class TestUtils {
     }
 
     /**
-     * Creates a set of {@link DummyKVStorable}. There are (lastKey - firstKey) {@link DummyKVStorable} be generated. The first
-     * {@link DummyKVStorable} has as key the <code>firstKey</code>, the last {@link DummyKVStorable} the <code>lastKey</code>.
+     * Creates a set of {@link DummyKVStorable}. There are (lastKey - firstKey) {@link DummyKVStorable} be generated.
+     * The first {@link DummyKVStorable} has as key the <code>firstKey</code>, the last {@link DummyKVStorable} the
+     * <code>lastKey</code>.
      * 
      * @param firstKey
      * @param lastKey
@@ -249,15 +260,15 @@ public class TestUtils {
         result.setRelevanceScore(relevanceScore);
         return result;
     }
-    
+
     /** merges the given two arrays to one */
     public static Object[] addAll(Object[] o1, Object[] o2) {
         Object[] all = new Object[o1.length + o2.length];
-        int k=0;
-        for(Object d : o1) {
+        int k = 0;
+        for (Object d : o1) {
             all[k] = d;
         }
-        for(Object d : o2) {
+        for (Object d : o2) {
             all[k] = d;
         }
         return all;

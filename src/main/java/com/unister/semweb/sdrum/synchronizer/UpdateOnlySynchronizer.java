@@ -57,7 +57,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
         try {
             /* Another thread can have access to this file in parallel. So we must wait to get exclusive access. */
             dataFile = new HeaderIndexFile<Data>(dataFilename, AccessMode.READ_WRITE, Integer.MAX_VALUE,
-                    elementSize);
+                    prototype.key.length, elementSize);
             header = dataFile.getIndex(); // Pointer to the Index
         } catch (FileLockException e) {
             e.printStackTrace();
@@ -81,20 +81,17 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
             long actualChunkOffset = 0, oldChunkOffset = -1;
             int indexInChunk = 0;
             // special case
-            if(dataFile.getFilledUpFromContentStart() == 0) {
-            	return;
-            }
-            
             for (int i = 0; i < toUpdate.length; i++) {
                 // get actual chunkIndex
                 actualChunkIdx = header.getChunkId(toUpdate[i].key);
                 actualChunkOffset = header.getStartOffsetOfChunk(actualChunkIdx);
 
-                if(actualChunkOffset > dataFile.getFilledUpFromContentStart()) {
-                	log.warn("Element with key {} was not found and therefore not updated", toUpdate[i].key);
-                    continue;
+
+                if (actualChunkOffset > dataFile.getFilledUpFromContentStart()) {
+                    log.warn("Element with key {} was not found and therefore not updated", toUpdate[i].key);
+                    //                    continue;
                 }
-                
+
                 // if it is the same chunk as in the last step, use the old readbuffer
                 if (actualChunkIdx != lastChunkIdx) {
                     // if we have read a chunk
@@ -103,7 +100,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
                         indexInChunk = 0;
                     }
                     // read a new part to the readBuffer
-                   	dataFile.read(actualChunkOffset, workingBuffer);
+                    dataFile.read(actualChunkOffset, workingBuffer);
                 }
 
                 indexInChunk = updateElementInReadBuffer(toUpdate[i], indexInChunk);
@@ -136,17 +133,19 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
         int maxElement = numberOfEntries - 1;
         int midElement;
         byte compare;
+        byte[] tmpKey = new byte[actualKey.length];
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
             indexInChunk = midElement * elementSize;
-            compare = KeyUtils.compareKey(actualKey, workingBuffer.array(), prototype.key.length);
+            workingBuffer.position(indexInChunk);
+            workingBuffer.get(tmpKey);
+            compare = KeyUtils.compareKey(actualKey, tmpKey);
             if (compare == 0) {
                 // first read the old element
                 workingBuffer.position(indexInChunk);
                 byte[] b = new byte[elementSize];
                 workingBuffer.get(b);
                 Data toUpdate = prototype.fromByteBuffer(ByteBuffer.wrap(b));
-                
                 // update the old element and writ it
                 toUpdate.update(data);
                 workingBuffer.position(indexInChunk);

@@ -75,6 +75,8 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     /** Size of {@link Data} for fast access. */
     private int elementSize;
 
+    /** Size of the key of a {@link Data} for fast access. */
+    private int keySize;
     /**
      * A private constructor.
      * 
@@ -97,6 +99,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             AccessMode accessMode) {
         this.prototype = prototype;
         this.elementSize = prototype.getByteBufferSize();
+        this.keySize = prototype.key.length;
         this.databaseDirectory = databaseDirectory;
         AbstractHashFunction.INITIAL_BUCKET_SIZE = sizeOfMemoryBuckets;
 
@@ -229,7 +232,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             HeaderIndexFile<Data> indexFile = null;
             try {
                 indexFile = new HeaderIndexFile<Data>(filename, HeaderIndexFile.AccessMode.READ_ONLY,
-                        HEADER_FILE_LOCK_RETRY, elementSize);
+                        HEADER_FILE_LOCK_RETRY, prototype.key.length, elementSize);
 
                 ArrayList<byte[]> keyList = entry.value;
                 result.addAll(searchForData(indexFile, keyList.toArray(new byte[keyList.size()][])));
@@ -267,7 +270,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     public List<Data> read(int bucketId, int elementOffset, int numberToRead) throws FileLockException, IOException {
         String filename = databaseDirectory + "/" + hashFunction.getFilename(bucketId);
         HeaderIndexFile<Data> indexFile = new HeaderIndexFile<Data>(filename, HeaderIndexFile.AccessMode.READ_ONLY,
-                HEADER_FILE_LOCK_RETRY, elementSize);
+                HEADER_FILE_LOCK_RETRY, prototype.key.length, elementSize);
 
         List<Data> result = new ArrayList<Data>();
         // where to start

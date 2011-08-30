@@ -28,7 +28,7 @@ public class UpdateOnlySynchronizerTest {
         DummyKVStorable[] linkDataList = new DummyKVStorable[2000];
         for (int i = 0; i < linkDataList.length; i++) {
             linkDataList[i] = new DummyKVStorable();
-            linkDataList[i].setKey(i*10 + 1);
+            linkDataList[i].setKey(i*1 + 1);
             linkDataList[i].setTimestamp(0);
         }
         TestUtils.createFile(dbFileName, linkDataList);
@@ -37,11 +37,12 @@ public class UpdateOnlySynchronizerTest {
         // ################ prepare Update-Array, using only pointers from insert-array
         DummyKVStorable[] toUpdate = new DummyKVStorable[3];
         toUpdate[2] = linkDataList[1900];
-        toUpdate[2].setTimestamp(230);
+        toUpdate[2].setTimestamp(2300000);
         toUpdate[1] = linkDataList[100];
-        toUpdate[1].setTimestamp(230);
+        toUpdate[1].setTimestamp(2300000);
         toUpdate[0] = linkDataList[90];
-        toUpdate[0].setTimestamp(230);
+        toUpdate[0].setTimestamp(2300000);
+        
         SortMachine.quickSort(toUpdate);
         
         // ############### perform the update, this is the real test

@@ -249,7 +249,7 @@ public class SDrumTest {
     /** Reads from the given file <code>numberOfElementsToRead</code> elements. */
     private List<DummyKVStorable> readFrom(String filename, int numberOfElementsToRead) throws Exception {
         HeaderIndexFile<DummyKVStorable> file = new HeaderIndexFile<DummyKVStorable>(filename, AccessMode.READ_ONLY, 1,
-                prototype.getByteBufferSize());
+                prototype.keySize, prototype.byteBufferSize);
         ByteBuffer dataBuffer = ByteBuffer.allocate(numberOfElementsToRead * prototype.getByteBufferSize());
         file.read(0, dataBuffer);
         dataBuffer.flip();

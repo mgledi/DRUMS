@@ -17,10 +17,10 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * Header structure:<br/>
  * <br/>
  * <code>
- * +-----------+--------------+---------------+---------------+-------------+<br/>
- * | FILE SIZE | FILLED UP TO | Closed Softly | ReadChunkSize | ElementSize |<br/>
- * | 8 bytes . | 8 bytes .... | 1 bytes ..... | 4 bytes ..... | 4 bytes ... |<br/>
- * +-----------+--------------+---------------+---------------+-------------+<br/>
+ * +-----------+--------------+---------------+---------------+-------------+---------+<br/>
+ * | FILE SIZE | FILLED UP TO | Closed Softly | ReadChunkSize | ElementSize | KeySize |<br/>
+ * | 8 bytes . | 8 bytes .... | 1 bytes ..... | 4 bytes ..... | 4 bytes ... | 4 bytes |<br/>
+ * +-----------+--------------+---------------+---------------+-------------+---------+<br/>
  * </code> = 1024 bytes (to have enough space for more values)<br/>
  * <br/>
  * To use this class correctly, have a look at the following methods: <li>read(long offset, ByteBuffer destBuffer) <li>
@@ -69,6 +69,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     /** the size of a stored element in bytes */
     protected int elementSize;// part of the header
 
+    protected int keySize;
+
     /** shows if the file was closed correctly */
     private byte closedSoftly = 0; // PART OF HEADER (1 bytes)
 
@@ -90,6 +92,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     /** A pseudo-index (not each element is indexed, but the chunks where they belong to */
     protected IndexForHeaderIndexFile index;
 
+    
     /**
      * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
      * {@link AccessMode}.
@@ -103,10 +106,11 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
      * @throws IOException
      *             if another error with the fileaccess occured
      */
-    public HeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, int elementSize)
+    public HeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, int keySize, int elementSize)
             throws FileLockException,
             IOException {
         this.elementSize = elementSize;
+        this.keySize = keySize;
         this.osFile = new File(fileName);
         this.mode = mode;
         this.max_retries_connect = max_retries_connect;
@@ -360,7 +364,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     /** reads and instantiates the index from the <code>indexBuffer</code> */
     public void readIndex() {
         indexBuffer.rewind();
-        index = new IndexForHeaderIndexFile(indexSize, readChunkSize, indexBuffer);
+        index = new IndexForHeaderIndexFile(indexSize, keySize, readChunkSize, indexBuffer);
     }
 
     protected void readHeader() {
@@ -370,6 +374,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
         closedSoftly = headerBuffer.get();
         readChunkSize = headerBuffer.getInt();
         elementSize = headerBuffer.getInt();
+        keySize = headerBuffer.getInt();
     }
 
     protected void writeHeader() {
@@ -379,6 +384,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
         headerBuffer.put(closedSoftly);
         headerBuffer.putInt(readChunkSize);
         headerBuffer.putInt(elementSize);
+        headerBuffer.putInt(keySize);
     }
 
     public void enlargeFile() throws IOException {

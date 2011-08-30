@@ -1,8 +1,6 @@
 package com.unister.semweb.sdrum;
 
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;

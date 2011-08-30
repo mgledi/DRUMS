@@ -6,7 +6,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
 
@@ -40,7 +39,7 @@ public class HeaderIndexFileTest {
     /** create static file access */
     @Before
     public void createFile() throws IOException, FileLockException {
-        file = new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 1, 26);
+        file = new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 1, 8, 26);
     }
 
     /** create static file access */
@@ -155,14 +154,14 @@ public class HeaderIndexFileTest {
         file.close();
         createFile();
         try {
-            new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, 26);
+            new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, 8, 26);
             Assert.assertTrue(false);
         } catch (FileLockException e) {
             Assert.assertTrue(true);
         }
         file.close();
 
-        new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, 26).close();
+        new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, 8, 26);
         Assert.assertTrue(true);
     }
 
@@ -197,7 +196,7 @@ public class HeaderIndexFileTest {
     
     @Test
     public void test() throws Throwable {
-        HeaderIndexFile hif = new HeaderIndexFile("/test.db", AccessMode.READ_WRITE, 26, 1);
+        HeaderIndexFile hif = new HeaderIndexFile("/test.db", AccessMode.READ_WRITE, 1, 8, 26);
         hif.delete();
         
         File osFile = new File("/test.db");

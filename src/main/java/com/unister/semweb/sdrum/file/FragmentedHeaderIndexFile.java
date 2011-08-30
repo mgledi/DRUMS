@@ -62,9 +62,9 @@ public class FragmentedHeaderIndexFile<Data extends AbstractKVStorable<Data>> ex
      * @throws IOException
      *             if another error with the fileaccess occured
      */
-    public FragmentedHeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, int elementSize)
+    public FragmentedHeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, int keySize, int elementSize)
             throws FileLockException, IOException {
-        super(fileName, mode, max_retries_connect, elementSize);
+        super(fileName, mode, max_retries_connect, keySize, elementSize);
     }
 
     @Override

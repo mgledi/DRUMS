@@ -7,10 +7,6 @@ import org.junit.runners.Suite.SuiteClasses;
 import com.unister.semweb.sdrum.buffer.BufferTest;
 import com.unister.semweb.sdrum.file.HeaderIndexFileTest;
 import com.unister.semweb.sdrum.syncronizer.UpdateOnlySynchronizerTest;
-import com.unister.semweb.sdrum.BucketContainerTest;
-import com.unister.semweb.sdrum.LinkDataMergeTest;
-import com.unister.semweb.sdrum.SynchronizerPerformanceTest;
-import com.unister.semweb.sdrum.SynchronizerTest;
 
 /**
  * A test suite for a all tests.

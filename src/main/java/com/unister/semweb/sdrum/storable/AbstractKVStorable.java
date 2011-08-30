@@ -65,7 +65,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
 
     @Override
     public abstract int getByteBufferSize();
-
+    
     /**
      * merges the given {@link AbstractKVStorable} with this one by your implementation and returns an
      * {@link AbstractKVStorable}.

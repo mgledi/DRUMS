@@ -78,6 +78,10 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
 //            System.out.println("files remaining");
             return true;
         }
+        
+        if(actualFile != null) {
+            actualFile.close();
+        }
         return false;
     }
 
@@ -101,6 +105,10 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+        
+        if(actualFile != null) {
+            actualFile.close();
         }
         return null;
     }

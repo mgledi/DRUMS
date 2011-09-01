@@ -27,6 +27,8 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
     /** the HashFunction to calculate the bucket-id */
     private final AbstractHashFunction hashFunction;
 
+    private boolean shutDownInitiated = false;
+    
     /**
      * @param buckets
      *            the buckets, where to store the {@link AbstractKVStorable}
@@ -88,6 +90,9 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @throws BucketContainerException
      */
     public void addToCache(Data... toAdd) throws BucketContainerException, InterruptedException {
+        if(shutDownInitiated) {
+            throw new BucketContainerException("Shutdown was already initiated. Could not add the given elements.");
+        }
         int throwBucketException = -1;
         for (Data linkData : toAdd) {
             int indexOfCache = hashFunction.getBucketId(linkData.getLongKey());
@@ -125,7 +130,7 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @throws BucketContainerException
      * @throws InterruptedException
      */
-    public boolean addToCacheWithoutBlocking(Data linkData) throws BucketContainerException,
+    private boolean addToCacheWithoutBlocking(Data linkData) throws BucketContainerException,
             InterruptedException {
         int indexOfCache = hashFunction.getBucketId(linkData.getLongKey());
 
@@ -180,5 +185,9 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
     /** Gets the number of elements that are waiting in the pre queue. */
     public int getFillLevelPreQueue() {
         return waitingElements.size();
+    }
+
+    public void shutdown() {
+        this.shutDownInitiated = true;
     }
 }

@@ -23,18 +23,16 @@ import org.slf4j.LoggerFactory;
  * +-----------+--------------+---------------+---------------+<br/>
  * </code> = 1024 bytes (to have enough space for more values)<br/>
  * <br/>
- * 
  * To use this class correctly, have a look at the following methods: <li>read(long offset, ByteBuffer destBuffer) <li>
  * write(long offset, ByteBuffer sourceBuffer) <li>append(ByteBuffer sourceBuffer) <li>dbfile.getFilledUpToExclHeader()
  * <br>
  * <br>
  * 
  * @author m.gleditzsch
- * 
  */
 public abstract class AbstractHeaderFile {
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    
+
     /** the Default size of a file. (16MB) */
     public final int DEFAULT_SIZE = 16 * 1024 * 1024;
     /** the time to wait for a retry if a file is locked */
@@ -183,7 +181,6 @@ public abstract class AbstractHeaderFile {
      * 
      * @param should
      *            the header be read
-     * 
      * @throws IOException
      */
     protected void openChannel(boolean readHeader) throws FileLockException, IOException {
@@ -277,7 +274,6 @@ public abstract class AbstractHeaderFile {
      * @param length
      *            the length of the region to access
      * @return the offset, if the region is accessible
-     * 
      * @throws IOException
      */
     protected long checkRegions(long offset, int length) throws IOException {
@@ -302,7 +298,7 @@ public abstract class AbstractHeaderFile {
                 channel.close();
                 channel = null;
             }
-            
+
             if (accessFile != null) {
                 accessFile.close();
                 accessFile = null;
@@ -330,5 +326,10 @@ public abstract class AbstractHeaderFile {
                 deleted = osFile.delete();
             }
         }
+    }
+
+    /** returns the name of the underlying OS-File */
+    public String getName() {
+        return osFile.getName();
     }
 }

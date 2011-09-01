@@ -140,7 +140,7 @@ public class KeyUtils {
 
         byte[] bmin = ByteBuffer.allocate(8).putLong(min).array();
         byte[] bmax = ByteBuffer.allocate(8).putLong(max).array();
-        if(false) return generateHashFunction(bmin, bmax, buckets, bucketSize, suffix, prefix);
+//        if(false) return generateHashFunction(bmin, bmax, buckets, bucketSize, suffix, prefix);
         long range = (long) Math.ceil((double) (max - min) / buckets.length);
         StringBuilder sb = new StringBuilder();
 
@@ -189,15 +189,15 @@ public class KeyUtils {
      * 
      * @throws Exception
      */
-    public static byte[] subtractUnsigned(byte[] divisor, byte[] dividend) throws Exception {
-        if (compareKey(divisor, dividend) <= 0) {
+    public static byte[] subtractUnsigned(byte[] minuend, byte[] subtrahend) throws Exception {
+        if (compareKey(minuend, subtrahend) <= 0) {
             throw new Exception("The given divisor is not larger than the dividend. This lead to an error");
         }
-        byte[] diff = new byte[divisor.length];
-        int[] imin = new int[dividend.length], imax = new int[divisor.length], iDiff = new int[divisor.length];
-        for (int i = dividend.length - 1; i >= 0; i--) {
-            imin[i] = dividend[i] & 0xFF;
-            imax[i] = divisor[i] & 0xFF;
+        byte[] diff = new byte[minuend.length];
+        int[] imin = new int[subtrahend.length], imax = new int[minuend.length], iDiff = new int[minuend.length];
+        for (int i = subtrahend.length - 1; i >= 0; i--) {
+            imin[i] = subtrahend[i] & 0xFF;
+            imax[i] = minuend[i] & 0xFF;
             iDiff[i] = imax[i] - imin[i] + iDiff[i];
             if (iDiff[i] < 0) {
                 iDiff[i] += 255;

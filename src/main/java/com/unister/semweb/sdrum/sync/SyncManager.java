@@ -259,6 +259,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
      * buckets, the thread won't shut down.
      */
     public void shutdown() {
+        this.bucketContainer.shutdown();
         shutDownInitiated = true;
     }
 

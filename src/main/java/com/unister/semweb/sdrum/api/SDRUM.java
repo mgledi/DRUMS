@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,7 +171,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             throw new FileStorageException(ex);
         }
     }
-
+        
     /**
      * This method are for efficient update operations. Be careful ONLY update is provided. If the given array contains
      * element, not stored in the SDRUM they will be not respected.<br>
@@ -241,7 +242,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
                         HEADER_FILE_LOCK_RETRY);
                 throw new FileStorageException(ex);
             } catch (IOException ex) {
-                log.error("An exception occurred while trying to get obejects from the file {}.", filename, ex);
+                log.error("An exception occurred while trying to get objects from the file {}.", filename, ex);
                 throw new FileStorageException(ex);
             } finally {
                 if (indexFile != null) {
@@ -323,7 +324,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * @return Arraylist which contains the found data. Can be less than the number of given keys
      */
     public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[][] keys) throws IOException {
-        Arrays.sort(keys);
+    	SortMachine.quickSort(keys);
         List<Data> result = new ArrayList<Data>();
 
         IndexForHeaderIndexFile index = indexFile.getIndex(); // Pointer to the Index
@@ -367,6 +368,27 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         return result;
     }
 
+    /**
+     * Returns the number of elements in the database.
+     * @return
+     * @throws IOException 
+     * @throws FileLockException 
+     */
+    public long size() throws FileLockException, IOException
+    {
+    	long size = 0L;
+    	for (int bucketId = 0; bucketId < hashFunction.getNumberOfBuckets(); bucketId++) 
+    	{    		
+    		HeaderIndexFile<Data> headerIndexFile = 
+    			new HeaderIndexFile<Data>(
+    					databaseDirectory+"/"+hashFunction.getFilename(bucketId), 
+    					HEADER_FILE_LOCK_RETRY);
+    		size += headerIndexFile.getFilledUpFromContentStart() / prototype.getByteBufferSize();
+    		headerIndexFile.close();
+    	}
+    	return size;
+    }
+    
     /**
      * Traverses the given workingBuffer beginning at indexInChunk (this is a byte-offset).
      * 

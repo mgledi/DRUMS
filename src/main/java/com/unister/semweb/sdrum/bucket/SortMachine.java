@@ -118,4 +118,59 @@ public class SortMachine {
             A[j] = tmp;
         }
     }
+    
+    public static byte[][] quickSort(byte[][] keys)
+    {
+        quickSort(keys, 0, keys.length - 1);
+        return keys;
+    }
+    
+    public static byte[][] quickSort(byte[][] keys, int left, int right) {
+        if (left + 10 <= right) {
+            int partitionIndex = partition(keys, left, right);
+            quickSort(keys, left, partitionIndex - 1);
+            quickSort(keys, partitionIndex, right);
+        } else {
+            // Do an insertion sort on the subarray
+            insertionSort(keys, left, right);
+        }
+        return keys;
+    }
+ 
+    private static int partition(byte[][] keys, int left, int right) {
+        int i = left;
+        int j = right;
+        byte[] pivot = keys[(left + right) / 2];
+        while (i <= j) {
+            while (KeyUtils.compareKey(keys[i], pivot) < 0)
+                i++;
+            while (KeyUtils.compareKey(keys[j], pivot) > 0)
+                j--;
+
+            if (i <= j) {
+                swap(keys, i, j);
+                i++;
+                j--;
+            }
+        }        
+        return i;
+    }
+    
+    public static void swap(byte[][] keys, int i, int j) {
+        byte[] temp = keys[i];
+        keys[i] = keys[j];
+        keys[j] = temp;
+    }
+
+    private static void insertionSort(byte[][] keys, int left, int right) {
+        for (int p = left + 1; p <= right; p++) {
+            byte[] tmp = keys[p];
+            int j;
+            for (j = p; j > left && KeyUtils.compareKey(tmp, keys[j - 1]) == -1; j--)
+                keys[j] = keys[j - 1];
+            keys[j] = tmp;
+        }
+    }
+
+
 }

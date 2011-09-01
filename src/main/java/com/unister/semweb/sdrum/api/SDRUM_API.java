@@ -67,7 +67,7 @@ public class SDRUM_API {
                 databaseDirectory,
                 hashFunction,
                 prototype);
-        configurationFile.writeTo(CONFIG_FILE);
+        configurationFile.writeTo(databaseDirectory + "/" + CONFIG_FILE);
         return table;
     }
 
@@ -100,6 +100,10 @@ public class SDRUM_API {
         File databaseDirectoryFile = new File(databaseDirectory);
         if (databaseDirectoryFile.exists()) {
             deleteDatabaseFilesWithinDirectory(databaseDirectory);
+        }
+        else
+        {
+        	databaseDirectoryFile.mkdir();
         }
 
         // We store the configuration parameters within the given configuration file.

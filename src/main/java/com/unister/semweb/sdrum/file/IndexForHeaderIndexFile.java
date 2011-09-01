@@ -110,9 +110,9 @@ public class IndexForHeaderIndexFile {
             if(midElement == 0) {
                 return 0;
             }
+            comp1 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement - 1]);
             comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement]);
-            comp1 = KeyUtils.compareKey(maxKeyPerChunk[midElement - 1], key);
-            if (comp1 < 0 && comp2 <= 0) {
+            if (comp1 > 0 && comp2 <= 0) {
                 return midElement;
             } else if (comp1 > 0) {
                 minElement = midElement + 1;
@@ -135,5 +135,9 @@ public class IndexForHeaderIndexFile {
         filledUpTo = Math.max(filledUpTo, chunkIdx);
         indexBuffer.position(chunkIdx * keySize);
         indexBuffer.put(largestKeyInChunk);
+    }
+    
+    private long toLong(byte[] b) {
+        return ByteBuffer.wrap(b).getLong();
     }
 }

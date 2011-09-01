@@ -25,7 +25,7 @@ public class UpdateOnlySynchronizerTest {
         // ################ creating file with initial data
         String dbFileName = "/tmp/test.db";
         new File(dbFileName).delete();
-        DummyKVStorable[] linkDataList = new DummyKVStorable[2000];
+        DummyKVStorable[] linkDataList = new DummyKVStorable[20400];
         for (int i = 0; i < linkDataList.length; i++) {
             linkDataList[i] = new DummyKVStorable();
             linkDataList[i].setKey(i*1 + 1);
@@ -40,8 +40,10 @@ public class UpdateOnlySynchronizerTest {
         toUpdate[2].setTimestamp(2300000);
         toUpdate[1] = linkDataList[100];
         toUpdate[1].setTimestamp(2300000);
-        toUpdate[0] = linkDataList[90];
+        toUpdate[0] = linkDataList[9000];
         toUpdate[0].setTimestamp(2300000);
+//        toUpdate[3] = linkDataList[11190];
+//        toUpdate[3].setTimestamp(234567);
         
         SortMachine.quickSort(toUpdate);
         

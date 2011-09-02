@@ -4,6 +4,9 @@ import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
@@ -14,6 +17,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * @author m.gleditzsch
  */
 public class BucketContainer<Data extends AbstractKVStorable<Data>> {
+    private static final Logger log = LoggerFactory.getLogger(BucketContainer.class);
     /**
      * array containing all {@link Bucket}s. The index of the bucket in this array should also be the bucketId of the
      * {@link Bucket}
@@ -189,5 +193,6 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
 
     public void shutdown() {
         this.shutDownInitiated = true;
+        log.info("Shutting down the bucket container.");
     }
 }

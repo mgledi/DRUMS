@@ -14,4 +14,5 @@ public class GlobalParameters {
 
     /** File extension of the database files that store the {@link AbstractKVStorable}. */
     public static final String linkDataFileExtension = ".db";
+    
 }

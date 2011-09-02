@@ -100,7 +100,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
         BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(allowedBucketsInBuffer);
         bufferThreads = new ThreadPoolExecutor(numberOfBufferThreads, numberOfBufferThreads, Integer.MAX_VALUE,
                 TimeUnit.DAYS, queue);
-        this.setName("BufferThread:FileStorage");
+        this.setName("SyncManager:FileStorage");
 
         numberOfElementsInserted = new AtomicLong();
         numberOfElementsUpdated = new AtomicLong();
@@ -159,6 +159,9 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     private void synchronizeBucketsWithHDD() {
         // run over all buckets
         for (int i = 0; i < numberOfBuckets; i++) {
+            if (shutDownInitiated) {
+                log.info("Last synchronizing of bucket {}", i);
+            }
             Bucket<Data> oldBucket = bucketContainer.buckets[i];
 
             // if the bucket is empty, then do nothing
@@ -242,6 +245,8 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
                 rememberId = oldBucket.getBucketId();
             }
         }
+
+        // TODO Implement here a threshold. Only if the threshold is reached a bucket should be synchronized!!!!
         return rememberId;
     }
 
@@ -260,6 +265,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
      */
     public void shutdown() {
         this.bucketContainer.shutdown();
+        log.info("Shuting down the sync manager");
         shutDownInitiated = true;
     }
 

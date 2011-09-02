@@ -1,3 +1,13 @@
+Version 0.1.3-SNAPSHOT
+  - Some bugs were fixed (shutdown, inconsistency)
+  
+Version 0.1.2-SNAPSHOT
+  - the key is now represented by an array of bytes
+  
+Version 0.1.1-SNAPSHOT
+  - refinement of the API
+  - the size of the bucket is now configurable by the AbstractHashFunction 
+  
 Version 0.1.0-SNAPSHOT
   - The file storage was split into a base, named SDRUM, and the classes for the CrawlingFrontier
   - RangeHashFunction was added: takes the function values from a file

@@ -1,5 +1,7 @@
 package com.unister.semweb.sdrum.utils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -262,12 +264,36 @@ public class KeyUtils {
         return sb.toString();
     }
 
-    public static void main(String[] args) throws Exception {
-        long l1 = -500;
-        long l2 = -100;
-        byte[] b1 =ByteBuffer.allocate(8).putLong(l1).array(); //{0, 0, 0, 100};
-        byte[] b2 =ByteBuffer.allocate(8).putLong(l2).array(); //{0, 20, 20, 50};
-        System.out.println(generateHashFunction(l1, l2, 10, 12, ".db", "/data/frontier/db"));
-        System.out.println(generateHashFunction(b1, b2, 10, 12, ".db", "/data/frontier/db"));
+    public static void generateHashFunctionBigInteger(long min, long max, int buckets, int bucketSize, String suffix, String prefix){
+        BigDecimal bigMin = new BigDecimal(min);
+        BigDecimal bigMax = new BigDecimal(max);
+        BigDecimal bigBuckets = new BigDecimal(buckets);
+        
+        BigDecimal bigMaxMinDifference = bigMax.subtract(bigMin);
+        BigDecimal bigRange = bigMaxMinDifference.divide(bigBuckets, RoundingMode.CEILING);
+        
+        BigDecimal bigVal = new BigDecimal(bigMin.toBigInteger());
+        
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < buckets; ++i) {
+            bigVal = bigVal.add(bigRange);
+            if (bigVal.compareTo(bigMax) == 0 || bigVal.compareTo(bigMax) == 1) {
+                bigVal = new BigDecimal(bigMax.toBigInteger());
+            }
+            
+            byte[] bval = ByteBuffer.allocate(8).putLong(bigVal.longValue()).array();
+            
+            for (int j = 0; j < bval.length; j++) {
+                int k = bval[j] & 0xff;
+                sb.append(k + "\t");
+            }
+            sb.append(prefix + i + suffix + "\t" + bucketSize + "\n");
+        }
+        
+        System.out.println(sb.toString());
     }
+    
+    public static void main(String[] args) {
+		generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 1024, 10000, ".db", "");
+	}
 }

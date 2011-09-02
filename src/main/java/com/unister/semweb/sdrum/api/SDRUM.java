@@ -195,7 +195,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         }
 
         for (IntObjectCursor<ArrayList<Data>> entry : bucketDataMapping) {
-            UpdateOnlySynchronizer<Data> synchronizer = new UpdateOnlySynchronizer<Data>(
+            UpdateOnlySynchronizer<Data> synchronizer = new UpdateOnlySynchronizer<Data>(this.databaseDirectory + "/" +
                     hashFunction.getFilename(entry.key), prototype);
             @SuppressWarnings("unchecked")
             Data[] toUpdate = (Data[]) entry.value.toArray(new AbstractKVStorable[entry.value.size()]);

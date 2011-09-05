@@ -171,7 +171,31 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             throw new FileStorageException(ex);
         }
     }
-        
+
+    
+    /**
+     * Adds or updates the given data expressed as a Map to the file storage. If an error occurs a FileStorageException is thrown. The call
+     * possibly blocks if all memory buckets are full. If the current thread is interrupted then an
+     * {@link InterruptedException} will be thrown.
+     * 
+     * @param toPersist
+     *            data to insert or update
+     * @throws FileStorageException
+     *             if an error occurs
+     * @throws InterruptedException
+     *             if the call blocks and the current thread is interrupted
+     */
+    public <K , V> void insertOrMerge(Map<K, V> toPersist) throws FileStorageException, InterruptedException {    	    	
+    	try {
+    		bucketContainer.addToCache(toPersist, prototype);
+    	} catch (BucketContainerException ex) {
+    		// This exception can theoretically never be thrown because the hash function should map all keys to a
+    		// bucket.
+    		throw new FileStorageException(ex);
+    	}
+    }
+
+    
     /**
      * This method are for efficient update operations. Be careful ONLY update is provided. If the given array contains
      * element, not stored in the SDRUM they will be not respected.<br>
@@ -409,10 +433,16 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         int maxElement = numberOfEntries - 1;
         int midElement;
         byte comp;
+        byte[] tempKey = new byte[keySize];
+        byte[] workingBufferArray = workingBuffer.array();
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
-            indexInChunk = midElement * elementSize;
-            comp = KeyUtils.compareKey(key, workingBuffer.array(),prototype.key.length);
+            indexInChunk = midElement * elementSize;            
+            for (int i = indexInChunk; i < indexInChunk + keySize; i++)
+            {
+            	tempKey[i - indexInChunk] = workingBufferArray[i]; 
+            }
+            comp = KeyUtils.compareKey(key, tempKey, prototype.key.length);
             if (comp == 0) {
                 return indexInChunk;
             } else if (comp < 0 ) {

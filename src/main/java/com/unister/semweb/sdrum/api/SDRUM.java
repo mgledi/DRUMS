@@ -366,7 +366,8 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             if (actualChunkIdx != lastChunkIdx) {
                 // if we have read a chunk
                 if (oldChunkOffset > -1) {
-                    indexFile.write(oldChunkOffset, workingBuffer);
+//                    indexFile.write(oldChunkOffset, workingBuffer);
+                	indexFile.read(oldChunkOffset, workingBuffer);
                     indexInChunk = 0;
                 }
                 // read a new part to the readBuffer

@@ -18,6 +18,7 @@ import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 
 public class SynchronizerTest {
@@ -116,6 +117,43 @@ public class SynchronizerTest {
 		DummyKVStorable[] readLinkData = readInFile(testFilename);
 		boolean areEqual = TestUtils.areEqual(originalData, readLinkData);
 		Assert.assertEquals(true, areEqual);		
+	}
+	
+	@Test
+	public void addSeveralEntriesNonEmptyFileGreaterChunkSize() throws Exception {
+	    int elementsInChunk = 85000;
+	    DummyKVStorable[] firstAdd = new DummyKVStorable[elementsInChunk];
+	    firstAdd[0] = createTestDate(1);
+	    
+	    for(int i = 1; i < elementsInChunk; i++) {
+	        firstAdd[i] = createTestDate(i + 82000);
+	    }
+	    
+        Arrays.sort(firstAdd);
+
+        Synchronizer<DummyKVStorable> synchronizer = new Synchronizer<DummyKVStorable>(testFilename, new DummyKVStorable());
+        synchronizer.upsert(firstAdd);
+        
+        DummyKVStorable[] secondAdd = new DummyKVStorable[81500];
+        for(int i = 0; i < 81500; i++) {
+            secondAdd[i] = createTestDate(i + 2);
+        }
+        
+        Arrays.sort(secondAdd);
+        synchronizer.upsert(secondAdd);
+        
+        DummyKVStorable[] originalData = (DummyKVStorable[]) TestUtils.addAll(firstAdd, secondAdd);
+        Arrays.sort(originalData);
+                
+        DummyKVStorable[] readLinkData = readInFile(testFilename);
+        boolean areEqual = TestUtils.areEqual(originalData, readLinkData);
+        Assert.assertEquals(true, areEqual);        
+	}
+	
+	private DummyKVStorable createTestDate(long key) {
+	    DummyKVStorable newDate = new DummyKVStorable();
+	    newDate.key = KeyUtils.transformFromLong(key);
+	    return newDate;
 	}
 	
 	@Test

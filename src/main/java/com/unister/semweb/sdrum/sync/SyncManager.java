@@ -159,14 +159,14 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     private void synchronizeBucketsWithHDD() {
         // run over all buckets
         for (int i = 0; i < numberOfBuckets; i++) {
-            if (shutDownInitiated) {
-                log.info("Last synchronizing of bucket {}", i);
-            }
             Bucket<Data> oldBucket = bucketContainer.buckets[i];
 
             // if the bucket is empty, then do nothing
             if (oldBucket.elementsInBucket == 0) {
                 continue;
+            }
+            if (shutDownInitiated) {
+                log.info("Last synchronizing of bucket {}", i);
             }
             // if the bucket is full, or the shutdown was initiated, then try to synchronize the buckets
             if (oldBucket.elementsInBucket >= oldBucket.getAllowedBucketSize() || shutDownInitiated) {
@@ -193,6 +193,8 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
      * 
      * @param bucketId
      */
+    
+    // TODO Must this really be synchronized???
     private boolean startNewThread(int bucketId) {
         // bucket is in process or doesnt exist
         if (actualProcessingBucketIds.contains(bucketId) || bucketId == -1) {
@@ -208,7 +210,6 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             return false;
         }
 
-        // Is this really right?
         // BlockingQueue is full
         if (bufferThreads.getQueue().size() == allowedBucketsInBuffer) {
             log.debug("Can't add BufferThread. Too many threads in queue");

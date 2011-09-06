@@ -3,12 +3,12 @@ package com.unister.semweb.sdrum.utils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
-import com.unister.semweb.sdrum.GlobalParameters;
-import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KeyUtils {
+    private static final Logger log = LoggerFactory.getLogger(KeyUtils.class);
 
     /** transforms the given array of longs to an array of bytearrays */
     public static byte[][] transformToByteArray(long[] l) {
@@ -20,6 +20,24 @@ public class KeyUtils {
             ByteBuffer.wrap(b[i]).putLong(l[i]);
         }
         return b;
+    }
+    
+    /**
+     * Transforms the given byte array (8 bytes) to the corresponding long value.
+     * @param bytes
+     * @return
+     */
+    public static long transformFromByte(byte[] bytes) {
+        if (bytes.length != 8) return 0;
+        ByteBuffer converter = ByteBuffer.wrap(bytes);
+        return converter.getLong();
+    }
+    
+    /** Transforms the given long value into a byte array.*/
+    public static byte[] transformFromLong(long toTransform) {
+        ByteBuffer converter = ByteBuffer.allocate(8);
+        converter.putLong(toTransform);
+        return converter.array();
     }
 
     /**
@@ -90,6 +108,7 @@ public class KeyUtils {
      *         0 if key1 == key2<br>
      *         1 if key1 > key2
      */
+    //TODO If the given keys have different length the function will not give the right result.
     public static byte compareKey(byte[] key1, byte[] key2, int length) {
         int minLength = Math.min(key1.length, key2.length);
         for (int k = 0; k < minLength; k++) {
@@ -99,6 +118,9 @@ public class KeyUtils {
                 }
                 continue;
             }
+            
+//            byte k1 = key1[k];
+//            byte k2 = key2[k];
             int k1 = key1[k] & 0xFF;
             int k2 = key2[k] & 0xFF;
             if (k1 < k2) {
@@ -109,6 +131,8 @@ public class KeyUtils {
             }
 
         }
+        
+        log.error("uncomparable values compared");
         if (key1.length < key2.length) {
             return -1;
         } else if (key1.length > key2.length) {
@@ -216,6 +240,16 @@ public class KeyUtils {
         for (int i = signed.length - 1; i >= 0; i--)
             unsigned[i] = signed[i] & 0xFF;
         return unsigned;
+    }
+    
+    /** Makes a string representation from the key*/
+    public static String transform(byte[] key) {
+        StringBuilder result = new StringBuilder();
+        for(int i = 0; i < key.length; i++) {
+            result.append(key[i]);
+            result.append(' ');
+        }
+        return result.toString();
     }
 
     /**

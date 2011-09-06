@@ -1,6 +1,7 @@
 package com.unister.semweb.sdrum;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -262,14 +263,16 @@ public class TestUtils {
     }
 
     /** merges the given two arrays to one */
-    public static Object[] addAll(Object[] o1, Object[] o2) {
-        Object[] all = new Object[o1.length + o2.length];
+    public static <T> T[] addAll(T[] o1, T[] o2) {
+        T[] all = (T[]) Array.newInstance(o1.getClass().getComponentType(), o1.length + o2.length);
         int k = 0;
-        for (Object d : o1) {
+        for (T d : o1) {
             all[k] = d;
+            k++;
         }
-        for (Object d : o2) {
+        for (T d : o2) {
             all[k] = d;
+            k++;
         }
         return all;
     }

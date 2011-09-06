@@ -196,10 +196,10 @@ public class HeaderIndexFileTest {
     
     @Test
     public void test() throws Throwable {
-        HeaderIndexFile hif = new HeaderIndexFile("/test.db", AccessMode.READ_WRITE, 1, 8, 26);
+        HeaderIndexFile hif = new HeaderIndexFile("/tmp/test.db", AccessMode.READ_WRITE, 1, 8, 26);
         hif.delete();
         
-        File osFile = new File("/test.db");
+        File osFile = new File("/tmp/test.db");
         osFile.createNewFile();
         RandomAccessFile raf = new RandomAccessFile(osFile, "rw");
         FileChannel channel = raf.getChannel();

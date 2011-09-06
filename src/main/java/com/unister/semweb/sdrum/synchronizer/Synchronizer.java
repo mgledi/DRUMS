@@ -116,6 +116,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
             // We take one AbstractKVStorable from the chunk. The chunk will be automatically incremented
             int indexOfToAdd = 0;
             byte[] dateFromDisk = getFromDisk();
+
             int keyLength = prototype.key.length;
             // if the date from disk is null, set key to 0
 
@@ -125,6 +126,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
                 Data dateFromBucket = toAdd[indexOfToAdd];
 
                 compare = KeyUtils.compareKey(dateFromBucket.key, dateFromDisk, keyLength);
+
                 /* insert element from bucket */
                 if (compare == -1) {
                     write(dateFromBucket.toByteBuffer().array(), false); // write date

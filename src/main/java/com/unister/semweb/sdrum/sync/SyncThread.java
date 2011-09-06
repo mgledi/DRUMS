@@ -73,7 +73,7 @@ public class SyncThread<Data extends AbstractKVStorable<Data>> implements Runnab
             buffer.sumUpInserted(synchronizer.getNumberOfInsertedEntries());
             buffer.sumUpUpdated(synchronizer.getNumberOfUpdatedEntries());
         } catch (IOException ex) {
-            log.error("An error occurred during synchronizing. Synchronizing thread stopped! Some urls were lost", ex);
+            log.error("An error occurred during synchronizing. Synchronizing thread stopped! Some data were lost.", ex);
             actualProcessingBucketIds.remove(bucket.getBucketId());
         }
     }

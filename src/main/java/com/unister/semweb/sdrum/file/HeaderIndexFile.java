@@ -188,7 +188,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
         offset += contentStart;
         sourceBuffer.position(0);
         if (offset + sourceBuffer.limit() > contentEnd) {
-            logger.warn("Filesize exceeded (contendEnd: {},size: {})", contentEnd, size);
+            logger.debug("Filesize exceeded (contendEnd: {},size: {})", contentEnd, size);
             if (AUTO_ENLARGE) {
                 this.enlargeFile();
             } else {
@@ -263,7 +263,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
             logger.debug(errorMessage);
             throw new IOException(errorMessage);
         } else if (offset + length > filledUpTo) {
-            logger.debug("Tried to read data over {} in File " + osFile.getName() + ". Limit will be setted to {}",
+            logger.debug("Tried to read data over {} in File " + osFile.getName() + ". Limit will be set to {}",
                     filledUpTo, destBuffer.limit());
             destBuffer.limit((int) (filledUpTo - offset));
         }

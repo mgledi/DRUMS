@@ -69,13 +69,10 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
     @Override
     public boolean hasNext() {
         if (readBuffer != null && readBuffer.remaining() != 0 ) {
-//            System.out.println("bytes in buffer remaining");
             return true;
         } else if (actualFile != null && actualFileOffset < actualFile.getFilledUpFromContentStart()) {
-//            System.out.println("bytes in file remaining " + actualFileOffset + " " + actualFile.getFilledUpFromContentStart());
             return true;
         } else if (actualBucketId < numberOfBuckets-1) { // TODO: this is weak, there could be empty buckets
-//            System.out.println("files remaining");
             return true;
         }
         

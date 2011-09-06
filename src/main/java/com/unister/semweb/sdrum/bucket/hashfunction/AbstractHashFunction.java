@@ -58,7 +58,7 @@ public abstract class AbstractHashFunction implements Serializable {
     }
 
     /**
-     * this function estimates the optimal bucket size for the given bucket-id from the already stored file. The given
+     * This function estimates the optimal bucket size for the given bucket-id from the already stored file. The given
      * threshold shows how many bytes relative to the already store bytes should be hold in memory.
      * 
      * @param threshold

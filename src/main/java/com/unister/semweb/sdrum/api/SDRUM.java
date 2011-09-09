@@ -185,15 +185,15 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * @throws InterruptedException
      *             if the call blocks and the current thread is interrupted
      */
-    public <K , V> void insertOrMerge(Map<K, V> toPersist) throws FileStorageException, InterruptedException {    	    	
-    	try {
-    		bucketContainer.addToCache(toPersist, prototype);
-    	} catch (BucketContainerException ex) {
-    		// This exception can theoretically never be thrown because the hash function should map all keys to a
-    		// bucket.
-    		throw new FileStorageException(ex);
-    	}
-    }
+//    public <K , V> void insertOrMerge(Map<K, V> toPersist) throws FileStorageException, InterruptedException {    	    	
+//    	try {
+//    		bucketContainer.addToCache(toPersist, prototype);
+//    	} catch (BucketContainerException ex) {
+//    		// This exception can theoretically never be thrown because the hash function should map all keys to a
+//    		// bucket.
+//    		throw new FileStorageException(ex);
+//    	}
+//    }
 
     
     /**

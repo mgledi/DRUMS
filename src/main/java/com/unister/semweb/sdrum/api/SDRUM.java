@@ -435,7 +435,13 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         int midElement;
         byte comp;
         byte[] tempKey = new byte[keySize];
-        byte[] workingBufferArray = workingBuffer.array();
+        
+        //TODO Examine this.
+        /* ============================================= */
+        // Bug fix suggestion of Martin (2011/09/07)
+        byte[] workingBufferArray = Arrays.copyOfRange(workingBuffer.array(), indexInChunk, workingBuffer.array().length);
+//        byte[] workingBufferArray = workingBuffer.array();
+        // ============================================= */
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
             indexInChunk = midElement * elementSize;            

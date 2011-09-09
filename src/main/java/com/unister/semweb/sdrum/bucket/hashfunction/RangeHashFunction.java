@@ -83,7 +83,6 @@ public class RangeHashFunction extends AbstractHashFunction {
      */
     public RangeHashFunction(File file) throws IOException {
         this.hashFunctionFile = file;
-        String line;
         FileReader configFile = new FileReader(file);
         List<String> readData = IOUtils.readLines(configFile);
 

@@ -193,8 +193,6 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
      * 
      * @param bucketId
      */
-    
-    // TODO Must this really be synchronized???
     private boolean startNewThread(int bucketId) {
         // bucket is in process or doesnt exist
         if (actualProcessingBucketIds.contains(bucketId) || bucketId == -1) {

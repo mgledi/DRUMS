@@ -32,6 +32,7 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
 
     /** prototype of type Data (extending {@link AbstractKVStorable}) for instantiating correct arrays */
     private Data prototype;
+    
     /**
      * Constructor. Needs to know the id of the {@link Bucket} and the maximum size of the {@link Bucket}.
      * 
@@ -113,6 +114,7 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
         for (int i = 0; i < elementsInBucket; i++) {
             data[i] = prototype.fromByteBuffer(ByteBuffer.wrap(backend[i]));
         }
+
         SortMachine.quickSort(data);
         return (Data[]) data;
     }

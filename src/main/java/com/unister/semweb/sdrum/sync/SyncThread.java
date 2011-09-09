@@ -33,7 +33,7 @@ public class SyncThread<Data extends AbstractKVStorable<Data>> implements Runnab
 
     /** The buffer that created this thread. */
     private SyncManager<Data> buffer;
-
+    
     /**
      * Constructor. The given {@link Bucket} will be processed.
      * 
@@ -58,6 +58,7 @@ public class SyncThread<Data extends AbstractKVStorable<Data>> implements Runnab
      */
     public void run() {
         Data[] linkData = bucket.getBackend(); // get all LinkData
+        
         long startTime = System.currentTimeMillis(); // remember the, time when synchronizing is started (for logging)
 
         log.debug("Start to synchronize {} objects.", linkData.length);
@@ -73,7 +74,7 @@ public class SyncThread<Data extends AbstractKVStorable<Data>> implements Runnab
             buffer.sumUpInserted(synchronizer.getNumberOfInsertedEntries());
             buffer.sumUpUpdated(synchronizer.getNumberOfUpdatedEntries());
         } catch (IOException ex) {
-            log.error("An error occurred during synchronizing. Synchronizing thread stopped! Some data were lost.", ex);
+            log.error("An error occurred during synchronizing. Synchronizing thread stopped! Some urls were lost", ex);
             actualProcessingBucketIds.remove(bucket.getBucketId());
         }
     }

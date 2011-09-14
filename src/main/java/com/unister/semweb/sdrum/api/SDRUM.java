@@ -162,7 +162,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * @throws InterruptedException
      *             if the call blocks and the current thread is interrupted
      */
-    public void insertOrMerge(Data[] toPersist) throws FileStorageException, InterruptedException {
+    public void insertOrMerge(Data... toPersist) throws FileStorageException, InterruptedException {
         try {
             bucketContainer.addToCache(toPersist);
         } catch (BucketContainerException ex) {
@@ -206,7 +206,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * 
      * @throws IOException
      */
-    public void update(Data[] toPersist) throws IOException {
+    public void update(Data... toPersist) throws IOException {
         // ############ reorder data
         IntObjectOpenHashMap<ArrayList<Data>> bucketDataMapping = new IntObjectOpenHashMap<ArrayList<Data>>();
         int bucketId;
@@ -347,7 +347,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      *            the keys to search for
      * @return Arraylist which contains the found data. Can be less than the number of given keys
      */
-    public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[][] keys) throws IOException {
+    public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[]... keys) throws IOException {
     	SortMachine.quickSort(keys);
         List<Data> result = new ArrayList<Data>();
 

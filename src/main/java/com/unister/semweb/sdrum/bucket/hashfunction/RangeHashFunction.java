@@ -115,7 +115,6 @@ public class RangeHashFunction extends AbstractHashFunction {
                     byteOffset++;
                 }
             }
-            System.out.println(Arrays.toString(maxRangeValues[i]));
             filenames[i] = Aline[keyComposition.length];
             bucketSizes[i] = Integer.parseInt(Aline[keyComposition.length + 1]); // TODO: adapt file
         }

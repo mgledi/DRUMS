@@ -293,7 +293,7 @@ public class KeyUtils {
                 int k = val[j] & 0xff;
                 sb.append(k + "\t");
             }
-            sb.append(prefix + i + suffix + "\t" + bucketSize + "\n");
+            sb.append(prefix + buckets[i] + suffix + "\t" + bucketSize + "\n");
         }
         return sb.toString();
     }

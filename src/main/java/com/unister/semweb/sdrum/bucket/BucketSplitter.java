@@ -14,31 +14,46 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * This class manages the splitting of a bucket. It would be possible to implement all functionality of this class in a
  * static context. But for reasons of inheritance, the implementation is done in the classic way. The splitting should
  * be done by the following steps<br>
- * <li>determine new maxRangeValues <li>adapt HashFunction or generate new one <li>generate files and move elements
- * according to the old and new HashFunction <li>store the HashFunction
+ * <li>determine new maxRangeValues <br> <li>adapt HashFunction or generate a new one <br> <li>generate files and move
+ * elements according to the old and new HashFunction <br> <li>store the HashFunction
  * 
  * @author m.gleditzsch
  */
 //TODO: remember KeyComposition in RangeHashFunction
 public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
 
+    /** the directory of the database */
     String databaseDir;
+    /** the file to split */
     HeaderIndexFile<Data> sourceFile;
+    /** the old HashFunction */
     RangeHashFunction oldHashFunction;
+    /** the new HashFunction */
     RangeHashFunction newHashFunction;
 
+    /**
+     * Instantiates a new BucketSplitter
+     * 
+     * @param databaseDir
+     * @param hashFunction
+     * @param bucketId
+     * @param numberOfPartitions
+     * @throws IOException
+     * @throws FileLockException
+     */
     public BucketSplitter(String databaseDir, RangeHashFunction hashFunction, int bucketId, int numberOfPartitions)
             throws IOException, FileLockException {
         this.oldHashFunction = hashFunction;
         this.databaseDir = databaseDir;
+        // open the file (READ_ONLY)
         String fileName = hashFunction.getFilename(bucketId);
-        sourceFile = new HeaderIndexFile<Data>(databaseDir + "/" + fileName, 100);
+        this.sourceFile = new HeaderIndexFile<Data>(databaseDir + "/" + fileName, 100);
 
         // determine new thresholds
         byte[][] keysToInsert = determineNewLargestElements(numberOfPartitions);
 
         // adapt HashFunction
-        newHashFunction = generateNewHashFunction(keysToInsert, bucketId);
+        this.newHashFunction = generateNewHashFunction(keysToInsert, bucketId);
 
         // move elements to files
         this.moveElements(sourceFile, newHashFunction, databaseDir);
@@ -47,30 +62,42 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         newHashFunction.writeToFile();
     }
 
-    protected void moveElements(HeaderIndexFile<Data> source, RangeHashFunction targetHashfunction, String workingDir) throws IOException, FileLockException {
+    /**
+     * moves elements from the source file to new smaller files. The filenames are generated automatically
+     * 
+     * @param source
+     * @param targetHashfunction
+     * @param workingDir
+     * @throws IOException
+     * @throws FileLockException
+     */
+    protected void moveElements(HeaderIndexFile<Data> source, RangeHashFunction targetHashfunction, String workingDir)
+            throws IOException, FileLockException {
         ByteBuffer elem = ByteBuffer.allocate(source.getElementSize());
-        HeaderIndexFile<Data> tmp = null;        
+        HeaderIndexFile<Data> tmp = null;
         long offset = 0, key;
         int oldBucket = -1, newBucket;
-        while(offset < source.getFilledUpFromContentStart()) {
+        while (offset < source.getFilledUpFromContentStart()) {
             source.read(offset, elem);
             elem.rewind();
             key = elem.getLong();
-            
+
             newBucket = targetHashfunction.getBucketId(key);
-            if(newBucket != oldBucket) {
-                if(tmp != null) {
+            if (newBucket != oldBucket) {
+                if (tmp != null) {
                     tmp.close();
                 }
                 String fileName = workingDir + "/" + targetHashfunction.getFilename(newBucket);
-                tmp = new HeaderIndexFile<Data>(fileName, AccessMode.READ_WRITE, 100, targetHashfunction.keySize, source.getElementSize());
+                tmp = new HeaderIndexFile<Data>(fileName, AccessMode.READ_WRITE, 100, targetHashfunction.keySize,
+                        source.getElementSize());
                 oldBucket = newBucket;
             }
-            
+
             tmp.append(elem);
             offset += elem.limit();
         }
-        if(tmp != null) tmp.close();
+        if (tmp != null)
+            tmp.close();
     }
 
     /**
@@ -110,9 +137,9 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         int[] newBucketSizes = new int[newSize];
         String[] newFileNames = new String[newSize];
 
-        int k=0; 
+        int k = 0;
         for (int i = 0; i < oldHashFunction.getNumberOfBuckets(); i++) {
-            if( i != bucketId) {
+            if (i != bucketId) {
                 newMaxRangeValues[k] = oldHashFunction.getMaxRange(i);
                 newBucketSizes[k] = oldHashFunction.getBucketSize(i);
                 newFileNames[k] = oldHashFunction.getFilename(i);
@@ -160,11 +187,11 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
             } else {
                 offset = ((i + 1) * elementsPerPart - 1) * sourceFile.getElementSize();
             }
-            
+
             ByteBuffer keyBuffer = ByteBuffer.allocate(oldHashFunction.keySize);
             sourceFile.read(offset, keyBuffer);
             keyBuffer.position(0);
-            
+
             keysToInsert[i] = keyBuffer.array();
         }
         return keysToInsert;

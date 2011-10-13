@@ -2,8 +2,8 @@ package com.unister.semweb.sdrum.bucket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
+import com.carrotsearch.hppc.IntArrayList;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
@@ -23,14 +23,23 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
 
     /** the directory of the database */
-    String databaseDir;
+    protected String databaseDir;
+    
     /** the file to split */
-    HeaderIndexFile<Data> sourceFile;
+    protected HeaderIndexFile<Data> sourceFile;
+    
     /** the old HashFunction */
-    RangeHashFunction oldHashFunction;
+    protected RangeHashFunction oldHashFunction;
+    
     /** the new HashFunction */
-    RangeHashFunction newHashFunction;
+    protected RangeHashFunction newHashFunction;
 
+    /** An arraylist containing the new bucketIds */
+    protected IntArrayList newBucketIds;
+    
+    /** the old bucket-id */
+    protected int oldBucketId;
+    
     /**
      * Instantiates a new BucketSplitter
      * 
@@ -45,6 +54,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
             throws IOException, FileLockException {
         this.oldHashFunction = hashFunction;
         this.databaseDir = databaseDir;
+        this.oldBucketId = bucketId;
         // open the file (READ_ONLY)
         String fileName = hashFunction.getFilename(bucketId);
         this.sourceFile = new HeaderIndexFile<Data>(databaseDir + "/" + fileName, 100);
@@ -61,6 +71,10 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         // store hashfunction
         newHashFunction.writeToFile();
     }
+    /** Dummy Constructor with no function */
+    public BucketSplitter() {
+        // TODO Auto-generated constructor stub
+    }
 
     /**
      * moves elements from the source file to new smaller files. The filenames are generated automatically
@@ -75,6 +89,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
             throws IOException, FileLockException {
         ByteBuffer elem = ByteBuffer.allocate(source.getElementSize());
         HeaderIndexFile<Data> tmp = null;
+        newBucketIds = new IntArrayList();
         long offset = 0, key;
         int oldBucket = -1, newBucket;
         while (offset < source.getFilledUpFromContentStart()) {
@@ -84,6 +99,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
 
             newBucket = targetHashfunction.getBucketId(key);
             if (newBucket != oldBucket) {
+                this.newBucketIds.add(newBucket);
                 if (tmp != null) {
                     tmp.close();
                 }
@@ -153,7 +169,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
             newBucketSizes[i] = (int) (0.01 * elementsPerPart);
             newFileNames[i] = generateFileName(k, oldHashFunction.getFilename(bucketId));
         }
-        System.out.println(Arrays.toString(newFileNames));
+
         return new RangeHashFunction(
                 newMaxRangeValues,
                 newFileNames,

@@ -48,6 +48,9 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  */
 public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends AbstractHeaderFile {
 
+    /** the initial size by which the file is enlarged */
+    public static int INITIAL_INCREMENT_SIZE = 16*1024*1024;
+    
     /** the size of the index in bytes */
     public static final long MAX_INDEX_SIZE_IN_BYTES = 512 * 1024; // 512 kb
 
@@ -78,7 +81,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     protected int readChunkSize;
 
     /** a constant size, by which the file will be resized in byte */
-    protected int incrementSize = 16 * 1024 * 1024;
+    protected int incrementSize = INITIAL_INCREMENT_SIZE;
 
     /** a mappedByteBuffer to the index-region. So changes can be made directly */
     protected MappedByteBuffer indexBuffer;

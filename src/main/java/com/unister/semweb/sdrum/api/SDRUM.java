@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +77,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
 
     /** Size of the key of a {@link Data} for fast access. */
     private int keySize;
+
     /**
      * A private constructor.
      * 
@@ -103,10 +103,10 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         this.keySize = prototype.key.length;
         this.databaseDirectory = databaseDirectory;
         AbstractHashFunction.INITIAL_BUCKET_SIZE = sizeOfMemoryBuckets;
+        this.hashFunction = hashFunction;
 
         if (accessMode == AccessMode.READ_WRITE) {
             this.sizeOfPreQueue = preQueueSize;
-            this.hashFunction = hashFunction;
 
             buckets = new Bucket[hashFunction.getNumberOfBuckets()];
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
@@ -172,9 +172,9 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         }
     }
 
-    
     /**
-     * Adds or updates the given data expressed as a Map to the file storage. If an error occurs a FileStorageException is thrown. The call
+     * Adds or updates the given data expressed as a Map to the file storage. If an error occurs a FileStorageException
+     * is thrown. The call
      * possibly blocks if all memory buckets are full. If the current thread is interrupted then an
      * {@link InterruptedException} will be thrown.
      * 
@@ -185,17 +185,16 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * @throws InterruptedException
      *             if the call blocks and the current thread is interrupted
      */
-//    public <K , V> void insertOrMerge(Map<K, V> toPersist) throws FileStorageException, InterruptedException {    	    	
-//    	try {
-//    		bucketContainer.addToCache(toPersist, prototype);
-//    	} catch (BucketContainerException ex) {
-//    		// This exception can theoretically never be thrown because the hash function should map all keys to a
-//    		// bucket.
-//    		throw new FileStorageException(ex);
-//    	}
-//    }
+    // public <K , V> void insertOrMerge(Map<K, V> toPersist) throws FileStorageException, InterruptedException {
+    // try {
+    // bucketContainer.addToCache(toPersist, prototype);
+    // } catch (BucketContainerException ex) {
+    // // This exception can theoretically never be thrown because the hash function should map all keys to a
+    // // bucket.
+    // throw new FileStorageException(ex);
+    // }
+    // }
 
-    
     /**
      * This method are for efficient update operations. Be careful ONLY update is provided. If the given array contains
      * element, not stored in the SDRUM they will be not respected.<br>
@@ -227,8 +226,10 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             synchronizer.upsert(toUpdate);
         }
     }
+
     /**
-     * Takes a list of long-keys and transform them byte[]-keys. Overloads <code>public List<Data> select(byte[]... keys)</code>
+     * Takes a list of long-keys and transform them byte[]-keys. Overloads
+     * <code>public List<Data> select(byte[]... keys)</code>
      * 
      * @param keys
      * @return
@@ -238,6 +239,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         byte[][] bKeys = KeyUtils.transformToByteArray(keys);
         return this.select(bKeys);
     }
+
     /**
      * Takes a list of keys and searches for that in all buckets. This method uses the <code>searchFor(...)</code>
      * method. If you want Data in a more sequential way (faster) try to use <code>read(...)</code> instead. <br>
@@ -348,7 +350,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * @return Arraylist which contains the found data. Can be less than the number of given keys
      */
     public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[]... keys) throws IOException {
-    	SortMachine.quickSort(keys);
+        SortMachine.quickSort(keys);
         List<Data> result = new ArrayList<Data>();
 
         IndexForHeaderIndexFile index = indexFile.getIndex(); // Pointer to the Index
@@ -356,7 +358,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         long actualChunkOffset = 0, oldChunkOffset = -1;
         int indexInChunk = 0;
         ByteBuffer workingBuffer = ByteBuffer.allocate(indexFile.getChunkSize());
-        byte[] tmpB = new byte[elementSize]; // stores temporarily the bytestream of an object 
+        byte[] tmpB = new byte[elementSize]; // stores temporarily the bytestream of an object
         for (byte[] key : keys) {
             // get actual chunkIndex
             actualChunkIdx = index.getChunkId(key);
@@ -366,8 +368,8 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             if (actualChunkIdx != lastChunkIdx) {
                 // if we have read a chunk
                 if (oldChunkOffset > -1) {
-//                    indexFile.write(oldChunkOffset, workingBuffer);
-                	indexFile.read(oldChunkOffset, workingBuffer);
+                    // indexFile.write(oldChunkOffset, workingBuffer);
+                    indexFile.read(oldChunkOffset, workingBuffer);
                     indexInChunk = 0;
                 }
                 // read a new part to the readBuffer
@@ -395,25 +397,24 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
 
     /**
      * Returns the number of elements in the database.
+     * 
      * @return
-     * @throws IOException 
-     * @throws FileLockException 
+     * @throws IOException
+     * @throws FileLockException
      */
-    public long size() throws FileLockException, IOException
-    {
-    	long size = 0L;
-    	for (int bucketId = 0; bucketId < hashFunction.getNumberOfBuckets(); bucketId++) 
-    	{    		
-    		HeaderIndexFile<Data> headerIndexFile = 
-    			new HeaderIndexFile<Data>(
-    					databaseDirectory+"/"+hashFunction.getFilename(bucketId), 
-    					HEADER_FILE_LOCK_RETRY);
-    		size += headerIndexFile.getFilledUpFromContentStart() / prototype.getByteBufferSize();
-    		headerIndexFile.close();
-    	}
-    	return size;
+    public long size() throws FileLockException, IOException {
+        long size = 0L;
+        for (int bucketId = 0; bucketId < hashFunction.getNumberOfBuckets(); bucketId++) {
+            HeaderIndexFile<Data> headerIndexFile =
+                    new HeaderIndexFile<Data>(
+                            databaseDirectory + "/" + hashFunction.getFilename(bucketId),
+                            HEADER_FILE_LOCK_RETRY);
+            size += headerIndexFile.getFilledUpFromContentStart() / prototype.getByteBufferSize();
+            headerIndexFile.close();
+        }
+        return size;
     }
-    
+
     /**
      * Traverses the given workingBuffer beginning at indexInChunk (this is a byte-offset).
      * 
@@ -435,24 +436,24 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         int midElement;
         byte comp;
         byte[] tempKey = new byte[keySize];
-        
-        //TODO Examine this.
+
+        // TODO Examine this.
         /* ============================================= */
         // Bug fix suggestion of Martin (2011/09/07)
-        byte[] workingBufferArray = Arrays.copyOfRange(workingBuffer.array(), indexInChunk, workingBuffer.array().length);
-//        byte[] workingBufferArray = workingBuffer.array();
+        byte[] workingBufferArray = Arrays.copyOfRange(workingBuffer.array(), indexInChunk,
+                workingBuffer.array().length);
+        // byte[] workingBufferArray = workingBuffer.array();
         // ============================================= */
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
-            indexInChunk = midElement * elementSize;            
-            for (int i = indexInChunk; i < indexInChunk + keySize; i++)
-            {
-            	tempKey[i - indexInChunk] = workingBufferArray[i]; 
+            indexInChunk = midElement * elementSize;
+            for (int i = indexInChunk; i < indexInChunk + keySize; i++) {
+                tempKey[i - indexInChunk] = workingBufferArray[i];
             }
             comp = KeyUtils.compareKey(key, tempKey, prototype.key.length);
             if (comp == 0) {
                 return indexInChunk;
-            } else if (comp < 0 ) {
+            } else if (comp < 0) {
                 maxElement = midElement - 1;
             } else {
                 minElement = midElement + 1;

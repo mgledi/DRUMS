@@ -10,6 +10,7 @@ import com.unister.semweb.sdrum.TestUtils;
 import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.synchronizer.UpdateOnlySynchronizer;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * Testing the UpdateOnlySynchronizer
@@ -21,14 +22,14 @@ public class UpdateOnlySynchronizerTest {
     @Test
     /** This function tests, if update will be stored correctly */
     public void updateTest() throws Exception {
-        System.out.println("============== updateTest()" );
+        System.out.println("============== updateTest() ==================");
         // ################ creating file with initial data
         String dbFileName = "/tmp/test.db";
         new File(dbFileName).delete();
         DummyKVStorable[] linkDataList = new DummyKVStorable[20400];
         for (int i = 0; i < linkDataList.length; i++) {
             linkDataList[i] = new DummyKVStorable();
-            linkDataList[i].setKey(i*1 + 1);
+            linkDataList[i].setKey(KeyUtils.transformFromLong(i * 1 + 1));
             linkDataList[i].setTimestamp(0);
         }
         TestUtils.createFile(dbFileName, linkDataList);
@@ -42,13 +43,14 @@ public class UpdateOnlySynchronizerTest {
         toUpdate[1].setTimestamp(2300000);
         toUpdate[0] = linkDataList[9000];
         toUpdate[0].setTimestamp(2300000);
-//        toUpdate[3] = linkDataList[11190];
-//        toUpdate[3].setTimestamp(234567);
-        
+        // toUpdate[3] = linkDataList[11190];
+        // toUpdate[3].setTimestamp(234567);
+
         SortMachine.quickSort(toUpdate);
-        
+
         // ############### perform the update, this is the real test
-        UpdateOnlySynchronizer<DummyKVStorable> updateSync = new UpdateOnlySynchronizer<DummyKVStorable>(dbFileName, new DummyKVStorable());
+        UpdateOnlySynchronizer<DummyKVStorable> updateSync = new UpdateOnlySynchronizer<DummyKVStorable>(dbFileName,
+                new DummyKVStorable());
         updateSync.upsert(toUpdate);
 
         // ############### check if the file was written correctly, the file have to be compared to the linkDataList

@@ -109,6 +109,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     public void run() {
         do {
             synchronizeBucketsWithHDD();
+            bucketContainer.moveElementsFromWaitingQueue();
         } while (!shutDownInitiated || !bucketsEmpty());
 
         // BucketContainer is not receiving new elements, but there can still be waiting elements
@@ -157,23 +158,27 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
      * <code>run()</code>, till shutdown is initiated.
      */
     private void synchronizeBucketsWithHDD() {
+        int synchronizedBuckets = 0;
         // run over all buckets
         for (int i = 0; i < numberOfBuckets; i++) {
             Bucket<Data> oldBucket = bucketContainer.buckets[i];
 
             // if the bucket is empty, then do nothing
             if (oldBucket.elementsInBucket == 0) {
+                synchronizedBuckets++;
                 continue;
             }
-            if (shutDownInitiated) {
-                log.info("Last synchronizing of bucket {}", i);
-            }
+
             // if the bucket is full, or the shutdown was initiated, then try to synchronize the buckets
             if (oldBucket.elementsInBucket >= oldBucket.getAllowedBucketSize() || shutDownInitiated) {
                 if (!startNewThread(i)) {
                     sleep();
                 }
             }
+        }
+
+        if (shutDownInitiated) {
+            log.info("{} of {} buckets were synchronized.", synchronizedBuckets, bucketContainer.getNumberOfBuckets());
         }
 
         // if the queue is not full try to fill it

@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * Tests the configuration file writing and reading.
@@ -32,7 +33,7 @@ public class ConfigurationTest {
     @Test
     public void writeAndReadTest() throws Exception {
         DummyKVStorable prototype = new DummyKVStorable();
-        prototype.setKey(10);
+        prototype.setKey(KeyUtils.transformFromLong(10));
 
         ConfigurationFile<DummyKVStorable> file = new ConfigurationFile<DummyKVStorable>(100, 10000, 12, 10000,
                 "/data/tmp/db", new FirstBitHashFunction(100), prototype);

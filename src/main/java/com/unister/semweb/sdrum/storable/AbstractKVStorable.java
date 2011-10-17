@@ -1,7 +1,6 @@
 package com.unister.semweb.sdrum.storable;
 
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
@@ -45,27 +44,27 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
      * 
      * @param key
      */
-    public void setKey(long key) {
-        // TODO: if key is not 8 byte
-        ByteBuffer.wrap(this.key).putLong(key);
-    }
+    // public void setKey(long key) {
+    // // TODO: if key is not 8 byte
+    // ByteBuffer.wrap(this.key).putLong(key);
+    // }
 
     /**
      * returns the key as long, if possible
      * 
      * @return
      */
-    public long getLongKey() {
-        // TODO: if key is not 8 byte
-        return ByteBuffer.wrap(this.key).getLong();
-    }
+    // public long getLongKey() {
+    // // TODO: if key is not 8 byte
+    // return ByteBuffer.wrap(this.key).getLong();
+    // }
 
     @Override
     public abstract Data clone() throws CloneNotSupportedException;
 
     @Override
     public abstract int getByteBufferSize();
-    
+
     /**
      * merges the given {@link AbstractKVStorable} with this one by your implementation and returns an
      * {@link AbstractKVStorable}.
@@ -97,7 +96,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
         // estimate number of uniques
         int count = 1;
         for (int i = 0; i < toAdd.length - 1; i++) {
-            if (KeyUtils.compareKey(toAdd[i].key,toAdd[i + 1].key) != 0) {
+            if (KeyUtils.compareKey(toAdd[i].key, toAdd[i + 1].key) != 0) {
                 count++;
             }
         }
@@ -107,7 +106,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
         // merge Elements in toAdd
         AbstractKVStorable<Data> first = toAdd[0];
         for (int k = 1; k < toAdd.length; k++) {
-            while (k < toAdd.length && KeyUtils.compareKey(toAdd[k].key,first.key) == 0) {
+            while (k < toAdd.length && KeyUtils.compareKey(toAdd[k].key, first.key) == 0) {
                 first = first.merge(toAdd[k]);
                 k++;
             }

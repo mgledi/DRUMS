@@ -87,7 +87,8 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
                 actualChunkOffset = header.getStartOffsetOfChunk(actualChunkIdx);
 
                 if (actualChunkOffset > dataFile.getFilledUpFromContentStart()) {
-                    log.warn("Element with key {} was not found. Chunk {} does not exist.", actualChunkIdx, toUpdate[i].key);
+                    log.warn("Element with key {} was not found. Chunk {} does not exist.", actualChunkIdx,
+                            toUpdate[i].key);
                     continue;
                 }
 
@@ -104,7 +105,8 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
 
                 indexInChunk = updateElementInReadBuffer(toUpdate[i], indexInChunk);
                 if (indexInChunk == -1) {
-                    log.warn("Element with key {} was not found and therefore not updated.", toUpdate[i].key);
+                    log.warn("Element with key {} was not found and therefore not updated. File: {}, Chunk: {}",
+                            new Object[] { toUpdate[i].key, this.dataFilename, actualChunkIdx });
                     indexInChunk = 0;
                 }
 

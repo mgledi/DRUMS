@@ -39,7 +39,7 @@ public class SDrumTest {
         long[] ranges = new long[] { 0, 10, 20, 30 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
-        int[] sizes = {1000,1000,1000,1000};
+        int[] sizes = { 1000, 1000, 1000, 1000 };
         FileUtils.deleteQuietly(new File(databaseDirectory));
 
         hashFunction = new RangeHashFunction(bRanges, filenames, sizes, new File("/tmp/hash.hs"));
@@ -76,19 +76,19 @@ public class SDrumTest {
     @Test
     public void insertDifferentRanges() throws Exception {
         List<DummyKVStorable> expectedFirstRange = new ArrayList<DummyKVStorable>();
-        DummyKVStorable firstRange = TestUtils.createDummyData(5, 1, 0.5);
+        DummyKVStorable firstRange = TestUtils.createDummyData(KeyUtils.transformFromLong(5), 1, 0.5);
         expectedFirstRange.add(firstRange);
 
-        DummyKVStorable secondRange = TestUtils.createDummyData(10, 12, 0.3);
+        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10), 12, 0.3);
         expectedFirstRange.add(secondRange);
 
         List<DummyKVStorable> expectedThirdRange = new ArrayList<DummyKVStorable>();
-        DummyKVStorable thirdRange = TestUtils.createDummyData(29, 9, 0.23);
+        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(29), 9, 0.23);
         expectedThirdRange.add(thirdRange);
 
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable( databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
         table.close();
@@ -110,11 +110,11 @@ public class SDrumTest {
     @Test
     public void selectTestSingleElement() throws Exception {
         List<DummyKVStorable> dataList = new ArrayList<DummyKVStorable>();
-        DummyKVStorable data = TestUtils.createDummyData(1, 1, 0.23);
+        DummyKVStorable data = TestUtils.createDummyData(KeyUtils.transformFromLong(1), 1, 0.23);
         dataList.add(data);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { data };
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable( databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
         Thread.sleep(2000);
@@ -132,16 +132,16 @@ public class SDrumTest {
     @Test
     public void selectTestSeveralRanges() throws Exception {
         List<DummyKVStorable> rangeData = new ArrayList<DummyKVStorable>();
-        DummyKVStorable firstRange = TestUtils.createDummyData(2, 2, 0.24);
-        DummyKVStorable secondRange = TestUtils.createDummyData(10, 10, 0.23);
-        DummyKVStorable thirdRange = TestUtils.createDummyData(12, 19, 0.29);
+        DummyKVStorable firstRange = TestUtils.createDummyData(KeyUtils.transformFromLong(2), 2, 0.24);
+        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10), 10, 0.23);
+        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(12), 19, 0.29);
         rangeData.add(firstRange);
         rangeData.add(secondRange);
         rangeData.add(thirdRange);
 
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable( databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
 
@@ -159,11 +159,11 @@ public class SDrumTest {
      */
     @Test
     public void readTestSingleElement() throws Exception {
-        DummyKVStorable testElement = TestUtils.createDummyData(1, 2, 0.23);
+        DummyKVStorable testElement = TestUtils.createDummyData(KeyUtils.transformFromLong(1), 2, 0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { testElement };
         List<DummyKVStorable> expectedData = Arrays.asList(toAdd);
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable( databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
 
@@ -182,7 +182,7 @@ public class SDrumTest {
     public void readTestSeveralElements() throws Exception {
         DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable( databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(testdata);
 
@@ -201,7 +201,7 @@ public class SDrumTest {
     public void readTestSeveralElementsDifferentElementOffset() throws Exception {
         DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable( databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(testdata);
 
@@ -220,11 +220,11 @@ public class SDrumTest {
         DummyKVStorable[] testdata = TestUtils.createDummyData(1, 5);
         DummyKVStorable[] secondRange = TestUtils.createDummyData(11, 19);
         DummyKVStorable[] thirdRange = TestUtils.createDummyData(21, 29);
-        
+
         DummyKVStorable[] completeTestdata = (DummyKVStorable[]) TestUtils.addAll(testdata, secondRange);
         completeTestdata = (DummyKVStorable[]) TestUtils.addAll(completeTestdata, thirdRange);
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable( databaseDirectory, sizeOfMemoryBuckets,
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, sizeOfMemoryBuckets,
                 preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(completeTestdata);
 
@@ -271,7 +271,8 @@ public class SDrumTest {
     /* ------------------------------------------------------- */
 
     /**
-     * Compares to list with {@link DummyKVStorable} with each other. The compare criteria are key, parent count and relevance
+     * Compares to list with {@link DummyKVStorable} with each other. The compare criteria are key, parent count and
+     * relevance
      * score.
      */
     private boolean equals(List<DummyKVStorable> firstCompare, List<DummyKVStorable> secondCompare) {
@@ -328,7 +329,8 @@ public class SDrumTest {
     }
 
     /**
-     * Comapares two {@link DummyKVStorable} with each other. The relevant field that are compared are: key, parentCount and
+     * Comapares two {@link DummyKVStorable} with each other. The relevant field that are compared are: key, parentCount
+     * and
      * relevanceScore.
      */
     private boolean equals(DummyKVStorable firstData, DummyKVStorable secondData) {

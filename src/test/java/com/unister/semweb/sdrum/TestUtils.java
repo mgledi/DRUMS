@@ -23,6 +23,7 @@ import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 public class TestUtils {
     public static Random randomGenerator = new Random(System.currentTimeMillis());
@@ -74,7 +75,7 @@ public class TestUtils {
         DummyKVStorable[] result = new DummyKVStorable[numberToGenerate];
         for (int i = 0; i < numberToGenerate; i++) {
             DummyKVStorable oneEntry = new DummyKVStorable();
-            oneEntry.setKey(randomGenerator.nextLong());
+            oneEntry.setKey(KeyUtils.transformFromLong(randomGenerator.nextLong()));
             oneEntry.setRelevanceScore(randomGenerator.nextDouble());
             oneEntry.setParentCount(randomGenerator.nextInt());
             oneEntry.setTimestamp(randomGenerator.nextLong());
@@ -94,9 +95,9 @@ public class TestUtils {
                     / (double) allowedUniqueElements;
             long newKey = (long) (dummyValue * maximumValueForKey);
 
-            oneEntry.setKey(newKey);
+            oneEntry.setKey(KeyUtils.transformFromLong(newKey));
             oneEntry.setRelevanceScore(randomGenerator.nextDouble());
-            //            oneEntry.setParentCount(randomGenerator.nextInt());
+            // oneEntry.setParentCount(randomGenerator.nextInt());
             oneEntry.setParentCount(1);
             oneEntry.setTimestamp(randomGenerator.nextLong());
             result[i] = oneEntry;
@@ -162,10 +163,10 @@ public class TestUtils {
         return result.toArray(resultArray);
     }
 
-    public static DummyKVStorable searchFor(DummyKVStorable[] toSearchIn, long idToSearch) {
+    public static DummyKVStorable searchFor(DummyKVStorable[] toSearchIn, byte[] idToSearch) {
         DummyKVStorable result = null;
         for (DummyKVStorable oneDate : toSearchIn) {
-            if (oneDate.getLongKey() == idToSearch) {
+            if (KeyUtils.compareKey(oneDate.key, idToSearch) == 0) {
                 result = oneDate;
                 break;
             }
@@ -212,8 +213,8 @@ public class TestUtils {
             dbfile.read(offset, buffer);
             buffer.flip();
             DummyKVStorable newLinkData = new DummyKVStorable(buffer);
-//            System.out.println(newLinkData);
-//            System.out.println(linkDataList[k]);
+            // System.out.println(newLinkData);
+            // System.out.println(linkDataList[k]);
             if (!newLinkData.equals(linkDataList[k])) {
                 return false;
             }
@@ -229,7 +230,7 @@ public class TestUtils {
     public static DummyKVStorable[] createDummyData(int numberOfData) {
         DummyKVStorable[] result = new DummyKVStorable[numberOfData];
         for (int i = 0; i < numberOfData; i++) {
-            DummyKVStorable newData = createDummyData(i + 1, i, 1d / i);
+            DummyKVStorable newData = createDummyData(KeyUtils.transformFromLong(i + 1), i, 1d / i);
             result[i] = newData;
         }
         return result;
@@ -247,14 +248,14 @@ public class TestUtils {
     public static DummyKVStorable[] createDummyData(int firstKey, int lastKey) {
         DummyKVStorable[] result = new DummyKVStorable[lastKey - firstKey];
         for (int i = firstKey; i < lastKey; i++) {
-            DummyKVStorable oneDate = createDummyData(i, i + 1, 1d / i);
+            DummyKVStorable oneDate = createDummyData(KeyUtils.transformFromLong(i), i + 1, 1d / i);
             result[i - firstKey] = oneDate;
         }
         return result;
     }
 
     /** Creates a specific {@link DummyKVStorable} with the given key, parentCount and relevanceScore. */
-    public static DummyKVStorable createDummyData(long key, int parentCount, double relevanceScore) {
+    public static DummyKVStorable createDummyData(byte[] key, int parentCount, double relevanceScore) {
         DummyKVStorable result = new DummyKVStorable();
         result.setKey(key);
         result.setParentCount(parentCount);

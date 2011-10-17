@@ -32,7 +32,7 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
     private final AbstractHashFunction hashFunction;
 
     private boolean shutDownInitiated = false;
-    
+
     /**
      * @param buckets
      *            the buckets, where to store the {@link AbstractKVStorable}
@@ -43,7 +43,8 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      *            the {@link AbstractHashFunction} is used to map from the key of a {@link AbstractKVStorable}-object to
      *            the relevant {@link Bucket}
      */
-    public BucketContainer(final Bucket<Data>[] buckets, final int sizeOfPreQueue, final AbstractHashFunction hashFunction) {
+    public BucketContainer(final Bucket<Data>[] buckets, final int sizeOfPreQueue,
+            final AbstractHashFunction hashFunction) {
         this.buckets = buckets;
         this.waitingElements = new ArrayBlockingQueue<Data>(sizeOfPreQueue); // TODO: configure
         this.hashFunction = hashFunction;
@@ -56,7 +57,7 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      *             if the {@link Bucket} where to add a {@link AbstractKVStorable} does not exist
      * @throws InterruptedException
      */
-    public void moveElementsFromWaitingQueue() throws BucketContainerException, InterruptedException {
+    public void moveElementsFromWaitingQueue() {
         Iterator<Data> tmp = waitingElements.iterator();
         while (tmp.hasNext()) {
             Data date = tmp.next();
@@ -85,8 +86,8 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
     }
 
     /**
-     * Possibly add the given <code>Data</code>(s) to one of the {@link Bucket}s. If the corresponding
-     * {@link Bucket} is full, it will be added to <code>waitingElements</code>. If all {@link Bucket}s and the queue
+     * Possibly add the given <code>Data</code>(s) to one of the {@link Bucket}s. If the corresponding {@link Bucket} is
+     * full, it will be added to <code>waitingElements</code>. If all {@link Bucket}s and the queue
      * for <code>waitingElements</code> are full the method is blocking.
      * 
      * @param {@link Data} to add
@@ -94,12 +95,12 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @throws BucketContainerException
      */
     public void addToCache(Data... toAdd) throws BucketContainerException, InterruptedException {
-        if(shutDownInitiated) {
+        if (shutDownInitiated) {
             throw new BucketContainerException("Shutdown was already initiated. Could not add the given elements.");
         }
         int throwBucketException = -1;
         for (Data linkData : toAdd) {
-            int indexOfCache = hashFunction.getBucketId(linkData.getKey());
+            int indexOfCache = hashFunction.getBucketId(linkData.key);
             // safety first, check if the bucket exists. If not, try to move on. Throw exception at the end
             if (indexOfCache < buckets.length) {
                 Bucket<Data> bucket = buckets[indexOfCache];
@@ -134,9 +135,8 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @throws BucketContainerException
      * @throws InterruptedException
      */
-    private boolean addToCacheWithoutBlocking(Data linkData) throws BucketContainerException,
-            InterruptedException {
-        int indexOfCache = hashFunction.getBucketId(linkData.getKey());
+    private boolean addToCacheWithoutBlocking(Data linkData) {
+        int indexOfCache = hashFunction.getBucketId(linkData.key);
 
         if (indexOfCache < buckets.length) {
             Bucket<Data> bucket = buckets[indexOfCache];

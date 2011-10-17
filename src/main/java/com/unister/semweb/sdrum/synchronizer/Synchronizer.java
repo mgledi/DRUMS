@@ -148,7 +148,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
                     dateFromDisk = getFromDisk(); // get next date from disk
                     // Incrementing the number of updated entries.
                     numberOfUpdateEntries++;
-//                    updatedData.incrementAndGet();
+                    // updatedData.incrementAndGet();
 
                     continue;
                 }
@@ -157,7 +157,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
                 if (compare == 1) {
                     write(dateFromDisk, true); // write date
                     dateFromDisk = getFromDisk(); // get next date from disk
-//                    processCountData.incrementAndGet();
+                    // processCountData.incrementAndGet();
                     continue;
                 }
             }

@@ -1,3 +1,11 @@
+Version 0.1.7-SNAPSHIT
+ - SyncManager: after synchronizing all buckets it is tried to empty the pre queue.
+                This was not done before so that the elements within the pre queue
+                was synchronized if the pre queue was full or if the the sdrum was
+                shut down.
+ - BucketContainer: unnecessary exception were removed from the moveElementsFromWaitingQueue
+                    method.
+
 Version 0.1.3-SNAPSHOT
   - Some bugs were fixed (shutdown, inconsistency)
   

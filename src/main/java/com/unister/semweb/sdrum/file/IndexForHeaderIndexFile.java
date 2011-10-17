@@ -39,6 +39,7 @@ public class IndexForHeaderIndexFile {
     private int filledUpTo;
 
     private int keySize;
+
     /**
      * This constructor instantiates a new {@link IndexForHeaderIndexFile}. You need to give the number of the indexed
      * chunks, the chunksize and the {@link MappedByteBuffer}, where the index should be written to.
@@ -47,7 +48,8 @@ public class IndexForHeaderIndexFile {
      * @param <b>int chunkSize</b>, the size of one chunk
      * @param <b>MappedByteBuffer indexBuffer</b>, the buffer were to write the indexinformations
      */
-    public IndexForHeaderIndexFile(final int numberOfChunks, final int keySize, final int chunkSize, final MappedByteBuffer indexBuffer) {
+    public IndexForHeaderIndexFile(final int numberOfChunks, final int keySize, final int chunkSize,
+            final MappedByteBuffer indexBuffer) {
         this.keySize = keySize;
         this.numberOfChunks = numberOfChunks;
         this.chunkSize = chunkSize;
@@ -107,7 +109,10 @@ public class IndexForHeaderIndexFile {
         byte comp1, comp2;
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
-            if(midElement == 0) {
+            // handle special case (maxElement was 1)
+            if (midElement == 0 && KeyUtils.compareKey(key, maxKeyPerChunk[0]) > 0) {
+                return 1;
+            } else if (midElement == 0) {
                 return 0;
             }
             comp1 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement - 1]);
@@ -118,6 +123,20 @@ public class IndexForHeaderIndexFile {
                 minElement = midElement + 1;
             } else {
                 maxElement = midElement - 1;
+            }
+        }
+        return -1;
+    }
+
+    @Deprecated
+    public int getChunkIdLinearSearch(byte[] key) {
+        for (int i = 1; i < filledUpTo; i++) {
+            byte comp1 = KeyUtils.compareKey(key, maxKeyPerChunk[i - 1]);
+            byte comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[i]);
+            if (comp1 > 0 && comp2 <= 0) {
+                return i;
+            } else if (i == 1 && comp1 <= 0) {
+                return 0;
             }
         }
         return -1;
@@ -136,7 +155,7 @@ public class IndexForHeaderIndexFile {
         indexBuffer.position(chunkIdx * keySize);
         indexBuffer.put(largestKeyInChunk);
     }
-    
+
     private long toLong(byte[] b) {
         return ByteBuffer.wrap(b).getLong();
     }

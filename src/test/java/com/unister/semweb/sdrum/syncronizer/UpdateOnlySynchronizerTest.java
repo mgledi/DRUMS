@@ -26,7 +26,7 @@ public class UpdateOnlySynchronizerTest {
         // ################ creating file with initial data
         String dbFileName = "/tmp/test.db";
         new File(dbFileName).delete();
-        DummyKVStorable[] linkDataList = new DummyKVStorable[20400];
+        DummyKVStorable[] linkDataList = new DummyKVStorable[204000];
         for (int i = 0; i < linkDataList.length; i++) {
             linkDataList[i] = new DummyKVStorable();
             linkDataList[i].setKey(KeyUtils.transformFromLong(i * 1 + 1));
@@ -36,13 +36,19 @@ public class UpdateOnlySynchronizerTest {
         Assert.assertTrue(TestUtils.checkContentFile(dbFileName, linkDataList));
 
         // ################ prepare Update-Array, using only pointers from insert-array
-        DummyKVStorable[] toUpdate = new DummyKVStorable[3];
-        toUpdate[2] = linkDataList[1900];
-        toUpdate[2].setTimestamp(2300000);
-        toUpdate[1] = linkDataList[100];
-        toUpdate[1].setTimestamp(2300000);
-        toUpdate[0] = linkDataList[9000];
-        toUpdate[0].setTimestamp(2300000);
+        DummyKVStorable[] toUpdate = new DummyKVStorable[linkDataList.length];
+        for (int i = 0; i < linkDataList.length; i++) {
+            toUpdate[i] = linkDataList[i];
+            toUpdate[i].setTimestamp(2300000);
+        }
+
+        // DummyKVStorable[] toUpdate = new DummyKVStorable[3];
+        // toUpdate[2] = linkDataList[1900];
+        // toUpdate[2].setTimestamp(2300000);
+        // toUpdate[1] = linkDataList[100];
+        // toUpdate[1].setTimestamp(2300000);
+        // toUpdate[0] = linkDataList[9000];
+        // toUpdate[0].setTimestamp(2300000);
         // toUpdate[3] = linkDataList[11190];
         // toUpdate[3].setTimestamp(234567);
 

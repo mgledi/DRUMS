@@ -23,7 +23,7 @@ public abstract class AbstractHashFunction implements Serializable {
     protected int[] bucketSizes;
 
     public int keySize;
-    
+
     /** the number of buckets */
     protected int buckets;
 
@@ -40,12 +40,15 @@ public abstract class AbstractHashFunction implements Serializable {
         ByteBuffer.wrap(b).putLong(key);
         return getBucketId(b);
     }
-    
+
     /** returns the bucket-id belonging to the given {@link KVStorable} */
     public abstract int getBucketId(KVStorable<?> key);
 
     /** Returns the filename of the bucket with the given bucket. */
     public abstract String getFilename(int bucketId);
+
+    /** Returns the bucketid of the bucket belonging to the given filenam. */
+    public abstract int getBucketId(String dbFilename);
 
     /** Returns the size of the bucket with the given bucket-id. */
     public int getBucketSize(int bucketId) {

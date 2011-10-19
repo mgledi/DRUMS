@@ -96,4 +96,9 @@ public class FirstBitHashFunction extends AbstractHashFunction {
     public String getFilename(int bucketId) {
         return new StringBuilder().append(bucketId).append(GlobalParameters.linkDataFileExtension).toString();
     }
+
+    @Override
+    public int getBucketId(String dbFilename) {
+        return -1;
+    }
 }

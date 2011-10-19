@@ -313,6 +313,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             dataBuffer.get(dataArray);
             result.add((Data) prototype.fromByteBuffer(ByteBuffer.wrap(dataArray)));
         }
+        indexFile.close();
         return result;
     }
 
@@ -489,6 +490,10 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     public AbstractHashFunction getHashFunction() {
         return this.hashFunction;
     }
+    
+    public void setHashFunction(AbstractHashFunction hash) {
+        this.hashFunction = hash;
+    }
 
     public String getDatabaseDirectory() {
         return this.databaseDirectory;
@@ -496,5 +501,9 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
 
     public int getElementKeySize() {
         return this.keySize;
+    }
+
+    public Data getPrototype() {
+        return prototype;
     }
 }

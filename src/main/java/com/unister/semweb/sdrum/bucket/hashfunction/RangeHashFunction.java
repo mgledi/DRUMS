@@ -220,7 +220,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         for (int i = 0; i < maxRangeValues[0].length; i++) {
             bufferedWriter.append('b').append('\t');
         }
-        bufferedWriter.append("filename").append('\t').append("bucketSize");
+        bufferedWriter.append("filename").append('\t').append("bucketSize").append("\n");
         for (int i = 0; i < maxRangeValues.length; i++) {
             String oneCSVLine = makeOneLine(maxRangeValues[i], bucketSizes[i], filenames[i]);
             bufferedWriter.append(oneCSVLine);
@@ -241,6 +241,17 @@ public class RangeHashFunction extends AbstractHashFunction {
         return sb.toString();
     }
 
+
+    @Override
+    public int getBucketId(String dbFilename) {
+        for(int i=0; i < filenames.length; i++) {
+            if(filenames[i].equals(dbFilename)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     /**
      * The header of could contain characters which are not numbers. Some of them can be translated into bytes. E.g.
      * char would be two byte.

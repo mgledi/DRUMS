@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
-import javax.xml.crypto.Data;
-
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,11 +50,32 @@ public class SDRUM_API {
                 numberOfSynchronizerThreads, hashFunction, prototype, AccessMode.READ_WRITE);
 
         // We store the configuration parameters within the given configuration file.
-        ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(hashFunction.getNumberOfBuckets(),
-                sizeOfMemoryBuckets, numberOfSynchronizerThreads, preQueueSize, databaseDirectory, hashFunction,
+        ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(
+                hashFunction.getNumberOfBuckets(),
+                sizeOfMemoryBuckets,
+                numberOfSynchronizerThreads,
+                preQueueSize,
+                databaseDirectory,
+                hashFunction,
                 prototype);
         configurationFile.writeTo(databaseDirectory + "/" + CONFIG_FILE);
         return table;
+    }
+
+    public static <Data extends AbstractKVStorable<Data>> void storeasNewConfigFile(SDRUM<Data> sdrum)
+            throws IOException, ClassNotFoundException {
+        ConfigurationFile<Data> oldConfig = ConfigurationFile
+                .readFrom(sdrum.getDatabaseDirectory() + "/" + CONFIG_FILE);
+
+        ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(
+                sdrum.getHashFunction().getNumberOfBuckets(),
+                oldConfig.getBucketSize(),
+                oldConfig.getNumberOfSynchronizerThreads(),
+                oldConfig.getPreQueueSize(),
+                sdrum.getDatabaseDirectory(),
+                sdrum.getHashFunction(),
+                sdrum.getPrototype());
+        configurationFile.writeTo(sdrum.getDatabaseDirectory() + "/" + CONFIG_FILE);
     }
 
     /**
@@ -87,7 +106,7 @@ public class SDRUM_API {
         }
         else
         {
-        	databaseDirectoryFile.mkdir();
+            databaseDirectoryFile.mkdir();
         }
 
         // We store the configuration parameters within the given configuration file.

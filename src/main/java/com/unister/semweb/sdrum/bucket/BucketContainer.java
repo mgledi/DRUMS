@@ -104,10 +104,12 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
             // safety first, check if the bucket exists. If not, try to move on. Throw exception at the end
             if (indexOfCache < buckets.length) {
                 Bucket<Data> bucket = buckets[indexOfCache];
-                if (bucket.size() >= bucket.getAllowedBucketSize()) {
-                    waitingElements.put(linkData);
-                } else {
-                    bucket.add(linkData);
+                synchronized (bucket) {
+                    if (bucket.size() >= bucket.getAllowedBucketSize()) {
+                        waitingElements.put(linkData);
+                    } else {
+                        bucket.add(linkData);
+                    }
                 }
             } else {
                 throwBucketException = indexOfCache;
@@ -140,9 +142,11 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
 
         if (indexOfCache < buckets.length) {
             Bucket<Data> bucket = buckets[indexOfCache];
-            if (bucket.size() < bucket.getAllowedBucketSize()) {
-                bucket.add(linkData);
-                return true;
+            synchronized (bucket) {
+                if (bucket.size() < bucket.getAllowedBucketSize()) {
+                    bucket.add(linkData);
+                    return true;
+                }
             }
         }
         return false;

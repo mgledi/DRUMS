@@ -32,7 +32,7 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
 
     /** prototype of type Data (extending {@link AbstractKVStorable}) for instantiating correct arrays */
     private Data prototype;
-    
+
     /**
      * Constructor. Needs to know the id of the {@link Bucket} and the maximum size of the {@link Bucket}.
      * 
@@ -80,14 +80,20 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
 
     /**
      * Adds one {@link AbstractKVStorable}-object. This method have to be synchronized, because it is possible to access
-     * the <code>backend</code> in the same moment with the function <code>getBackend()</code>.
+     * the <code>backend</code> in the same moment with the function <code>getBackend()</code>. The method returns
+     * <code>true</code> if the inseration was successful.
      * 
      * @param toAdd
      *            the {@link AbstractKVStorable} to add
      */
-    public synchronized void add(AbstractKVStorable<?> toAdd) {
-        backend[elementsInBucket] = toAdd.toByteBuffer().array();
-        elementsInBucket++;
+    public synchronized boolean add(AbstractKVStorable<?> toAdd) {
+        boolean wasAdded = false;
+        if (size() < allowedBucketSize) {
+            backend[elementsInBucket] = toAdd.toByteBuffer().array();
+            elementsInBucket++;
+            wasAdded = true;
+        }
+        return wasAdded;
     }
 
     /**
@@ -97,11 +103,11 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
      * @param toAdd
      *            the {@link AbstractKVStorable}s to add
      */
-    public synchronized void addAll(AbstractKVStorable<?>[] toAdd) {
-        for (AbstractKVStorable<?> oneDate : toAdd) {
-            add(oneDate);
-        }
-    }
+    // public synchronized void addAll(AbstractKVStorable<?>[] toAdd) {
+    // for (AbstractKVStorable<?> oneDate : toAdd) {
+    // add(oneDate);
+    // }
+    // }
 
     /**
      * Returns the in <code>backend</code> stored {@link AbstractKVStorable}s. First it rebuilds all objects from their

@@ -164,7 +164,7 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @throws BucketContainerException
      * @throws InterruptedException
      */
-    public synchronized void setBucket(Bucket<Data> bucket) throws BucketContainerException, InterruptedException {
+    public void setBucket(Bucket<Data> bucket) throws BucketContainerException, InterruptedException {
         buckets[bucket.getBucketId()] = bucket;
     }
 

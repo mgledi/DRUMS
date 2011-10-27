@@ -119,7 +119,7 @@ public class SDrumTest {
         table.insertOrMerge(toAdd);
         Thread.sleep(2000);
 
-        List<DummyKVStorable> selectedData = table.select(1);
+        List<DummyKVStorable> selectedData = table.select(1l);
 
         Assert.assertTrue(equals(dataList, selectedData));
     }

@@ -65,7 +65,9 @@ public class TestUtils {
         for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
             Bucket<DummyKVStorable> newBucket = new Bucket<DummyKVStorable>(i, bucketSize, new DummyKVStorable());
             DummyKVStorable[] bucketLinkData = generateTestdata(numberOfDataPerBucket);
-            newBucket.addAll(bucketLinkData);
+            for (DummyKVStorable oneToAdd : bucketLinkData) {
+                newBucket.add(oneToAdd);
+            }
             result.add(newBucket);
         }
         return result;

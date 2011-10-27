@@ -1,8 +1,17 @@
-Version 0.1.7-SNAPSHIT
+Version 0.1.9-SNAPSHOT
+ - Bug fix: BucketConainer: While adding a new element it was possible that another
+                            thread access the bucket in parallel and want to add
+                            one more element that the bucket should have. This
+                            lead to a ArrayOutOfBoundException.
+
+Version 0.1.8-SNAPSHOT
  - SyncManager: after synchronizing all buckets it is tried to empty the pre queue.
                 This was not done before so that the elements within the pre queue
                 was synchronized if the pre queue was full or if the the sdrum was
                 shut down.
+ - UpdateOnlySynchronizer: the first chunk from a HeaderIndexFile could not be updated
+    - 
+Version 0.1.7-SNAPSHOT
  - BucketContainer: unnecessary exception were removed from the moveElementsFromWaitingQueue
                     method.
 

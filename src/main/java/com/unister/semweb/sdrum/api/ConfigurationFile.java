@@ -29,6 +29,7 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
 
     /**
      * Creates a configuration file.
+     * 
      * @param numberOfBuckets
      * @param bucketSize
      * @param numberOfSynchronizerThreads
@@ -58,7 +59,6 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
             propertyConfiguration.addProperty("preQueueSize", preQueueSize);
             propertyConfiguration.addProperty("databaseDirectory", databaseDirectory);
 
-            
             String serializedHashFunction = Base64.encodeObject(hashFunction);
             propertyConfiguration.addProperty("hashFunction", serializedHashFunction);
 
@@ -73,6 +73,7 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
 
     /**
      * Loads the configuration from the given configuration file.
+     * 
      * @param <Data>
      * @param configurationFilename
      * @return
@@ -96,7 +97,8 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
             AbstractHashFunction hashFunction = (AbstractHashFunction) Base64.decodeToObject(serialisedHashFunction);
             Data prototype = (Data) Base64.decodeToObject(serialisedPrototype);
 
-            result = new ConfigurationFile<Data>(numberOfBuckets, bucketSize, numberOfSynchronizerThreads, preQueueSize,
+            result = new ConfigurationFile<Data>(numberOfBuckets, bucketSize, numberOfSynchronizerThreads,
+                    preQueueSize,
                     readDatabaseDirectory, hashFunction, prototype);
         } catch (ConfigurationException ex) {
             throw new IOException(ex);

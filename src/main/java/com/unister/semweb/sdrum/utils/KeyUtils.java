@@ -1,8 +1,8 @@
 package com.unister.semweb.sdrum.utils;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,19 +21,21 @@ public class KeyUtils {
         }
         return b;
     }
-    
+
     /**
      * Transforms the given byte array (8 bytes) to the corresponding long value.
+     * 
      * @param bytes
      * @return
      */
     public static long transformFromByte(byte[] bytes) {
-        if (bytes.length != 8) return 0;
+        if (bytes.length != 8)
+            return 0;
         ByteBuffer converter = ByteBuffer.wrap(bytes);
         return converter.getLong();
     }
-    
-    /** Transforms the given long value into a byte array.*/
+
+    /** Transforms the given long value into a byte array. */
     public static byte[] transformFromLong(long toTransform) {
         ByteBuffer converter = ByteBuffer.allocate(8);
         converter.putLong(toTransform);
@@ -108,7 +110,7 @@ public class KeyUtils {
      *         0 if key1 == key2<br>
      *         1 if key1 > key2
      */
-    //TODO If the given keys have different length the function will not give the right result.
+    // TODO If the given keys have different length the function will not give the right result.
     public static byte compareKey(byte[] key1, byte[] key2, int length) {
         int minLength = Math.min(key1.length, key2.length);
         for (int k = 0; k < minLength; k++) {
@@ -118,9 +120,9 @@ public class KeyUtils {
                 }
                 continue;
             }
-            
-//            byte k1 = key1[k];
-//            byte k2 = key2[k];
+
+            // byte k1 = key1[k];
+            // byte k2 = key2[k];
             int k1 = key1[k] & 0xFF;
             int k2 = key2[k] & 0xFF;
             if (k1 < k2) {
@@ -131,7 +133,7 @@ public class KeyUtils {
             }
 
         }
-        
+
         log.error("uncomparable values compared");
         if (key1.length < key2.length) {
             return -1;
@@ -159,14 +161,17 @@ public class KeyUtils {
         return generateHashFunction(min, max, Sbuckets, bucketSize, suffix, prefix);
     }
 
-    /** Generates a long based range HashFunction 
-     * @throws Exception */
+    /**
+     * Generates a long based range HashFunction
+     * 
+     * @throws Exception
+     */
     public static String generateHashFunction(long min, long max, String[] buckets, int bucketSize, String suffix,
             String prefix) throws Exception {
 
         byte[] bmin = ByteBuffer.allocate(8).putLong(min).array();
         byte[] bmax = ByteBuffer.allocate(8).putLong(max).array();
-//        if(false) return generateHashFunction(bmin, bmax, buckets, bucketSize, suffix, prefix);
+        // if(false) return generateHashFunction(bmin, bmax, buckets, bucketSize, suffix, prefix);
         long range = (long) Math.ceil((double) (max - min) / buckets.length);
         StringBuilder sb = new StringBuilder();
 
@@ -201,9 +206,12 @@ public class KeyUtils {
             if (iSum[i] > 255) {
                 iSum[i] -= 255;
                 if (i == 0) {
-                    throw new Exception("The sum of the two given values is out of range.");
+                    System.err.println("The sum of the two given values is out of range.\n   " + Arrays.toString(b1)
+                            + "\n + " + Arrays.toString(b2) + "\n = " + Arrays.toString(iSum));
+                } else {
+
+                    iSum[i - 1] += 1;
                 }
-                iSum[i - 1] += 1;
             }
             sum[i] = (byte) iSum[i];
         }
@@ -241,11 +249,11 @@ public class KeyUtils {
             unsigned[i] = signed[i] & 0xFF;
         return unsigned;
     }
-    
-    /** Makes a string representation from the key*/
+
+    /** Makes a string representation from the key */
     public static String transform(byte[] key) {
         StringBuilder result = new StringBuilder();
-        for(int i = 0; i < key.length; i++) {
+        for (int i = 0; i < key.length; i++) {
             result.append(key[i]);
             result.append(' ');
         }
@@ -277,9 +285,9 @@ public class KeyUtils {
             }
             range[i] = (byte) iRange[i];
         }
-        if(tmprest > 0) {
-            iRange[max.length - 1] ++;
-            range[max.length - 1] = (byte)iRange[max.length - 1];
+        if (tmprest > 0) {
+            iRange[max.length - 1]++;
+            range[max.length - 1] = (byte) iRange[max.length - 1];
         }
         StringBuilder sb = new StringBuilder();
 
@@ -298,36 +306,71 @@ public class KeyUtils {
         return sb.toString();
     }
 
-    public static void generateHashFunctionBigInteger(long min, long max, int buckets, int bucketSize, String suffix, String prefix){
-        BigDecimal bigMin = new BigDecimal(min);
-        BigDecimal bigMax = new BigDecimal(max);
-        BigDecimal bigBuckets = new BigDecimal(buckets);
-        
-        BigDecimal bigMaxMinDifference = bigMax.subtract(bigMin);
-        BigDecimal bigRange = bigMaxMinDifference.divide(bigBuckets, RoundingMode.CEILING);
-        
-        BigDecimal bigVal = new BigDecimal(bigMin.toBigInteger());
-        
+    public static void generateHashFunctionBigInteger(long min, long max, int buckets, int bucketSize, String suffix,
+            String prefix) {
+        BigInteger bigMin = BigInteger.valueOf(min);
+        BigInteger bigMax = BigInteger.valueOf(max);
+        BigInteger bigBuckets = BigInteger.valueOf(buckets);
+
+        BigInteger bigMaxMinDifference = bigMax.subtract(bigMin);
+        BigInteger bigRange = bigMaxMinDifference.divide(bigBuckets);
+
+        BigInteger bigVal = bigMin;
+
         StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < buckets; ++i) {
+        for (int i = 0; i < buckets; ++i) {
             bigVal = bigVal.add(bigRange);
             if (bigVal.compareTo(bigMax) == 0 || bigVal.compareTo(bigMax) == 1) {
-                bigVal = new BigDecimal(bigMax.toBigInteger());
+                bigVal = bigMax;
             }
-            
-            byte[] bval = ByteBuffer.allocate(8).putLong(bigVal.longValue()).array();
-            
+
+            byte[] bval = ByteBuffer.allocate(12).put(bigVal.toByteArray()).array();
+
             for (int j = 0; j < bval.length; j++) {
                 int k = bval[j] & 0xff;
                 sb.append(k + "\t");
             }
             sb.append(prefix + i + suffix + "\t" + bucketSize + "\n");
         }
-        
+
+        // BigDecimal bigMin = new BigDecimal(min);
+        // BigDecimal bigMax = new BigDecimal(max);
+        // BigDecimal bigBuckets = new BigDecimal(buckets);
+        //
+        // BigDecimal bigMaxMinDifference = bigMax.subtract(bigMin);
+        // BigDecimal bigRange = bigMaxMinDifference.divide(bigBuckets, RoundingMode.CEILING);
+        //
+        // BigDecimal bigVal = new BigDecimal(bigMin.toBigInteger());
+        //
+        // StringBuilder sb = new StringBuilder();
+        // for (int i = 0; i < buckets; ++i) {
+        // bigVal = bigVal.add(bigRange);
+        // if (bigVal.compareTo(bigMax) == 0 || bigVal.compareTo(bigMax) == 1) {
+        // bigVal = new BigDecimal(bigMax.toBigInteger());
+        // }
+        //
+        // byte[] bval = ByteBuffer.allocate(8).putLong(bigVal.longValue()).array();
+        //
+        // for (int j = 0; j < bval.length; j++) {
+        // int k = bval[j] & 0xff;
+        // sb.append(k + "\t");
+        // }
+        // sb.append(prefix + i + suffix + "\t" + bucketSize + "\n");
+        // }
+
         System.out.println(sb.toString());
     }
-    
-    public static void main(String[] args) {
-		generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 1024, 10000, ".db", "");
-	}
+
+    public static void main(String[] args) throws Exception {
+        // byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        // byte[] h1 = new byte[] { (byte) 64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        // byte[] h2 = new byte[] { (byte) 128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        // byte[] h3 = new byte[] { (byte) -64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        // byte[] h4 = new byte[] { (byte) -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        //
+        // String result = generateHashFunction(h3, h4, 4096, 10000, ".db", "");
+        // System.out.println(result);
+
+        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 512, 10000, ".db", "");
+    }
 }

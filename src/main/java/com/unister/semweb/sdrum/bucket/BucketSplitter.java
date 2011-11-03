@@ -19,27 +19,27 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * 
  * @author m.gleditzsch
  */
-//TODO: remember KeyComposition in RangeHashFunction
+// TODO: remember KeyComposition in RangeHashFunction
 public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
 
     /** the directory of the database */
     protected String databaseDir;
-    
+
     /** the file to split */
     protected HeaderIndexFile<Data> sourceFile;
-    
+
     /** the old HashFunction */
     protected RangeHashFunction oldHashFunction;
-    
+
     /** the new HashFunction */
     protected RangeHashFunction newHashFunction;
 
     /** An arraylist containing the new bucketIds */
     protected IntArrayList newBucketIds;
-    
+
     /** the old bucket-id */
     protected int oldBucketId;
-    
+
     /**
      * Instantiates a new BucketSplitter
      * 
@@ -71,6 +71,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         // store hashfunction
         newHashFunction.writeToFile();
     }
+
     /** Dummy Constructor with no function */
     public BucketSplitter() {
         // TODO Auto-generated constructor stub
@@ -184,8 +185,10 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
      * @return int
      */
     protected int determineElementsPerPart(int numberOfPartitions) {
-        return (int) Math.ceil((sourceFile.getFilledUpFromContentStart() /
-                sourceFile.getElementSize() / numberOfPartitions));
+        double numberOfElementsWithinFile = sourceFile.getFilledUpFromContentStart() / sourceFile.getElementSize();
+        double elementsPerPart = numberOfElementsWithinFile / numberOfPartitions;
+        int roundNumber = (int) Math.ceil(elementsPerPart);
+        return roundNumber;
     }
 
     /**

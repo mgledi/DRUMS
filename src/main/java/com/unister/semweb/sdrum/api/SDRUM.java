@@ -18,12 +18,12 @@ import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
-import com.unister.semweb.sdrum.file.IndexForHeaderIndexFile;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.sync.SyncManager;
 import com.unister.semweb.sdrum.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.UpdateOnlySynchronizer;
+import com.unister.semweb.sdrum.utils.KeySearcher;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
@@ -251,6 +251,20 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * @return the to the keys corresponding data
      */
     public List<Data> select(byte[]... keys) throws FileStorageException {
+        return select(1, keys);
+    }
+
+    /**
+     * Takes a list of keys and searches for that in all buckets. To speed up the search the size of the read buffer can
+     * be specified that will be used to read in the database file. Greater values speed up more. The read buffer is the
+     * number of elements of data that should hold in memory.
+     * 
+     * @param readBuffer
+     * @param keys
+     * @return
+     * @throws FileStorageException
+     */
+    public List<Data> select(int readBuffer, byte[]... keys) throws FileStorageException {
         List<Data> result = new ArrayList<Data>();
         IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = searchForBuckets(keys);
         String filename;
@@ -262,7 +276,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
                         HEADER_FILE_LOCK_RETRY, prototype.key.length, elementSize);
 
                 ArrayList<byte[]> keyList = entry.value;
-                result.addAll(searchForData(indexFile, keyList.toArray(new byte[keyList.size()][])));
+                result.addAll(searchForData(indexFile, readBuffer, keyList.toArray(new byte[keyList.size()][])));
             } catch (FileLockException ex) {
                 log.error("Could not access the file {} within {} retries. The file seems to be locked.", filename,
                         HEADER_FILE_LOCK_RETRY);
@@ -338,6 +352,93 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         return bucketKeyMapping;
     }
 
+    public List<Data> searchForData(HeaderIndexFile<Data> indexFile, int elementBuffer, byte[]... keys)
+            throws IOException {
+        SortMachine.quickSort(keys);
+        List<Data> result = new ArrayList<Data>();
+
+        long position = 0;
+        ByteBuffer buffer = ByteBuffer.allocate(elementBuffer * elementSize);
+        while (position < indexFile.getFilledUpFromContentStart()) {
+            indexFile.read(position, buffer);
+            buffer.flip();
+
+            List<Data> extractedData = extractAndRemoveFoundKey(buffer, keys);
+            result.addAll(extractedData);
+            position = position + (elementBuffer * elementSize);
+            buffer.clear();
+        }
+
+        // ByteBuffer buffer = ByteBuffer.allocate(prototype.getByteBufferSize());
+        // while (position < indexFile.getFilledUpFromContentStart()) {
+        // indexFile.read(position, buffer);
+        // buffer.flip();
+        // byte[] readKey = new byte[keySize];
+        // buffer.get(readKey);
+        //
+        // if (contains(readKey, keys)) {
+        // buffer.position(0);
+        // Data oneData = prototype.fromByteBuffer(buffer);
+        // result.add(oneData);
+        // }
+        // buffer.clear();
+        // position = position + elementSize;
+        // }
+
+        return result;
+    }
+
+    /**
+     * Takes a buffer and searches for the <code>keys</code> with the buffer. If one Data is found with that key the
+     * Data will add to the result and the key will be removed from <code>keys</code> array.
+     * 
+     * @param buffer
+     * @param keys
+     * @return
+     */
+    private List<Data> extractAndRemoveFoundKey(ByteBuffer buffer, byte[]... keys) {
+        List<Data> result = new ArrayList<Data>();
+
+        while (buffer.position() < buffer.limit()) {
+            byte[] oneData = new byte[elementSize];
+            buffer.get(oneData);
+            byte[] readKey = Arrays.copyOfRange(oneData, 0, keySize);
+            int indexOfKey = KeySearcher.searchFor(keys, readKey);
+            if (indexOfKey >= 0) {
+                Data newData = prototype.fromByteBuffer(ByteBuffer.wrap(oneData));
+                result.add(newData);
+                // keys = (byte[][]) ArrayUtils.remove(keys, indexOfKey);
+            }
+        }
+
+        // while (buffer.position() < buffer.limit()) {
+        // byte[] oneData = new byte[elementSize];
+        // buffer.get(oneData);
+        // byte[] readKey = Arrays.copyOfRange(oneData, 0, keySize);
+        // int indexOfKey = contains(readKey, keys);
+        // if (indexOfKey >= 0) {
+        // Data newData = prototype.fromByteBuffer(ByteBuffer.wrap(oneData));
+        // result.add(newData);
+        // keys = (byte[][]) ArrayUtils.remove(keys, indexOfKey);
+        // }
+        // }
+        return result;
+    }
+
+    /**
+     * Searches for <code>toSearch</code> within the <code>keys</code>. If it is found, the index of the key will
+     * returned, otherwise -1.
+     */
+    private int contains(byte[] toSearch, byte[]... keys) {
+        for (int i = 0; i < keys.length; i++) {
+            if (KeyUtils.compareKey(keys[i], toSearch) == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // TODO Method doesn't work
     /**
      * Searches for the {@link AbstractKVStorable}s corresponding the given <code>keys</code> within the given
      * <code>indexFile</code>. This is done by using the {@link IndexForHeaderIndexFile} in the given
@@ -350,51 +451,51 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      *            the keys to search for
      * @return Arraylist which contains the found data. Can be less than the number of given keys
      */
-    public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[]... keys) throws IOException {
-        SortMachine.quickSort(keys);
-        List<Data> result = new ArrayList<Data>();
-
-        IndexForHeaderIndexFile index = indexFile.getIndex(); // Pointer to the Index
-        int actualChunkIdx = 0, lastChunkIdx = -1;
-        long actualChunkOffset = 0, oldChunkOffset = -1;
-        int indexInChunk = 0;
-        ByteBuffer workingBuffer = ByteBuffer.allocate(indexFile.getChunkSize());
-        byte[] tmpB = new byte[elementSize]; // stores temporarily the bytestream of an object
-        for (byte[] key : keys) {
-            // get actual chunkIndex
-            actualChunkIdx = index.getChunkId(key);
-            actualChunkOffset = index.getStartOffsetOfChunk(actualChunkIdx);
-
-            // if it is the same chunk as in the last step, use the old readbuffer
-            if (actualChunkIdx != lastChunkIdx) {
-                // if we have read a chunk
-                if (oldChunkOffset > -1) {
-                    // indexFile.write(oldChunkOffset, workingBuffer);
-                    indexFile.read(oldChunkOffset, workingBuffer);
-                    indexInChunk = 0;
-                }
-                // read a new part to the readBuffer
-                indexFile.read(actualChunkOffset, workingBuffer);
-            }
-            // find offset in workingBuffer
-            indexInChunk = findElementInReadBuffer(workingBuffer, key, indexInChunk);
-            if (indexInChunk == -1) {
-                indexInChunk = 0;
-                continue;
-            }
-            // read element from workingBuffer
-            workingBuffer.position(indexInChunk);
-            workingBuffer.get(tmpB);
-            result.add(prototype.fromByteBuffer(ByteBuffer.wrap(tmpB)));
-            if (indexInChunk == -1) {
-                log.warn("Element with key {} was not found and therefore not updated", key);
-                indexInChunk = 0;
-            }
-            lastChunkIdx = actualChunkIdx; // remember last chunk
-            oldChunkOffset = actualChunkOffset; // remember last offset of the last chunk
-        }
-        return result;
-    }
+    // public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[]... keys) throws IOException {
+    // SortMachine.quickSort(keys);
+    // List<Data> result = new ArrayList<Data>();
+    //
+    // IndexForHeaderIndexFile index = indexFile.getIndex(); // Pointer to the Index
+    // int actualChunkIdx = 0, lastChunkIdx = -1;
+    // long actualChunkOffset = 0, oldChunkOffset = -1;
+    // int indexInChunk = 0;
+    // ByteBuffer workingBuffer = ByteBuffer.allocate(indexFile.getChunkSize());
+    // byte[] tmpB = new byte[elementSize]; // stores temporarily the bytestream of an object
+    // for (byte[] key : keys) {
+    // // get actual chunkIndex
+    // actualChunkIdx = index.getChunkId(key);
+    // actualChunkOffset = index.getStartOffsetOfChunk(actualChunkIdx);
+    //
+    // // if it is the same chunk as in the last step, use the old readbuffer
+    // if (actualChunkIdx != lastChunkIdx) {
+    // // if we have read a chunk
+    // if (oldChunkOffset > -1) {
+    // // indexFile.write(oldChunkOffset, workingBuffer);
+    // indexFile.read(oldChunkOffset, workingBuffer);
+    // indexInChunk = 0;
+    // }
+    // // read a new part to the readBuffer
+    // indexFile.read(actualChunkOffset, workingBuffer);
+    // }
+    // // find offset in workingBuffer
+    // indexInChunk = findElementInReadBuffer(workingBuffer, key, indexInChunk);
+    // if (indexInChunk == -1) {
+    // indexInChunk = 0;
+    // continue;
+    // }
+    // // read element from workingBuffer
+    // workingBuffer.position(indexInChunk);
+    // workingBuffer.get(tmpB);
+    // result.add(prototype.fromByteBuffer(ByteBuffer.wrap(tmpB)));
+    // if (indexInChunk == -1) {
+    // log.warn("Element with key {} was not found and therefore not updated", key);
+    // indexInChunk = 0;
+    // }
+    // lastChunkIdx = actualChunkIdx; // remember last chunk
+    // oldChunkOffset = actualChunkOffset; // remember last offset of the last chunk
+    // }
+    // return result;
+    // }
 
     /**
      * Returns the number of elements in the database.

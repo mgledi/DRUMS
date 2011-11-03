@@ -62,6 +62,14 @@ public class SDRUM_API {
         return table;
     }
 
+    /**
+     * Stores a new configuration file for the given {@link SDRUM}.
+     * 
+     * @param <Data>
+     * @param sdrum
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static <Data extends AbstractKVStorable<Data>> void storeasNewConfigFile(SDRUM<Data> sdrum)
             throws IOException, ClassNotFoundException {
         ConfigurationFile<Data> oldConfig = ConfigurationFile
@@ -103,9 +111,7 @@ public class SDRUM_API {
         File databaseDirectoryFile = new File(databaseDirectory);
         if (databaseDirectoryFile.exists()) {
             deleteDatabaseFilesWithinDirectory(databaseDirectory);
-        }
-        else
-        {
+        } else {
             databaseDirectoryFile.mkdir();
         }
 

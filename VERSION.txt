@@ -1,3 +1,7 @@
+Version 0.1.10-SNAPSHOT
+ - new feature: SDRUM_API: new method "storeasNewConfigFile" to store the configuration file 
+ - new feature: BucketSplitting: can split a bucket to several ones (package "bucket")
+ 
 Version 0.1.9-SNAPSHOT
  - Bug fix: BucketConainer: While adding a new element it was possible that another
                             thread access the bucket in parallel and want to add

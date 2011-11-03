@@ -371,6 +371,6 @@ public class KeyUtils {
         // String result = generateHashFunction(h3, h4, 4096, 10000, ".db", "");
         // System.out.println(result);
 
-        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 512, 10000, ".db", "");
+        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 64, 800000, ".db", "");
     }
 }

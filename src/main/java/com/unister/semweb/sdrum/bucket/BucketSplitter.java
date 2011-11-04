@@ -29,16 +29,19 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
     protected HeaderIndexFile<Data> sourceFile;
 
     /** the old HashFunction */
-    protected RangeHashFunction oldHashFunction;
+    protected RangeHashFunction hashFunction;
 
     /** the new HashFunction */
-    protected RangeHashFunction newHashFunction;
+    // protected RangeHashFunction newHashFunction;
 
     /** An arraylist containing the new bucketIds */
     protected IntArrayList newBucketIds;
 
     /** the old bucket-id */
     protected int oldBucketId;
+
+    private int keySize;
+    private Data prototype;
 
     /**
      * Instantiates a new BucketSplitter
@@ -50,31 +53,34 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
      * @throws IOException
      * @throws FileLockException
      */
-    public BucketSplitter(String databaseDir, RangeHashFunction hashFunction, int bucketId, int numberOfPartitions)
-            throws IOException, FileLockException {
-        this.oldHashFunction = hashFunction;
+    public BucketSplitter(String databaseDir, RangeHashFunction hashFunction, Data prototype) {
+        this.hashFunction = hashFunction;
+        this.keySize = hashFunction.keySize;
+        // this.newHashFunction = hashFunction.copy();
         this.databaseDir = databaseDir;
+        this.prototype = prototype;
+    }
+
+    public void split(int bucketId, int numberOfPartitions) throws IOException, FileLockException {
         this.oldBucketId = bucketId;
         // open the file (READ_ONLY)
         String fileName = hashFunction.getFilename(bucketId);
-        this.sourceFile = new HeaderIndexFile<Data>(databaseDir + "/" + fileName, 100);
+        this.sourceFile = new HeaderIndexFile<Data>(databaseDir + "/" + fileName, AccessMode.READ_WRITE, 100,
+                hashFunction.keySize,
+                prototype.getByteBufferSize());
 
         // determine new thresholds
         byte[][] keysToInsert = determineNewLargestElements(numberOfPartitions);
 
-        // adapt HashFunction
-        this.newHashFunction = generateNewHashFunction(keysToInsert, bucketId);
+        // Replace the old bucket line with the new ones.
+        hashFunction.replace(bucketId, keysToInsert, hashFunction.getBucketSize(bucketId));
 
         // move elements to files
-        this.moveElements(sourceFile, newHashFunction, databaseDir);
+        this.moveElements(sourceFile, hashFunction, databaseDir);
         sourceFile.delete();
         // store hashfunction
-        newHashFunction.writeToFile();
-    }
+        hashFunction.writeToFile();
 
-    /** Dummy Constructor with no function */
-    public BucketSplitter() {
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -91,12 +97,13 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         ByteBuffer elem = ByteBuffer.allocate(source.getElementSize());
         HeaderIndexFile<Data> tmp = null;
         newBucketIds = new IntArrayList();
-        long offset = 0, key;
+        long offset = 0;
+        byte[] key = new byte[keySize];
         int oldBucket = -1, newBucket;
         while (offset < source.getFilledUpFromContentStart()) {
             source.read(offset, elem);
             elem.rewind();
-            key = elem.getLong();
+            elem.get(key);
 
             newBucket = targetHashfunction.getBucketId(key);
             if (newBucket != oldBucket) {
@@ -115,67 +122,6 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         }
         if (tmp != null)
             tmp.close();
-    }
-
-    /**
-     * generates a new filename for a subbucket from the given oldName
-     * 
-     * @param subBucket
-     * @param oldName
-     * @return
-     */
-    protected String generateFileName(int subBucket, String oldName) {
-        int dotPos = oldName.lastIndexOf(".");
-        int slashPos = Math.max(oldName.lastIndexOf("/"), oldName.lastIndexOf("\\"));
-        String prefix;
-        String suffix;
-        if (dotPos > slashPos) {
-
-            prefix = oldName.substring(0, dotPos);
-            suffix = oldName.substring(dotPos);
-        } else {
-            prefix = oldName;
-            suffix = "";
-        }
-        return prefix + "_" + subBucket + suffix;
-    }
-
-    /**
-     * Generates the new {@link RangeHashFunction}. Therefore it takes the oldfunction and inserts the new elements.
-     * 
-     * @param keysToInsert
-     * @param bucketId
-     * @return
-     */
-    protected RangeHashFunction generateNewHashFunction(byte[][] keysToInsert, int bucketId) {
-        int numberOfPartitions = keysToInsert.length;
-        int newSize = oldHashFunction.getNumberOfBuckets() - 1 + numberOfPartitions;
-        byte[][] newMaxRangeValues = new byte[newSize][];
-        int[] newBucketSizes = new int[newSize];
-        String[] newFileNames = new String[newSize];
-
-        int k = 0;
-        for (int i = 0; i < oldHashFunction.getNumberOfBuckets(); i++) {
-            if (i != bucketId) {
-                newMaxRangeValues[k] = oldHashFunction.getMaxRange(i);
-                newBucketSizes[k] = oldHashFunction.getBucketSize(i);
-                newFileNames[k] = oldHashFunction.getFilename(i);
-                k++;
-            }
-        }
-        int elementsPerPart = determineElementsPerPart(numberOfPartitions);
-        for (int i = oldHashFunction.getNumberOfBuckets() - 1; i < newSize; i++) {
-            k = i - (oldHashFunction.getNumberOfBuckets() - 1);
-            newMaxRangeValues[i] = keysToInsert[k];
-            newBucketSizes[i] = (int) (0.01 * elementsPerPart);
-            newFileNames[i] = generateFileName(k, oldHashFunction.getFilename(bucketId));
-        }
-
-        return new RangeHashFunction(
-                newMaxRangeValues,
-                newFileNames,
-                newBucketSizes,
-                oldHashFunction.getHashFunctionFile());
     }
 
     /**
@@ -207,7 +153,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
                 offset = ((i + 1) * elementsPerPart - 1) * sourceFile.getElementSize();
             }
 
-            ByteBuffer keyBuffer = ByteBuffer.allocate(oldHashFunction.keySize);
+            ByteBuffer keyBuffer = ByteBuffer.allocate(hashFunction.keySize);
             sourceFile.read(offset, keyBuffer);
             keyBuffer.position(0);
 

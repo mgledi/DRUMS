@@ -77,10 +77,10 @@ public class TestUtils {
         DummyKVStorable[] result = new DummyKVStorable[numberToGenerate];
         for (int i = 0; i < numberToGenerate; i++) {
             DummyKVStorable oneEntry = new DummyKVStorable();
-            oneEntry.setKey(KeyUtils.transformFromLong(randomGenerator.nextLong()));
-            oneEntry.setRelevanceScore(randomGenerator.nextDouble());
-            oneEntry.setParentCount(randomGenerator.nextInt());
-            oneEntry.setTimestamp(randomGenerator.nextLong());
+            oneEntry.setKey(KeyUtils.transformFromLong(i + 1));
+            oneEntry.setRelevanceScore(i - 0.05);
+            oneEntry.setParentCount(i + 1000);
+            oneEntry.setTimestamp(i + 2000);
             result[i] = oneEntry;
         }
         Arrays.sort(result);

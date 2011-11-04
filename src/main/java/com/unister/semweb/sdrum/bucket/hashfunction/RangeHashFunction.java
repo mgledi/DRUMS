@@ -68,7 +68,12 @@ public class RangeHashFunction extends AbstractHashFunction {
         } else {
             this.bucketSizes = bucketSizes;
         }
+        sort();
 
+    }
+
+    /** Sorts the max range values corresponding to the file names and the bucket sizes. */
+    private void sort() {
         sortMachine = new RangeHashSorter(maxRangeValues, filenames, this.bucketSizes);
         sortMachine.quickSort();
         generateBucketIds();
@@ -171,9 +176,9 @@ public class RangeHashFunction extends AbstractHashFunction {
         if (KeyUtils.compareKey(key, maxRangeValues[rightIndex]) > 0) {
             return 0;
         }
-        
+
         byte comp1, comp2;
-        while (leftIndex <= rightIndex) {        	
+        while (leftIndex <= rightIndex) {
             int midIndex = ((rightIndex - leftIndex) / 2) + leftIndex;
             comp2 = KeyUtils.compareKey(key, maxRangeValues[midIndex]);
             if (midIndex == 0) {
@@ -241,17 +246,92 @@ public class RangeHashFunction extends AbstractHashFunction {
         return sb.toString();
     }
 
-
     @Override
     public int getBucketId(String dbFilename) {
-        for(int i=0; i < filenames.length; i++) {
-            if(filenames[i].equals(dbFilename)) {
+        for (int i = 0; i < filenames.length; i++) {
+            if (filenames[i].equals(dbFilename)) {
                 return i;
             }
         }
         return -1;
     }
-    
+
+    /**
+     * Replaces one bucket line within the {@link RangeHashFunction} with the lines given. All added buckets are set to
+     * the specified bucket size. If the <code>bucketId</code> that is to replaced is invalid a
+     * {@link IllegalArgumentException} is thrown.
+     * 
+     * @param keysToInsert
+     * @param bucketId
+     * @return
+     */
+    public void replace(int bucketId, byte[][] keysToInsert, int sizeOfNewBuckets) {
+        if (bucketId < 0 || bucketId >= maxRangeValues.length) {
+            throw new IllegalArgumentException("Invalid bucketId: " + bucketId);
+        }
+        int numberOfPartitions = keysToInsert.length;
+        int newSize = this.getNumberOfBuckets() - 1 + numberOfPartitions;
+        byte[][] newMaxRangeValues = new byte[newSize][];
+        int[] newBucketSizes = new int[newSize];
+        String[] newFileNames = new String[newSize];
+
+        int k = 0;
+        for (int i = 0; i < this.getNumberOfBuckets(); i++) {
+            if (i != bucketId) {
+                newMaxRangeValues[k] = this.getMaxRange(i);
+                newBucketSizes[k] = this.getBucketSize(i);
+                newFileNames[k] = this.getFilename(i);
+                k++;
+            }
+        }
+        for (int i = this.getNumberOfBuckets() - 1; i < newSize; i++) {
+            k = i - (this.getNumberOfBuckets() - 1);
+            newMaxRangeValues[i] = keysToInsert[k];
+            newBucketSizes[i] = sizeOfNewBuckets;
+            newFileNames[i] = generateFileName(k, this.getFilename(bucketId));
+        }
+
+        this.maxRangeValues = newMaxRangeValues;
+        this.filenames = newFileNames;
+        this.bucketSizes = newBucketSizes;
+
+        sort();
+    }
+
+    /**
+     * generates a new filename for a subbucket from the given oldName
+     * 
+     * @param subBucket
+     * @param oldName
+     * @return
+     */
+    protected String generateFileName(int subBucket, String oldName) {
+        int dotPos = oldName.lastIndexOf(".");
+        int slashPos = Math.max(oldName.lastIndexOf("/"), oldName.lastIndexOf("\\"));
+        String prefix;
+        String suffix;
+        if (dotPos > slashPos) {
+
+            prefix = oldName.substring(0, dotPos);
+            suffix = oldName.substring(dotPos);
+        } else {
+            prefix = oldName;
+            suffix = "";
+        }
+        return prefix + "_" + subBucket + suffix;
+    }
+
+    /**
+     * Makes a copy of the current {@link RangeHashFunction}. <b>Note: the file name is also copied. Make sure that you
+     * don't overwrite the file if you change one of the functions.</b>
+     * 
+     * @return
+     */
+    public RangeHashFunction copy() {
+        RangeHashFunction clone = new RangeHashFunction(maxRangeValues, filenames, bucketSizes, hashFunctionFile);
+        return clone;
+    }
+
     /**
      * The header of could contain characters which are not numbers. Some of them can be translated into bytes. E.g.
      * char would be two byte.

@@ -104,10 +104,10 @@ public class RangeHashSorter implements Serializable {
         int j = right;
         byte[] pivot = ranges[(left + right) / 2];
         while (i <= j) {
-            while (KeyUtils.compareKey(ranges[i],pivot) < 0) {
+            while (KeyUtils.compareKey(ranges[i], pivot) < 0) {
                 i++;
             }
-            while (KeyUtils.compareKey(ranges[j],pivot) > 0) {
+            while (KeyUtils.compareKey(ranges[j], pivot) > 0) {
                 j--;
             }
 
@@ -132,14 +132,17 @@ public class RangeHashSorter implements Serializable {
         for (int p = left + 1; p <= right; p++) {
             byte[] tmpRange = ranges[p];
             String tmpFilename = filenames[p];
+            int tmpBucketSize = bucketSizes[p];
 
             int j;
-            for (j = p; j > left && KeyUtils.compareKey(tmpRange,ranges[j - 1]) < 0; j--) {
+            for (j = p; j > left && KeyUtils.compareKey(tmpRange, ranges[j - 1]) < 0; j--) {
                 ranges[j] = ranges[j - 1];
                 filenames[j] = filenames[j - 1];
+                bucketSizes[j] = bucketSizes[j - 1];
             }
             ranges[j] = tmpRange;
             filenames[j] = tmpFilename;
+            bucketSizes[j] = tmpBucketSize;
         }
     }
 

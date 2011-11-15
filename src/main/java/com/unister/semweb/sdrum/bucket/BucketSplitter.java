@@ -40,8 +40,8 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
     /** the old bucket-id */
     protected int oldBucketId;
 
-    private int keySize;
-    private Data prototype;
+    protected int keySize;
+    protected Data prototype;
 
     /**
      * Instantiates a new BucketSplitter
@@ -61,7 +61,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         this.prototype = prototype;
     }
 
-    public void split(int bucketId, int numberOfPartitions) throws IOException, FileLockException {
+    public void splitAndStoreConfiguration(int bucketId, int numberOfPartitions) throws IOException, FileLockException {
         this.oldBucketId = bucketId;
         // open the file (READ_ONLY)
         String fileName = hashFunction.getFilename(bucketId);
@@ -71,6 +71,10 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
 
         // determine new thresholds
         byte[][] keysToInsert = determineNewLargestElements(numberOfPartitions);
+
+        // We replace the last threshold with the original value. So the theoretical border of the bucket remains.
+        byte[] lastKey = hashFunction.getMaxRange(bucketId);
+        keysToInsert[keysToInsert.length - 1] = lastKey;
 
         // Replace the old bucket line with the new ones.
         hashFunction.replace(bucketId, keysToInsert, hashFunction.getBucketSize(bucketId));
@@ -148,8 +152,10 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         long offset;
         for (int i = 0; i < numberOfPartitions; i++) {
             if (i == numberOfPartitions - 1) {
+                // Handling of last partition
                 offset = sourceFile.getFilledUpFromContentStart() - sourceFile.getElementSize();
             } else {
+                // Handling of all other partitions
                 offset = ((i + 1) * elementsPerPart - 1) * sourceFile.getElementSize();
             }
 

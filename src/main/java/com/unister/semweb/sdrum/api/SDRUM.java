@@ -110,7 +110,12 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
 
             buckets = new Bucket[hashFunction.getNumberOfBuckets()];
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
-                buckets[i] = new Bucket<Data>(i, hashFunction.getBucketSize(i), prototype);
+                try {
+                    buckets[i] = new Bucket<Data>(i, hashFunction.getBucketSize(i), prototype.clone());
+                } catch (CloneNotSupportedException ex) {
+                    log.error("Prototype doesn't provide clone functionality.", ex);
+                    throw new RuntimeException(ex);
+                }
             }
             bucketContainer = new BucketContainer<Data>(buckets, sizeOfPreQueue, hashFunction);
             synchronizerFactory = new SynchronizerFactory<Data>(prototype);
@@ -218,12 +223,18 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         }
 
         for (IntObjectCursor<ArrayList<Data>> entry : bucketDataMapping) {
-            UpdateOnlySynchronizer<Data> synchronizer = new UpdateOnlySynchronizer<Data>(this.databaseDirectory + "/" +
-                    hashFunction.getFilename(entry.key), prototype);
-            @SuppressWarnings("unchecked")
-            Data[] toUpdate = (Data[]) entry.value.toArray(new AbstractKVStorable[entry.value.size()]);
-            SortMachine.quickSort(toUpdate);
-            synchronizer.upsert(toUpdate);
+            try {
+                UpdateOnlySynchronizer<Data> synchronizer = new UpdateOnlySynchronizer<Data>(this.databaseDirectory
+                        + "/" +
+                        hashFunction.getFilename(entry.key), prototype.clone());
+                @SuppressWarnings("unchecked")
+                Data[] toUpdate = (Data[]) entry.value.toArray(new AbstractKVStorable[entry.value.size()]);
+                SortMachine.quickSort(toUpdate);
+                synchronizer.upsert(toUpdate);
+            } catch (CloneNotSupportedException ex) {
+                log.error("Could not clone the prototype for updating entries.", ex);
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -591,7 +602,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     public AbstractHashFunction getHashFunction() {
         return this.hashFunction;
     }
-    
+
     public void setHashFunction(AbstractHashFunction hash) {
         this.hashFunction = hash;
     }

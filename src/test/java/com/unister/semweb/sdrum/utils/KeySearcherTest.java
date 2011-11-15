@@ -56,7 +56,7 @@ public class KeySearcherTest {
     private byte[][] generateKeysSorted(int numberOfKeys) {
         byte[][] generated = new byte[numberOfKeys][8];
         for (int i = 0; i < numberOfKeys; i++) {
-            byte[] oneKey = KeyUtils.transformFromLong(i);
+            byte[] oneKey = KeyUtils.transformFromLong(i, 8);
             generated[i] = oneKey;
         }
         return generated;

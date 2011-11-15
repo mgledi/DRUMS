@@ -4,6 +4,12 @@ import java.io.File;
 
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 
+/**
+ * Utility class for handling {@link RangeHashFunction} easier.
+ * 
+ * @author n.thieme
+ * 
+ */
 public class RangeHashFunctionTestUtils {
     /**
      * Creates a {@link RangeHashFunction} with the specified number of ranges. Each range has the specified width. All
@@ -15,12 +21,12 @@ public class RangeHashFunctionTestUtils {
      * @return
      */
     public static RangeHashFunction createTestFunction(int numberOfRanges, int rangeWidth, int sizeOfBuckets,
-            String filename) {
+            String filename, int keySize) {
         byte[][] ranges = new byte[numberOfRanges][];
         String[] filenames = new String[numberOfRanges];
         int[] bucketSizes = new int[numberOfRanges];
         for (int i = 0; i < numberOfRanges; i++) {
-            byte[] oneLine = KeyUtils.transformFromLong((i + 1) * rangeWidth);
+            byte[] oneLine = KeyUtils.transformFromLong((i + 1) * rangeWidth, keySize);
             ranges[i] = oneLine;
             filenames[i] = i + ".db";
             bucketSizes[i] = sizeOfBuckets;

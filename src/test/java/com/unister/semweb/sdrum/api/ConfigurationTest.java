@@ -33,7 +33,7 @@ public class ConfigurationTest {
     @Test
     public void writeAndReadTest() throws Exception {
         DummyKVStorable prototype = new DummyKVStorable();
-        prototype.setKey(KeyUtils.transformFromLong(10));
+        prototype.setKey(KeyUtils.transformFromLong(10, prototype.keySize));
 
         ConfigurationFile<DummyKVStorable> file = new ConfigurationFile<DummyKVStorable>(100, 10000, 12, 10000,
                 "/data/tmp/db", new FirstBitHashFunction(100), prototype);

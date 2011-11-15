@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,10 +37,16 @@ public class KeyUtils {
     }
 
     /** Transforms the given long value into a byte array. */
-    public static byte[] transformFromLong(long toTransform) {
+    public static byte[] transformFromLong(long toTransform, int keySize) {
         ByteBuffer converter = ByteBuffer.allocate(8);
         converter.putLong(toTransform);
-        return converter.array();
+        byte[] leadingBytes = new byte[keySize - 8];
+        for (int i = 0; i < leadingBytes.length; i++) {
+            leadingBytes[i] = 0;
+        }
+
+        byte[] result = ArrayUtils.addAll(leadingBytes, converter.array());
+        return result;
     }
 
     /**
@@ -371,6 +378,6 @@ public class KeyUtils {
         // String result = generateHashFunction(h3, h4, 4096, 10000, ".db", "");
         // System.out.println(result);
 
-        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 64, 800000, ".db", "");
+        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 4, 800000, ".db", "");
     }
 }

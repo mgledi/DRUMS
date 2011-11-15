@@ -299,6 +299,15 @@ public class RangeHashFunction extends AbstractHashFunction {
     }
 
     /**
+     * Returns the ranges of this hash function.
+     * 
+     * @return
+     */
+    public byte[][] getRanges() {
+        return this.maxRangeValues;
+    }
+
+    /**
      * generates a new filename for a subbucket from the given oldName
      * 
      * @param subBucket

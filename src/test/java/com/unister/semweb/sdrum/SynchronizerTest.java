@@ -66,14 +66,14 @@ public class SynchronizerTest {
     @Test
     public void addOneEntryInNonEmptyFileLess() throws Exception {
         DummyKVStorable[] toAdd = TestUtils.generateTestdata(1);
-        toAdd[0].setKey(KeyUtils.transformFromLong(10));
+        toAdd[0].setKey(KeyUtils.transformFromLong(10, toAdd[0].keySize));
 
         Synchronizer<DummyKVStorable> synchronizer = new Synchronizer<DummyKVStorable>(testFilename,
                 new DummyKVStorable());
         synchronizer.upsert(toAdd);
 
         DummyKVStorable[] toAddAdditional = TestUtils.generateTestdata(1);
-        toAddAdditional[0].setKey(KeyUtils.transformFromLong(4));
+        toAddAdditional[0].setKey(KeyUtils.transformFromLong(4, toAddAdditional[0].keySize));
         synchronizer.upsert(toAddAdditional);
 
         DummyKVStorable[] originalData = new DummyKVStorable[] { toAddAdditional[0], toAdd[0] };
@@ -85,14 +85,14 @@ public class SynchronizerTest {
     @Test
     public void addOneEntryInNonEmptyFileGreater() throws Exception {
         DummyKVStorable[] toAdd = TestUtils.generateTestdata(1);
-        toAdd[0].setKey(KeyUtils.transformFromLong(4));
+        toAdd[0].setKey(KeyUtils.transformFromLong(4, toAdd[1].keySize));
 
         Synchronizer<DummyKVStorable> synchronizer = new Synchronizer<DummyKVStorable>(testFilename,
                 new DummyKVStorable());
         synchronizer.upsert(toAdd);
 
         DummyKVStorable[] toAddAdditional = TestUtils.generateTestdata(1);
-        toAddAdditional[0].setKey(KeyUtils.transformFromLong(10));
+        toAddAdditional[0].setKey(KeyUtils.transformFromLong(10, toAddAdditional[0].keySize));
         synchronizer.upsert(toAddAdditional);
 
         DummyKVStorable[] originalData = new DummyKVStorable[] { toAdd[0], toAddAdditional[0] };
@@ -157,7 +157,7 @@ public class SynchronizerTest {
 
     private DummyKVStorable createTestDate(long key) {
         DummyKVStorable newDate = new DummyKVStorable();
-        newDate.key = KeyUtils.transformFromLong(key);
+        newDate.key = KeyUtils.transformFromLong(key, newDate.keySize);
         return newDate;
     }
 

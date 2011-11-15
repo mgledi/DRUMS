@@ -64,7 +64,7 @@ public class BucketContainerTest {
         fingerprint = fingerprint << 65;
 
         DummyKVStorable linkData = new DummyKVStorable();
-        linkData.setKey(KeyUtils.transformFromLong(fingerprint));
+        linkData.setKey(KeyUtils.transformFromLong(fingerprint, linkData.keySize));
         linkData.setRelevanceScore(0.34);
         linkData.setParentCount(10);
         linkData.setTimestamp(System.currentTimeMillis());

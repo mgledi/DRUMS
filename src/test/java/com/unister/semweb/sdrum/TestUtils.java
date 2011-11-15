@@ -77,7 +77,29 @@ public class TestUtils {
         DummyKVStorable[] result = new DummyKVStorable[numberToGenerate];
         for (int i = 0; i < numberToGenerate; i++) {
             DummyKVStorable oneEntry = new DummyKVStorable();
-            oneEntry.setKey(KeyUtils.transformFromLong(i + 1));
+            oneEntry.setKey(KeyUtils.transformFromLong(i + 1, oneEntry.keySize));
+            oneEntry.setRelevanceScore(i - 0.05);
+            oneEntry.setParentCount(i + 1000);
+            oneEntry.setTimestamp(i + 2000);
+            result[i] = oneEntry;
+        }
+        Arrays.sort(result);
+        return result;
+    }
+
+    /**
+     * Generates the specified number of test data with the specified width. The width refers to the key. The key starts
+     * at 1 and will be increment by <code>width</code>.
+     * 
+     * @param numberToGenerate
+     * @param width
+     * @return
+     */
+    public static DummyKVStorable[] generateTestdata(int numberToGenerate, int width) {
+        DummyKVStorable[] result = new DummyKVStorable[numberToGenerate];
+        for (int i = 0; i < numberToGenerate; i++) {
+            DummyKVStorable oneEntry = new DummyKVStorable();
+            oneEntry.setKey(KeyUtils.transformFromLong((i * width) + 1, oneEntry.keySize));
             oneEntry.setRelevanceScore(i - 0.05);
             oneEntry.setParentCount(i + 1000);
             oneEntry.setTimestamp(i + 2000);
@@ -97,7 +119,7 @@ public class TestUtils {
                     / (double) allowedUniqueElements;
             long newKey = (long) (dummyValue * maximumValueForKey);
 
-            oneEntry.setKey(KeyUtils.transformFromLong(newKey));
+            oneEntry.setKey(KeyUtils.transformFromLong(newKey, oneEntry.keySize));
             oneEntry.setRelevanceScore(randomGenerator.nextDouble());
             // oneEntry.setParentCount(randomGenerator.nextInt());
             oneEntry.setParentCount(1);
@@ -230,9 +252,10 @@ public class TestUtils {
 
     /** Creates <code>numberOfData</code> dummy {@link DummyKVStorable}. */
     public static DummyKVStorable[] createDummyData(int numberOfData) {
+        DummyKVStorable prototype = new DummyKVStorable();
         DummyKVStorable[] result = new DummyKVStorable[numberOfData];
         for (int i = 0; i < numberOfData; i++) {
-            DummyKVStorable newData = createDummyData(KeyUtils.transformFromLong(i + 1), i, 1d / i);
+            DummyKVStorable newData = createDummyData(KeyUtils.transformFromLong(i + 1, prototype.keySize), i, 1d / i);
             result[i] = newData;
         }
         return result;
@@ -248,9 +271,10 @@ public class TestUtils {
      * @return
      */
     public static DummyKVStorable[] createDummyData(int firstKey, int lastKey) {
+        DummyKVStorable prototype = new DummyKVStorable();
         DummyKVStorable[] result = new DummyKVStorable[lastKey - firstKey];
         for (int i = firstKey; i < lastKey; i++) {
-            DummyKVStorable oneDate = createDummyData(KeyUtils.transformFromLong(i), i + 1, 1d / i);
+            DummyKVStorable oneDate = createDummyData(KeyUtils.transformFromLong(i, prototype.keySize), i + 1, 1d / i);
             result[i - firstKey] = oneDate;
         }
         return result;

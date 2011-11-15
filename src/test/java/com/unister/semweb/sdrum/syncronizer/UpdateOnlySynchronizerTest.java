@@ -29,7 +29,7 @@ public class UpdateOnlySynchronizerTest {
         DummyKVStorable[] linkDataList = new DummyKVStorable[204000];
         for (int i = 0; i < linkDataList.length; i++) {
             linkDataList[i] = new DummyKVStorable();
-            linkDataList[i].setKey(KeyUtils.transformFromLong(i * 1 + 1));
+            linkDataList[i].setKey(KeyUtils.transformFromLong(i * 1 + 1, linkDataList[i].keySize));
             linkDataList[i].setTimestamp(0);
         }
         TestUtils.createFile(dbFileName, linkDataList);

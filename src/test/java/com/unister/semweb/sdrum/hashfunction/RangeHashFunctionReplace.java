@@ -16,6 +16,7 @@ import com.unister.semweb.sdrum.utils.RangeHashFunctionTestUtils;
  */
 public class RangeHashFunctionReplace {
     private static final String rangeHashFunctionFilename = "/tmp/rangeHashFunctionTest.txt";
+    private static final int KEY_SIZE = 8;
 
     /**
      * Creates a {@link RangeHashFunction} with one line and replaces this lines with one single line.
@@ -23,7 +24,7 @@ public class RangeHashFunctionReplace {
     @Test
     public void oneLineOneLine() {
         RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0, 10000,
-                rangeHashFunctionFilename);
+                rangeHashFunctionFilename, KEY_SIZE);
 
         byte[] newLine = new byte[] { 0, 0, 0, 0, 0, 0, 0, (byte) 200 };
         byte[][] newLines = new byte[][] { newLine };
@@ -45,12 +46,12 @@ public class RangeHashFunctionReplace {
     @Test
     public void oneLineFourLines() {
         RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0, 10000,
-                rangeHashFunctionFilename);
+                rangeHashFunctionFilename, KEY_SIZE);
 
-        byte[] newLine1 = KeyUtils.transformFromLong(0);
-        byte[] newLine2 = KeyUtils.transformFromLong(100);
-        byte[] newLine3 = KeyUtils.transformFromLong(1000);
-        byte[] newLine4 = KeyUtils.transformFromLong(10000);
+        byte[] newLine1 = KeyUtils.transformFromLong(0, KEY_SIZE);
+        byte[] newLine2 = KeyUtils.transformFromLong(100, KEY_SIZE);
+        byte[] newLine3 = KeyUtils.transformFromLong(1000, KEY_SIZE);
+        byte[] newLine4 = KeyUtils.transformFromLong(10000, KEY_SIZE);
 
         byte[][] newLines = new byte[][] { newLine1, newLine2, newLine3, newLine4 };
 
@@ -78,12 +79,12 @@ public class RangeHashFunctionReplace {
     @Test
     public void severalLinesLastFourLines() {
         RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100, 1000,
-                rangeHashFunctionFilename);
+                rangeHashFunctionFilename, 8);
 
-        byte[] newLine1 = KeyUtils.transformFromLong(1000);
-        byte[] newLine2 = KeyUtils.transformFromLong(2000);
-        byte[] newLine3 = KeyUtils.transformFromLong(3000);
-        byte[] newLine4 = KeyUtils.transformFromLong(4000);
+        byte[] newLine1 = KeyUtils.transformFromLong(1000, 8);
+        byte[] newLine2 = KeyUtils.transformFromLong(2000, 8);
+        byte[] newLine3 = KeyUtils.transformFromLong(3000, 8);
+        byte[] newLine4 = KeyUtils.transformFromLong(4000, 8);
 
         byte[][] newLines = new byte[][] { newLine1, newLine2, newLine3, newLine4 };
 
@@ -102,12 +103,12 @@ public class RangeHashFunctionReplace {
     @Test
     public void severalLinesMidFourLines() {
         RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100, 1000,
-                rangeHashFunctionFilename);
+                rangeHashFunctionFilename, KEY_SIZE);
 
-        byte[] newLine1 = KeyUtils.transformFromLong(300);
-        byte[] newLine2 = KeyUtils.transformFromLong(325);
-        byte[] newLine3 = KeyUtils.transformFromLong(350);
-        byte[] newLine4 = KeyUtils.transformFromLong(375);
+        byte[] newLine1 = KeyUtils.transformFromLong(300, KEY_SIZE);
+        byte[] newLine2 = KeyUtils.transformFromLong(325, KEY_SIZE);
+        byte[] newLine3 = KeyUtils.transformFromLong(350, KEY_SIZE);
+        byte[] newLine4 = KeyUtils.transformFromLong(375, KEY_SIZE);
 
         byte[][] newLines = new byte[][] { newLine1, newLine2, newLine3, newLine4 };
 
@@ -126,9 +127,9 @@ public class RangeHashFunctionReplace {
     @Test(expected = IllegalArgumentException.class)
     public void invalidBucketId() {
         RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100, 10,
-                rangeHashFunctionFilename);
+                rangeHashFunctionFilename, KEY_SIZE);
 
-        byte[] newLine1 = KeyUtils.transformFromLong(300);
+        byte[] newLine1 = KeyUtils.transformFromLong(300, KEY_SIZE);
         byte[][] newLines = new byte[][] { newLine1 };
 
         testFunction.replace(100, newLines, 10000);

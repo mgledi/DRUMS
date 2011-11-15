@@ -19,8 +19,8 @@ import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.utils.RangeHashFunctionTestUtils;
 
 /**
- * This class is for Testing the BucketSplitter The tests creates one database file and tries to split this file. Also
- * the test data are linear meaning that there is no gap between the keys of the data.
+ * This class is for testing the BucketSplitter The tests creates one database file and tries to split this file. Also
+ * the test data are linear meaning that there is no gap between the keys within the data.
  * 
  * @author m.gleditzsch, n.thieme
  */
@@ -31,12 +31,14 @@ public class BucketSplitterTestLinear {
     private static final String hashFunctionFilename = "/tmp/hash.hs";
 
     private DummyKVStorable prototype;
+    private int prototypeKeySize;
 
     @Before
     public void initialise() throws IOException {
         FileUtils.deleteQuietly(new File(sdrumDirectory));
         new File(sdrumDirectory).mkdirs();
         prototype = new DummyKVStorable();
+        prototypeKeySize = prototype.keySize;
     }
 
     /**
@@ -48,12 +50,12 @@ public class BucketSplitterTestLinear {
     public void oneBucket2Split() throws Exception {
         int numberOfElements = 100;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 100, 10000,
-                hashFunctionFilename);
+                hashFunctionFilename, prototypeKeySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
                 prototype);
-        splitter.split(0, 2);
+        splitter.splitAndStoreConfiguration(0, 2);
 
         SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, AccessMode.READ_ONLY,
                 prototype);
@@ -84,13 +86,13 @@ public class BucketSplitterTestLinear {
     public void oneBucket4Split() throws Exception {
         int numberOfElements = 100;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 100, 10000,
-                hashFunctionFilename);
+                hashFunctionFilename, prototypeKeySize);
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
                 prototype);
-        splitter.split(0, 4);
+        splitter.splitAndStoreConfiguration(0, 4);
 
         SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, AccessMode.READ_ONLY,
                 prototype);
@@ -133,13 +135,13 @@ public class BucketSplitterTestLinear {
     public void oneBigBucketSplit() throws Exception {
         int numberOfElements = 1200000;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 2000000, 10000,
-                hashFunctionFilename);
+                hashFunctionFilename, prototypeKeySize);
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
                 prototype);
-        splitter.split(0, 4);
+        splitter.splitAndStoreConfiguration(0, 4);
 
         SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, AccessMode.READ_ONLY,
                 prototype);
@@ -182,13 +184,13 @@ public class BucketSplitterTestLinear {
     public void splitSecondBucket() throws Exception {
         int numberOfElements = 2400;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(2, 1200, 10000,
-                hashFunctionFilename);
+                hashFunctionFilename, prototypeKeySize);
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
                 prototype);
-        splitter.split(1, 4);
+        splitter.splitAndStoreConfiguration(1, 4);
 
         SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, AccessMode.READ_ONLY,
                 prototype);

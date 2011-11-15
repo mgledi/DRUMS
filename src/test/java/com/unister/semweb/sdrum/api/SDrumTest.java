@@ -75,15 +75,19 @@ public class SDrumTest {
      */
     @Test
     public void insertDifferentRanges() throws Exception {
+        DummyKVStorable prototype = new DummyKVStorable();
         List<DummyKVStorable> expectedFirstRange = new ArrayList<DummyKVStorable>();
-        DummyKVStorable firstRange = TestUtils.createDummyData(KeyUtils.transformFromLong(5), 1, 0.5);
+        DummyKVStorable firstRange = TestUtils
+                .createDummyData(KeyUtils.transformFromLong(5, prototype.keySize), 1, 0.5);
         expectedFirstRange.add(firstRange);
 
-        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10), 12, 0.3);
+        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10, prototype.keySize), 12,
+                0.3);
         expectedFirstRange.add(secondRange);
 
         List<DummyKVStorable> expectedThirdRange = new ArrayList<DummyKVStorable>();
-        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(29), 9, 0.23);
+        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(29, prototype.keySize), 9,
+                0.23);
         expectedThirdRange.add(thirdRange);
 
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
@@ -110,7 +114,7 @@ public class SDrumTest {
     @Test
     public void selectTestSingleElement() throws Exception {
         List<DummyKVStorable> dataList = new ArrayList<DummyKVStorable>();
-        DummyKVStorable data = TestUtils.createDummyData(KeyUtils.transformFromLong(1), 1, 0.23);
+        DummyKVStorable data = TestUtils.createDummyData(KeyUtils.transformFromLong(1, prototype.keySize), 1, 0.23);
         dataList.add(data);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { data };
 
@@ -132,9 +136,12 @@ public class SDrumTest {
     @Test
     public void selectTestSeveralRanges() throws Exception {
         List<DummyKVStorable> rangeData = new ArrayList<DummyKVStorable>();
-        DummyKVStorable firstRange = TestUtils.createDummyData(KeyUtils.transformFromLong(2), 2, 0.24);
-        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10), 10, 0.23);
-        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(12), 19, 0.29);
+        DummyKVStorable firstRange = TestUtils.createDummyData(KeyUtils.transformFromLong(2, prototype.keySize), 2,
+                0.24);
+        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10, prototype.keySize), 10,
+                0.23);
+        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(12, prototype.keySize), 19,
+                0.29);
         rangeData.add(firstRange);
         rangeData.add(secondRange);
         rangeData.add(thirdRange);
@@ -159,7 +166,8 @@ public class SDrumTest {
      */
     @Test
     public void readTestSingleElement() throws Exception {
-        DummyKVStorable testElement = TestUtils.createDummyData(KeyUtils.transformFromLong(1), 2, 0.23);
+        DummyKVStorable testElement = TestUtils.createDummyData(KeyUtils.transformFromLong(1, prototype.keySize), 2,
+                0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { testElement };
         List<DummyKVStorable> expectedData = Arrays.asList(toAdd);
 

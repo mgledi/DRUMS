@@ -1,4 +1,7 @@
-Version 0.1.11-SNAPSHIT
+Version 0.1.11
+  - only new version number to denote a stable version
+  
+Version 0.1.11-SNAPSHOT
  - new feature: RangeHashFunction: getting all ranges
 
 Version 0.1.10-SNAPSHOT

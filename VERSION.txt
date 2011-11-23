@@ -1,3 +1,6 @@
+Version 0.1.13
+ - RangeHashFunction: adding new method that returns all bucketIds for specific prefix 
+ 
 Version 0.1.12
   - KeyUtils: adding new method "startsWith" to examine whether the key array begins
               with another byte array

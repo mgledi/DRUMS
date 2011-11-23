@@ -299,6 +299,56 @@ public class RangeHashFunction extends AbstractHashFunction {
     }
 
     /**
+     * Returns the bucket ids for the given byte prefix. Example: Suppose you have the following ranges:
+     * 1 0 0 0 - 1 1 0 0
+     * 1 1 0 1 - 1 1 1 1
+     * 2 0 0 0 - 2 1 1 1
+     * 
+     * The prefix is 1 then the method will return the bucket ids of first two ranges.
+     * 
+     * If the <code>prefix</code> has more elements than the keys within the hash function an
+     * {@link IllegalArgumentException} is thrown.
+     * 
+     * @param prefix
+     * @return
+     */
+    public int[] getBucketIdsFor(byte[] prefix) throws IllegalArgumentException {
+        // We take one range to get the length of the keys.
+        byte[] oneMaxRange = maxRangeValues[0];
+
+        // If the prefix array has more bytes than the keys then we return the bucket id for the prefix.
+        if (prefix.length > oneMaxRange.length) {
+            throw new IllegalArgumentException(
+                    "The prefix has more bytes as the keys within this hash function. Prefix size: " + prefix.length);
+        }
+
+        // Here determine the smallest and the highest value of the beginning with the prefix.
+        byte[] smallestValue = Arrays.copyOf(prefix, oneMaxRange.length);
+        byte[] greatestValue = Arrays.copyOf(prefix, oneMaxRange.length);
+        Arrays.fill(greatestValue, prefix.length, oneMaxRange.length, (byte) 255);
+
+        // We get the bucket id for the smallest and greatest value.
+        int smallestBucketId = getBucketId(smallestValue);
+        int greatestBucketId = getBucketId(greatestValue);
+
+        // If the greatest bucket id is less than the smallest we swap these values.
+        if (greatestBucketId < smallestBucketId) {
+            int dummyValue = greatestBucketId;
+            greatestBucketId = smallestBucketId;
+            smallestBucketId = dummyValue;
+        }
+
+        // We calculate the number of return values.
+        int numberOfResult = greatestBucketId - smallestBucketId + 1;
+        int result[] = new int[numberOfResult];
+
+        for (int i = 0; i < numberOfResult; i++) {
+            result[i] = i + smallestBucketId;
+        }
+        return result;
+    }
+
+    /**
      * Returns the ranges of this hash function.
      * 
      * @return

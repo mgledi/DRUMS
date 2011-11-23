@@ -1,3 +1,7 @@
+Version 0.1.12
+  - KeyUtils: adding new method "startsWith" to examine whether the key array begins
+              with another byte array
+
 Version 0.1.11
   - only new version number to denote a stable version
   

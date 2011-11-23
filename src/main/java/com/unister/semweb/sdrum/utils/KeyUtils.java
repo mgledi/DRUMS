@@ -150,6 +150,28 @@ public class KeyUtils {
         return 0;
     }
 
+    /**
+     * We have two byte arrays and we want to know whether <code>compare</code> starts <code>toBegin</code>. If so
+     * <code>true</code> will be returned. If <code>toBegin</code> has more bytes then <code>compare</code> it will
+     * return <code>false</code>.
+     * 
+     * @param toBegin
+     * @param compare
+     * @return
+     */
+    public static boolean startsWith(byte[] toBegin, byte[] compare) {
+        if (toBegin.length > compare.length) {
+            return false;
+        }
+
+        for (int i = 0; i < toBegin.length; i++) {
+            if (toBegin[i] != compare[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static String generateHashFunction(byte[] min, byte[] max, int buckets, int bucketSize, String suffix,
             String prefix) throws Exception {
         String[] Sbuckets = new String[buckets];

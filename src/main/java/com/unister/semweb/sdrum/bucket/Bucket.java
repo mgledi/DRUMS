@@ -24,8 +24,8 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
     /** the id of the bucket. Should be known by its {@link BucketContainer} and its {@link AbstractHashFunction} */
     private final int bucketId;
 
-    /** the allowed size of the bucket */
-    private final int allowedBucketSize;
+    /** the allowed size of the bucket. For faster access, should be public */
+    public final int allowedBucketSize;
 
     /** the number of elements in this bucket. For faster access, should be public */
     public int elementsInBucket;

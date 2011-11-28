@@ -32,6 +32,9 @@ import com.unister.semweb.sdrum.synchronizer.Synchronizer;
 public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     private static final Logger log = LoggerFactory.getLogger(SyncManager.class);
 
+    /** at least this * allowedElementsPerBucket Elements have to be in a bucket, before synchronizing the bucket */
+    public static final double MINFILL_BEFORE_SYNC = 0.3;
+
     /** Contains the buckets. */
     public final BucketContainer<Data> bucketContainer;
 
@@ -184,7 +187,9 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
         // if the queue is not full try to fill it
         if (bufferThreads.getQueue().size() < bufferThreads.getMaximumPoolSize()) {
             int bucketId = getLargestBucketId();
-            if (!startNewThread(bucketId)) {
+            Bucket<Data> pointer = bucketContainer.buckets[bucketId];
+            if (pointer.elementsInBucket >= MINFILL_BEFORE_SYNC * pointer.allowedBucketSize
+                    && !startNewThread(bucketId)) {
                 sleep();
             }
         }
@@ -249,8 +254,6 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
                 rememberId = oldBucket.getBucketId();
             }
         }
-
-        // TODO Implement here a threshold. Only if the threshold is reached a bucket should be synchronized!!!!
         return rememberId;
     }
 

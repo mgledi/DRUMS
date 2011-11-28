@@ -337,6 +337,8 @@ public class KeyUtils {
 
     public static void generateHashFunctionBigInteger(long min, long max, int buckets, int bucketSize, String suffix,
             String prefix) {
+        int numberOfBytes = 12;
+
         BigInteger bigMin = BigInteger.valueOf(min);
         BigInteger bigMax = BigInteger.valueOf(max);
         BigInteger bigBuckets = BigInteger.valueOf(buckets);
@@ -347,6 +349,12 @@ public class KeyUtils {
         BigInteger bigVal = bigMin;
 
         StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < numberOfBytes; i++) {
+            sb.append("b\t");
+        }
+
+        sb.append("filename\t");
+        sb.append("bucketsize\n");
         for (int i = 0; i < buckets; ++i) {
             bigVal = bigVal.add(bigRange);
             if (bigVal.compareTo(bigMax) == 0 || bigVal.compareTo(bigMax) == 1) {
@@ -400,6 +408,6 @@ public class KeyUtils {
         // String result = generateHashFunction(h3, h4, 4096, 10000, ".db", "");
         // System.out.println(result);
 
-        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 4, 800000, ".db", "");
+        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 128, 10000, ".db", "");
     }
 }

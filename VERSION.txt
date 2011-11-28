@@ -1,3 +1,8 @@
+Version 0.1.4
+ - SyncManager: Added a threshold to the SynManager. If a bucket reaches the threshold
+                then the bucket can be synchronized. If the threshold is not reaches
+                the bucket is not synchronized. So we prevent unnecessary write operations.
+ 
 Version 0.1.13
  - RangeHashFunction: adding new method that returns all bucketIds for specific prefix 
  

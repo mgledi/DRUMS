@@ -1,4 +1,10 @@
-Version 0.1.4
+Version 0.2.2
+ - SyncManager: Bug fix of the threshold when to write the bucket to disk
+ 
+ Version 0.2.1
+  - no important things happened
+ 
+Version 0.2.0
  - SyncManager: Added a threshold to the SynManager. If a bucket reaches the threshold
                 then the bucket can be synchronized. If the threshold is not reaches
                 the bucket is not synchronized. So we prevent unnecessary write operations.

@@ -187,10 +187,12 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
         // if the queue is not full try to fill it
         if (bufferThreads.getQueue().size() < bufferThreads.getMaximumPoolSize()) {
             int bucketId = getLargestBucketId();
-            Bucket<Data> pointer = bucketContainer.buckets[bucketId];
-            if (pointer.elementsInBucket >= MINFILL_BEFORE_SYNC * pointer.allowedBucketSize
-                    && !startNewThread(bucketId)) {
-                sleep();
+            if(bucketId != -1) {
+                Bucket<Data> pointer = bucketContainer.buckets[bucketId];
+                if (pointer.elementsInBucket >= MINFILL_BEFORE_SYNC * pointer.allowedBucketSize
+                        && !startNewThread(bucketId)) {
+                    sleep();
+                }   
             }
         }
     }

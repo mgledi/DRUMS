@@ -56,7 +56,7 @@ public class RangeHashFunctionBucketidsPrefix {
     }
 
     /**
-     * We search for the bucket ids that confirm to the given preifx. In this text three buckets ids will be returned.
+     * We search for the bucket ids that confirm to the given prefix. In this test three buckets ids will be returned.
      */
     @Test
     public void twoBucketsInTheMiddle() {
@@ -74,6 +74,48 @@ public class RangeHashFunctionBucketidsPrefix {
         Assert.assertEquals(2, bucketIds[0]);
         Assert.assertEquals(3, bucketIds[1]);
         Assert.assertEquals(4, bucketIds[2]);
+    }
+
+    /**
+     * We search for the bucket ids that confirm to the given prefix. In this test the last two buckets ids will be
+     * returned.
+     */
+    @Test
+    public void twoBucketsAtTheEnd() {
+        byte[][] rangeValues = new byte[][] { { 0, 0, 1, 0 }, { 0, 0, 1, 5 }, { 0, 0, 2, 1 }, { 0, 0, 2, 2 },
+                { 0, 0, 3, 0 }, { 0, 0, 4, 0 } };
+        String[] generatedFilenames = generateFilenames(rangeValues.length);
+        int[] bucketSizes = generateBucketSizes(rangeValues.length, BUCKET_SIZE);
+
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, bucketSizes, new File(
+                HASHFUNCTION_FILENAME));
+
+        byte[] prefix = { 0, 0, 3 };
+        int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
+        Assert.assertEquals(2, bucketIds.length);
+        Assert.assertEquals(4, bucketIds[0]);
+        Assert.assertEquals(5, bucketIds[1]);
+    }
+
+    /**
+     * We search for the bucket ids that confirm to the given prefix. In this test the last and the bucket ids will be
+     * returned.
+     */
+    @Test
+    public void twoBucketsAtTheEnd2() {
+        byte[][] rangeValues = new byte[][] { { 0, 0, 1, 0 }, { 0, 0, 1, 5 }, { 0, 0, 2, 1 }, { 0, 0, 2, 2 },
+                { 0, 0, 3, 0 }, { 0, 0, 4, 0 } };
+        String[] generatedFilenames = generateFilenames(rangeValues.length);
+        int[] bucketSizes = generateBucketSizes(rangeValues.length, BUCKET_SIZE);
+
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, bucketSizes, new File(
+                HASHFUNCTION_FILENAME));
+
+        byte[] prefix = { 0, 0, 4 };
+        int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
+        Assert.assertEquals(2, bucketIds.length);
+        Assert.assertEquals(5, bucketIds[0]);
+        Assert.assertEquals(0, bucketIds[1]);
     }
 
     /**

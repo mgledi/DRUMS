@@ -331,19 +331,17 @@ public class RangeHashFunction extends AbstractHashFunction {
         int smallestBucketId = getBucketId(smallestValue);
         int greatestBucketId = getBucketId(greatestValue);
 
-        // If the greatest bucket id is less than the smallest we swap these values.
+        // We calculate modulo in the next step. If the greatest bucket id is less than the smallest bucket id (this is
+        // the case if we look at the last and first element of the ranges) then we add the number of ranges. Modulo the
+        // number of ranges is 0. the addition annihilates.
         if (greatestBucketId < smallestBucketId) {
-            int dummyValue = greatestBucketId;
-            greatestBucketId = smallestBucketId;
-            smallestBucketId = dummyValue;
+            greatestBucketId = greatestBucketId + maxRangeValues.length;
         }
 
-        // We calculate the number of return values.
         int numberOfResult = greatestBucketId - smallestBucketId + 1;
-        int result[] = new int[numberOfResult];
-
-        for (int i = 0; i < numberOfResult; i++) {
-            result[i] = i + smallestBucketId;
+        int[] result = new int[numberOfResult];
+        for (int i = smallestBucketId; i <= greatestBucketId; i++) {
+            result[i - smallestBucketId] = i % maxRangeValues.length;
         }
         return result;
     }

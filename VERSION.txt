@@ -1,3 +1,6 @@
+Version 0.2.3
+ - RangeHashFunction: Bug fix within getBucketIdsFpr(prefix), handles border correctly
+ 
 Version 0.2.2
  - SyncManager: Bug fix of the threshold when to write the bucket to disk
  

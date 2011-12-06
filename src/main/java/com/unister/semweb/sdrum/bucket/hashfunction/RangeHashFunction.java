@@ -309,6 +309,10 @@ public class RangeHashFunction extends AbstractHashFunction {
      * If the <code>prefix</code> has more elements than the keys within the hash function an
      * {@link IllegalArgumentException} is thrown.
      * 
+     * TODO: THIS METHODS IS NOT COMPLETE AND CAUSES AN INAPPROPIATE RESULT. IF ALL RANGES HAVE THE SAME PREFIX THE
+     * METHOD DOESN'T RETURNS ALL RANGES IF THE GIVEN prefix IS EQUAL TO THE PREFIX OF ALL RANGES. INSTEAD IT RETURNS
+     * ONLY ONE BUCKET ID NOT ALL.
+     * 
      * @param prefix
      * @return
      */

@@ -45,8 +45,9 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
     private int numberOfBuckets = 0;
 
     private int countElementsRead = 0;
-    
+
     private String directory;
+
     /**
      * Initialises the iterator with the hash function.
      * 
@@ -68,15 +69,15 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
      */
     @Override
     public boolean hasNext() {
-        if (readBuffer != null && readBuffer.remaining() != 0 ) {
+        if (readBuffer != null && readBuffer.remaining() != 0) {
             return true;
         } else if (actualFile != null && actualFileOffset < actualFile.getFilledUpFromContentStart()) {
             return true;
-        } else if (actualBucketId < numberOfBuckets-1) { // TODO: this is weak, there could be empty buckets
+        } else if (actualBucketId < numberOfBuckets - 1) { // TODO: this is weak, there could be empty buckets
             return true;
         }
-        
-        if(actualFile != null) {
+
+        if (actualFile != null) {
             actualFile.close();
         }
         return false;
@@ -85,16 +86,22 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
     @Override
     public Data next() {
         try {
-            if(!handleFile()) {
+            while (handleFile() && readBuffer.remaining() == 0) {
+                handleReadBuffer();
+            }
+
+            if (readBuffer.remaining() == 0) {
                 return null;
             }
-            handleReadBuffer();
-            if(readBuffer.remaining() == 0) {
-                return null;
-            }
+            // if (!handleFile()) {
+            // return null;
+            // }
+            // if (readBuffer.remaining() == 0) {
+            // return null;
+            // }
             readBuffer.get(actualDestination);
             Data d = prototype.fromByteBuffer(ByteBuffer.wrap(actualDestination));
-            countElementsRead ++;
+            countElementsRead++;
             return d;
         } catch (FileLockException e) {
             // TODO Auto-generated catch block
@@ -103,8 +110,8 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
-        if(actualFile != null) {
+
+        if (actualFile != null) {
             actualFile.close();
         }
         return null;
@@ -116,7 +123,7 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
             readBuffer.clear();
             actualFile.read(actualFileOffset, readBuffer);
             actualFileOffset += readBuffer.limit();
-            readBuffer.position(0); 
+            readBuffer.position(0);
         }
     }
 
@@ -127,6 +134,27 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
      * @throws IOException
      */
     private boolean handleFile() throws FileLockException, IOException {
+        // while (actualFile == null || (actualFileOffset >= actualFile.getFilledUpFromContentStart())) {
+        // if ((readBuffer == null)
+        // || (readBuffer.remaining() == 0 && actualFileOffset >= actualFile.getFilledUpFromContentStart())) {
+        //
+        // if (actualFile != null) {
+        // actualFile.close();
+        // }
+        //
+        // actualBucketId++;
+        // if (actualBucketId >= numberOfBuckets) {
+        // return false;
+        // }
+        // String filename = directory + "/" + hashFunction.getFilename(actualBucketId);
+        // actualFile = new HeaderIndexFile<Data>(filename, 1);
+        // actualFileOffset = 0;
+        // readBuffer = ByteBuffer.allocate(actualFile.getChunkSize());
+        // readBuffer.clear();
+        // readBuffer.limit(0);
+        // }
+        // }
+
         String filename = null;
         // if we open the first file
         if (readBuffer == null) {
@@ -135,10 +163,10 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
             readBuffer = ByteBuffer.allocate(actualFile.getChunkSize());
             readBuffer.clear();
             readBuffer.limit(0);
-        } else if (readBuffer.remaining() == 0 && actualFileOffset >= actualFile.getFilledUpFromContentStart() ) {
+        } else if (readBuffer.remaining() == 0 && actualFileOffset >= actualFile.getFilledUpFromContentStart()) {
             actualFile.close();
             actualBucketId++;
-            if(actualBucketId >= numberOfBuckets) {
+            if (actualBucketId >= numberOfBuckets) {
                 return false;
             }
             filename = directory + "/" + hashFunction.getFilename(actualBucketId);

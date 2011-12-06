@@ -1,5 +1,10 @@
+Version 0.2.4
+ - SDRUM Iterator: Bug fix because empty files were not be respected
+ - RangeHashFunction: method getBucketIdsFor(prefix): DOESN'T WORK CORRECTLY IF ALL THE
+                      RANGES HAS THE SAME PREFIX AND THIS PREFIX IS SEARCHED FOR.
+                      
 Version 0.2.3
- - RangeHashFunction: Bug fix within getBucketIdsFpr(prefix), handles border correctly
+ - RangeHashFunction: Bug fix within getBucketIdsFor(prefix), handles border correctly
  
 Version 0.2.2
  - SyncManager: Bug fix of the threshold when to write the bucket to disk

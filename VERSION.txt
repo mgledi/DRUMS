@@ -1,3 +1,7 @@
+Version 0.2.5
+ - SyncThread: now all exceptions will be catched and the bucket id will be released so that 
+               the bucket can be synchronized again
+
 Version 0.2.4
  - SDRUM Iterator: Bug fix because empty files were not be respected
  - RangeHashFunction: method getBucketIdsFor(prefix): DOESN'T WORK CORRECTLY IF ALL THE

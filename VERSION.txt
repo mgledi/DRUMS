@@ -1,3 +1,6 @@
+Version 0.2.7
+ - SyncManager: correcting a spelling error within comment
+ 
 Version 0.2.6
  -SyncManager: the SyncManager thread sleeps for 1 milliseconds for each iteration -> reduces CPU load a lot
  

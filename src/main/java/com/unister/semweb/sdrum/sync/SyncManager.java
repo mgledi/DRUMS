@@ -114,7 +114,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             synchronizeBucketsWithHDD();
             bucketContainer.moveElementsFromWaitingQueue();
 
-            // We wait for 1 milli second. This not much but reduces the CPU load a lot.
+            // We wait for 1 milli second. This is not much but reduces the CPU load a lot.
             try {
                 Thread.sleep(1);
             } catch (InterruptedException ex) {

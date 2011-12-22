@@ -197,9 +197,6 @@ public class KeyUtils {
      */
     public static String generateHashFunction(long min, long max, String[] buckets, int bucketSize, String suffix,
             String prefix) throws Exception {
-
-        byte[] bmin = ByteBuffer.allocate(8).putLong(min).array();
-        byte[] bmax = ByteBuffer.allocate(8).putLong(max).array();
         // if(false) return generateHashFunction(bmin, bmax, buckets, bucketSize, suffix, prefix);
         long range = (long) Math.ceil((double) (max - min) / buckets.length);
         StringBuilder sb = new StringBuilder();
@@ -209,7 +206,7 @@ public class KeyUtils {
             val += range;
             if (val >= max) {
                 val = max;
-            }
+            }   
             byte[] bval = ByteBuffer.allocate(8).putLong(val).array();
             for (int j = 0; j < bval.length; j++) {
                 int k = bval[j] & 0xff;

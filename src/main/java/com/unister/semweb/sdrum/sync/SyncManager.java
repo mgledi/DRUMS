@@ -113,6 +113,14 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
         do {
             synchronizeBucketsWithHDD();
             bucketContainer.moveElementsFromWaitingQueue();
+
+            // We wait for 1 milli second. This not much but reduces the CPU load a lot.
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ex) {
+                log.info("Sync manager was interrupted.");
+                break;
+            }
         } while (!shutDownInitiated || !bucketsEmpty());
 
         // BucketContainer is not receiving new elements, but there can still be waiting elements
@@ -187,12 +195,12 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
         // if the queue is not full try to fill it
         if (bufferThreads.getQueue().size() < bufferThreads.getMaximumPoolSize()) {
             int bucketId = getLargestBucketId();
-            if(bucketId != -1) {
+            if (bucketId != -1) {
                 Bucket<Data> pointer = bucketContainer.buckets[bucketId];
                 if (pointer.elementsInBucket >= MINFILL_BEFORE_SYNC * pointer.allowedBucketSize
                         && !startNewThread(bucketId)) {
                     sleep();
-                }   
+                }
             }
         }
     }

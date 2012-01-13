@@ -1,3 +1,6 @@
+Version 0.2.8
+ - KeyUtils.transformFromLong(toConvert, keySize): key sizes less than 8 bytes are handled correctly
+ 
 Version 0.2.7
  - SyncManager: correcting a spelling error within comment
  

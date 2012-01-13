@@ -40,12 +40,18 @@ public class KeyUtils {
     public static byte[] transformFromLong(long toTransform, int keySize) {
         ByteBuffer converter = ByteBuffer.allocate(8);
         converter.putLong(toTransform);
-        byte[] leadingBytes = new byte[keySize - 8];
-        for (int i = 0; i < leadingBytes.length; i++) {
-            leadingBytes[i] = 0;
-        }
 
-        byte[] result = ArrayUtils.addAll(leadingBytes, converter.array());
+        byte[] result = null;
+        if (keySize >= 8) {
+            byte[] leadingBytes = new byte[keySize - 8];
+            for (int i = 0; i < leadingBytes.length; i++) {
+                leadingBytes[i] = 0;
+            }
+
+            result = ArrayUtils.addAll(leadingBytes, converter.array());
+        } else {
+            result = Arrays.copyOfRange(converter.array(), converter.array().length - keySize, 8);
+        }
         return result;
     }
 
@@ -405,6 +411,6 @@ public class KeyUtils {
         // String result = generateHashFunction(h3, h4, 4096, 10000, ".db", "");
         // System.out.println(result);
 
-        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 128, 10000, ".db", "");
+        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 1024, 10000, ".db", "");
     }
 }

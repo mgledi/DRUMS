@@ -203,14 +203,53 @@ public class SDRUM_API {
             int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads,
             AbstractHashFunction hashFunction, Data prototype) throws IOException, ClassNotFoundException {
 
+        return createOrOpenTable(databaseDirectory, sizeOfMemoryBuckets, preQueueSize, numberOfSynchronizerThreads,
+                Long.MAX_VALUE, hashFunction, prototype);
+    }
+
+    // public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createOrOpenTable(String databaseDirectory,
+    // int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads,
+    // AbstractHashFunction hashFunction, Data prototype) throws IOException, ClassNotFoundException {
+    //
+    // File databaseDirectoryFile = new File(databaseDirectory);
+    // if (databaseDirectoryFile.exists()) {
+    // return openTable(databaseDirectory, AccessMode.READ_WRITE, prototype);
+    // } else {
+    // return createTable(databaseDirectory, sizeOfMemoryBuckets, preQueueSize, numberOfSynchronizerThreads,
+    // hashFunction, prototype);
+    // }
+    // }
+
+    /**
+     * Creates or opens the table. If the directory doesn't exists it will be created. If the directory exists only an
+     * open will be made.
+     * 
+     * @param databaseDirectory
+     * @param sizeOfMemoryBuckets
+     * @param preQueueSize
+     * @param numberOfSynchronizerThreads
+     * @param maxBucketStorageTime
+     * @param hashFunction
+     * @param prototype
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createOrOpenTable(String databaseDirectory,
+            int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads, long maxBucketStorageTime,
+            AbstractHashFunction hashFunction, Data prototype) throws IOException, ClassNotFoundException {
+
         File databaseDirectoryFile = new File(databaseDirectory);
+        SDRUM<Data> sdrum = null;
         if (databaseDirectoryFile.exists()) {
-            return openTable(databaseDirectory, AccessMode.READ_WRITE, prototype);
+            sdrum = openTable(databaseDirectory, AccessMode.READ_WRITE, prototype);
         } else {
-            return createTable(databaseDirectory, sizeOfMemoryBuckets, preQueueSize, numberOfSynchronizerThreads,
+            sdrum = createTable(databaseDirectory, sizeOfMemoryBuckets, preQueueSize, numberOfSynchronizerThreads,
                     hashFunction, prototype);
         }
 
+        sdrum.getSyncManager().setMaxBucketStorageTime(maxBucketStorageTime);
+        return sdrum;
     }
 
 }

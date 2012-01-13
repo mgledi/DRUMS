@@ -67,6 +67,12 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     private int numberOfBuckets;
 
     /**
+     * max time that a bucket can linger in the bucket container before it will be synchronized to disk. The initial
+     * storage time will be infinite.
+     */
+    private long maxBucketStorageTime;
+
+    /**
      * The number of elements that were inserted by Synchronizers. Have to be threadsafe. Because several
      * {@link Synchronizer}s may update this variable.
      */
@@ -95,6 +101,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
         HashSet<Integer> tmpSet = new HashSet<Integer>();
         this.actualProcessingBucketIds = Collections.synchronizedSet(tmpSet);
         this.pathToDbFiles = pathToFiles;
+        this.maxBucketStorageTime = Long.MAX_VALUE;
         this.synchronizerFactory = synchronizerFactory;
         this.allowedBucketsInBuffer = numberOfBufferThreads * 4;
         this.numberOfBuckets = bucketContainer.getNumberOfBuckets();
@@ -180,8 +187,12 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
                 continue;
             }
 
-            // if the bucket is full, or the shutdown was initiated, then try to synchronize the buckets
-            if (oldBucket.elementsInBucket >= oldBucket.getAllowedBucketSize() || shutDownInitiated) {
+            long elapsedTime = System.currentTimeMillis() - oldBucket.getCreationTime();
+            // if the bucket is full, or the bucket is longer then max bucket storage time within the BucketContainer,
+            // or the shutdown was initiated, then try to synchronize the buckets
+            // At this point we prevent starvation of one bucket if it not filled for a long period of time.
+            if (oldBucket.elementsInBucket >= oldBucket.getAllowedBucketSize() || elapsedTime > maxBucketStorageTime
+                    || shutDownInitiated) {
                 if (!startNewThread(i)) {
                     sleep();
                 }
@@ -289,6 +300,24 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     /** Returns the directory of the database files. */
     public String getPathToDbFiles() {
         return pathToDbFiles;
+    }
+
+    /**
+     * Returns the current maximal time that a bucket can linger within the BucketContainer.
+     * 
+     * @return
+     */
+    public long getMaxBucketStorageTime() {
+        return maxBucketStorageTime;
+    }
+
+    /**
+     * Sets the maximal time that a bucket can linger within the BucketContainer without synchronsation to hard drive.
+     * 
+     * @param maxBucketStorageTime
+     */
+    public void setMaxBucketStorageTime(long maxBucketStorageTime) {
+        this.maxBucketStorageTime = maxBucketStorageTime;
     }
 
     // #########################################################################################

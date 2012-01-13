@@ -33,6 +33,9 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
     /** prototype of type Data (extending {@link AbstractKVStorable}) for instantiating correct arrays */
     private Data prototype;
 
+    /** Stores the creation time of this bucket. */
+    private long creationTime;
+
     /**
      * Constructor. Needs to know the id of the {@link Bucket} and the maximum size of the {@link Bucket}.
      * 
@@ -47,6 +50,7 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
         this.elementsInBucket = 0;
         this.allowedBucketSize = allowedBucketSize;
         this.prototype = prototype;
+        this.creationTime = System.currentTimeMillis();
     }
 
     /**
@@ -142,5 +146,14 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
      */
     public int size() {
         return elementsInBucket;
+    }
+
+    /**
+     * Returns the creation time of this bucket.
+     * 
+     * @return
+     */
+    public long getCreationTime() {
+        return creationTime;
     }
 }

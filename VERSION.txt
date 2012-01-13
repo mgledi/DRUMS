@@ -1,3 +1,7 @@
+Version 0.2.9
+ - Bucket: now has a creation time
+ - SyncManager: also synchronized buckets when they linger to long within the bucket container, this
+                time is configurable
 Version 0.2.8
  - KeyUtils.transformFromLong(toConvert, keySize): key sizes less than 8 bytes are handled correctly
  

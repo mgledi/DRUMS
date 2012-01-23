@@ -106,11 +106,14 @@ public class IndexForHeaderIndexFile {
     public int getChunkId(byte[] key) {
         // adapted binary search
         int minElement = 0, maxElement = filledUpTo, midElement;
-        byte comp1, comp2;
+        byte comp1 = 0, comp2 = 0;
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
             // handle special case (maxElement was 1)
             if (midElement == 0 && KeyUtils.compareKey(key, maxKeyPerChunk[0]) > 0) {
+                if(filledUpTo == 0) {
+                    return -1;
+                }
                 return 1;
             } else if (midElement == 0) {
                 return 0;

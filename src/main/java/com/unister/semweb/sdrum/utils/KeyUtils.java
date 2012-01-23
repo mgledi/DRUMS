@@ -44,10 +44,6 @@ public class KeyUtils {
         byte[] result = null;
         if (keySize >= 8) {
             byte[] leadingBytes = new byte[keySize - 8];
-            for (int i = 0; i < leadingBytes.length; i++) {
-                leadingBytes[i] = 0;
-            }
-
             result = ArrayUtils.addAll(leadingBytes, converter.array());
         } else {
             result = Arrays.copyOfRange(converter.array(), converter.array().length - keySize, 8);

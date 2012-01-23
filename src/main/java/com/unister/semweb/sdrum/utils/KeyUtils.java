@@ -212,7 +212,7 @@ public class KeyUtils {
             val += range;
             if (val >= max) {
                 val = max;
-            }   
+            }
             byte[] bval = ByteBuffer.allocate(8).putLong(val).array();
             for (int j = 0; j < bval.length; j++) {
                 int k = bval[j] & 0xff;
@@ -411,6 +411,15 @@ public class KeyUtils {
         // String result = generateHashFunction(h3, h4, 4096, 10000, ".db", "");
         // System.out.println(result);
 
-        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 1024, 10000, ".db", "");
+        generateHashFunctionBigInteger(-255, 255, 2, 500000, ".db", "");
+
+        // generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 1024, 10000, ".db", "");
+    }
+
+    public static byte[] convert(long key) {
+        ByteBuffer converter = ByteBuffer.allocate(8);
+        converter.putLong(key);
+        converter.flip();
+        return converter.array();
     }
 }

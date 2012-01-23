@@ -1,6 +1,7 @@
 package com.unister.semweb.sdrum.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +47,34 @@ public class SDrumTest {
         prototype = new DummyKVStorable();
     }
 
+    /**
+     * This method is for testing the binary search in SDRUM.findElementInReadBuffer()
+     * 
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    @Test //by mgledi 
+    public void findElementInReadBufferTest() throws IOException, ClassNotFoundException {
+        SDRUM<DummyKVStorable> table = SDRUM_API.createOrOpenTable(databaseDirectory, sizeOfMemoryBuckets,
+                preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+        // create data
+        DummyKVStorable d1 = new DummyKVStorable(); d1.setKey(new byte[]{0,0,0,0,0,0,0,1});
+        DummyKVStorable d2 = new DummyKVStorable(); d2.setKey(new byte[]{0,0,0,0,0,0,0,2});
+        DummyKVStorable d3 = new DummyKVStorable(); d3.setKey(new byte[]{0,0,0,0,0,0,0,3});
+        ByteBuffer bb = ByteBuffer.allocate(3 * prototype.byteBufferSize);
+        bb.put(d1.toByteBuffer().array());
+        bb.put(d2.toByteBuffer().array());
+        bb.put(d3.toByteBuffer().array());
+        
+        Assert.assertEquals(-1, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,0}, 0));
+        Assert.assertEquals(0, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,1}, 0));
+        Assert.assertEquals(1 * prototype.byteBufferSize, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,2}, 0));
+        Assert.assertEquals(2 * prototype.byteBufferSize, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,3}, 0));
+        Assert.assertEquals(2 * prototype.byteBufferSize, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,3}, 1*prototype.byteBufferSize));
+        Assert.assertEquals(2 * prototype.byteBufferSize, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,3}, 2*prototype.byteBufferSize));
+        Assert.assertEquals(-1, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,3}, 3*prototype.byteBufferSize));
+    }
+    
     /**
      * Creates a table and inserts 10 elements. After that the file in which the data should be written are read and the
      * data is compared with the generated data.

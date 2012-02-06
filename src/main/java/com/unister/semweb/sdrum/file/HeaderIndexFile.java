@@ -147,10 +147,10 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     protected void init() throws FileLockException, IOException {
         this.contentStart = HEADER_SIZE + MAX_INDEX_SIZE_IN_BYTES;
         if (!osFile.exists()) {
-            logger.debug("File {} not found. Initialise new File.", osFile.getAbsolutePath());
+            logger.info("File {} not found. Initialise new File.", osFile.getAbsolutePath());
             this.createFile();
         } else {
-            logger.debug("File {} exists. Try to open it.", osFile.getAbsolutePath());
+            logger.info("File {} exists. Try to open it.", osFile.getAbsolutePath());
             openChannel();
         }
         this.contentEnd = size;

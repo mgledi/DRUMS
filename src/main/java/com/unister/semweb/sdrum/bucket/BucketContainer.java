@@ -1,5 +1,6 @@
 package com.unister.semweb.sdrum.bucket;
 
+import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -57,22 +58,27 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @throws InterruptedException
      */
     public void moveElementsFromWaitingQueue() {
-        Data date = waitingElements.peek();
-        while (date != null) {
-            if (this.addToCacheWithoutBlocking(date)) {
-                waitingElements.remove(date);
-            }
-            date = waitingElements.peek();
-        }
+        // Try of a bug fix.
+        // Data date = waitingElements.peek();
+        // while (date != null) {
+        // if (this.addToCacheWithoutBlocking(date)) {
+        // waitingElements.remove(date);
+        // }
+        // date = waitingElements.peek();
+        // }
 
-        // Old version -> leads to an NullPointerException
-        // Iterator<Data> tmp = waitingElements.iterator();
-        // while (tmp.hasNext()) {
-        // Data date = tmp.next();
-        // if (date!= null && this.addToCacheWithoutBlocking(date)) {
-        // tmp.remove();
-        // }
-        // }
+        // Old version with bug fix.
+        Iterator<Data> tmp = waitingElements.iterator();
+        while (tmp.hasNext()) {
+            try {
+                Data date = tmp.next();
+                if (date != null && this.addToCacheWithoutBlocking(date)) {
+                    tmp.remove();
+                }
+            } catch (Exception ex) {
+                log.error("Error while moving elements from waiting queue.", ex);
+            }
+        }
     }
 
     /**

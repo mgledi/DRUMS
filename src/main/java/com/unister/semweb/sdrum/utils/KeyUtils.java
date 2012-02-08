@@ -398,18 +398,18 @@ public class KeyUtils {
     }
 
     public static void main(String[] args) throws Exception {
-         byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        // byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         // byte[] h1 = new byte[] { (byte) 64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
         // byte[] h2 = new byte[] { (byte) 128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
         // byte[] h3 = new byte[] { (byte) -64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-         byte[] h4 = new byte[] { (byte) -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        // byte[] h4 = new byte[] { (byte) -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
         //
-         String result = generateHashFunction(h0, h4, 32, 100000, ".db", "");
-         System.out.println(result);
+        // String result = generateHashFunction(h3, h4, 4096, 10000, ".db", "");
+        // System.out.println(result);
 
-//        generateHashFunctionBigInteger(-255, 255, 2, 500000, ".db", "");
+        // generateHashFunctionBigInteger(-255, 255, 2, 500000, ".db", "");
 
-        // generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 1024, 10000, ".db", "");
+        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 1024, 10000, ".db", "");
     }
 
     public static byte[] convert(long key) {

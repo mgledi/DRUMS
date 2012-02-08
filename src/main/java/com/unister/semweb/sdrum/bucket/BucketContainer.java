@@ -1,6 +1,5 @@
 package com.unister.semweb.sdrum.bucket;
 
-import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -58,13 +57,22 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @throws InterruptedException
      */
     public void moveElementsFromWaitingQueue() {
-        Iterator<Data> tmp = waitingElements.iterator();
-        while (tmp.hasNext()) {
-            Data date = tmp.next();
+        Data date = waitingElements.peek();
+        while (date != null) {
             if (this.addToCacheWithoutBlocking(date)) {
-                tmp.remove();
+                waitingElements.remove(date);
             }
+            date = waitingElements.peek();
         }
+
+        // Old version -> leads to an NullPointerException
+        // Iterator<Data> tmp = waitingElements.iterator();
+        // while (tmp.hasNext()) {
+        // Data date = tmp.next();
+        // if (date!= null && this.addToCacheWithoutBlocking(date)) {
+        // tmp.remove();
+        // }
+        // }
     }
 
     /**
@@ -87,8 +95,8 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
 
     /**
      * Possibly add the given <code>Data</code>(s) to one of the {@link Bucket}s. If the corresponding {@link Bucket} is
-     * full, it will be added to <code>waitingElements</code>. If all {@link Bucket}s and the queue
-     * for <code>waitingElements</code> are full the method is blocking.
+     * full, it will be added to <code>waitingElements</code>. If all {@link Bucket}s and the queue for
+     * <code>waitingElements</code> are full the method is blocking.
      * 
      * @param {@link Data} to add
      * @return true if the insertion was successful, otherwise false
@@ -134,16 +142,14 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @throws InterruptedException
      */
     private boolean addToCacheWithoutBlocking(Data linkData) {
-        if(linkData == null) {
-            System.out.println("linkdata was null");
-        } 
-        if(hashFunction == null) {
-            System.out.println("hashfunction was null");
-        }
+        // if (linkData == null) {
+        // System.out.println("linkdata was null");
+        // }
+        // if(hashFunction == null) {
+        // System.out.println("hashfunction was null");
+        // }
         int indexOfCache = hashFunction.getBucketId(linkData.key);
 
-        
-        
         if (indexOfCache < buckets.length) {
             Bucket<Data> bucket = buckets[indexOfCache];
 
@@ -191,7 +197,7 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
     }
 
     /* Monitoring methods */
-    
+
     /** Gets the number of elements that are waiting in the pre queue. */
     public int getFillLevelPreQueue() {
         return waitingElements.size();

@@ -1,3 +1,6 @@
+Version 0.2.13
+ - Fixing NullPointerException within BucketContainer: moveElementsFromWaitingQueue was set to synchronized
+ 
 Version 0.2.12
  - Fixing NullPointerException within BucketContainer: previous bug fix didn't work
 

@@ -57,19 +57,10 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      *             if the {@link Bucket} where to add a {@link AbstractKVStorable} does not exist
      * @throws InterruptedException
      */
-    public void moveElementsFromWaitingQueue() {
-        // Try of a bug fix.
-        // Data date = waitingElements.peek();
-        // while (date != null) {
-        // if (this.addToCacheWithoutBlocking(date)) {
-        // waitingElements.remove(date);
-        // }
-        // date = waitingElements.peek();
-        // }
-
-        // Old version with bug fix.
+    public synchronized void moveElementsFromWaitingQueue() {
         Iterator<Data> tmp = waitingElements.iterator();
         while (tmp.hasNext()) {
+            // We catch all exceptions if an error occurs here.
             try {
                 Data date = tmp.next();
                 if (date != null && this.addToCacheWithoutBlocking(date)) {

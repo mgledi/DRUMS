@@ -139,12 +139,6 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @throws InterruptedException
      */
     private boolean addToCacheWithoutBlocking(Data linkData) {
-        // if (linkData == null) {
-        // System.out.println("linkdata was null");
-        // }
-        // if(hashFunction == null) {
-        // System.out.println("hashfunction was null");
-        // }
         int indexOfCache = hashFunction.getBucketId(linkData.key);
 
         if (indexOfCache < buckets.length) {

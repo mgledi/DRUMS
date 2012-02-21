@@ -136,8 +136,8 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
                 bucketContainer.moveElementsFromWaitingQueue();
                 synchronizeBucketsWithHDD();
             } while (bucketContainer.getNumberOfWaitingElements() > 0 || !bucketsEmpty());
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            log.error("One exception occurred while synchronizing buckets.", ex);
         }
 
         bufferThreads.shutdown();
@@ -201,6 +201,12 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
 
         if (shutDownInitiated) {
             log.info("{} of {} buckets were synchronized.", synchronizedBuckets, bucketContainer.getNumberOfBuckets());
+
+            // TODO Only for testing purpose. Can be deleted.
+            if (synchronizedBuckets >= bucketContainer.getNumberOfBuckets()) {
+                log.info("All bucket were synchronized. Number of elements in waiting queue: {}, Buckets empty: {}",
+                        bucketContainer.getNumberOfWaitingElements(), bucketsEmpty());
+            }
         }
 
         // if the queue is not full try to fill it

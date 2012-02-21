@@ -1,3 +1,10 @@
+Version 0.2.15
+ - HeaderIndexFile: removing annoying log messages
+ 
+Version 0.2.14
+ - SyncManager: adding new logging line to log the size of the pre queue if the shutdown was done
+ - Clean up of some source files: removing unnecessary comments
+ 
 Version 0.2.13
  - Fixing NullPointerException within BucketContainer: moveElementsFromWaitingQueue was set to synchronized
  

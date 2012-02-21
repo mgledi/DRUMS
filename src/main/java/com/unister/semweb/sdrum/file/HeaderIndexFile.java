@@ -49,8 +49,8 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends AbstractHeaderFile {
 
     /** the initial size by which the file is enlarged */
-    public static int INITIAL_INCREMENT_SIZE = 16*1024*1024;
-    
+    public static int INITIAL_INCREMENT_SIZE = 16 * 1024 * 1024;
+
     /** the size of the index in bytes */
     public static final long MAX_INDEX_SIZE_IN_BYTES = 512 * 1024; // 512 kb
 
@@ -95,7 +95,6 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     /** A pseudo-index (not each element is indexed, but the chunks where they belong to */
     protected IndexForHeaderIndexFile index;
 
-    
     /**
      * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
      * {@link AccessMode}.
@@ -147,10 +146,10 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     protected void init() throws FileLockException, IOException {
         this.contentStart = HEADER_SIZE + MAX_INDEX_SIZE_IN_BYTES;
         if (!osFile.exists()) {
-            logger.info("File {} not found. Initialise new File.", osFile.getAbsolutePath());
+            logger.debug("File {} not found. Initialise new File.", osFile.getAbsolutePath());
             this.createFile();
         } else {
-            logger.info("File {} exists. Try to open it.", osFile.getAbsolutePath());
+            logger.debug("File {} exists. Try to open it.", osFile.getAbsolutePath());
             openChannel();
         }
         this.contentEnd = size;
@@ -204,7 +203,6 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
             filledUpTo = offset + sourceBuffer.limit();
         }
         channel.write(sourceBuffer, offset);
-        //        System.out.println("written in " + osFile.getName() + ": "  + sourceBuffer.limit() + " -> " + filledUpTo);
         writeHeader();
     }
 
@@ -262,7 +260,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
         destBuffer.clear();
         int length = destBuffer.capacity();
         if (offset > filledUpTo) {
-            String errorMessage = "Tried to read data beginning at " + offset + " in File (max=" + filledUpTo+") " + osFile.getName();
+            String errorMessage = "Tried to read data beginning at " + offset + " in File (max=" + filledUpTo + ") "
+                    + osFile.getName();
             logger.debug(errorMessage);
             throw new IOException(errorMessage);
         } else if (offset + length > filledUpTo) {
@@ -296,8 +295,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     }
 
     /**
-     * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Optionally reads the header.
-     * and the index
+     * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Optionally reads the header. and
+     * the index
      * 
      * @param boolean - should the header be read
      * @param boolean - should the index be read
@@ -318,8 +317,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     }
 
     /**
-     * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Optionally reads the header.
-     * Reads the index. This may overwrite previous set parameters.
+     * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Optionally reads the header. Reads
+     * the index. This may overwrite previous set parameters.
      * 
      * @param boolean - should the header be read
      * @throws IOException
@@ -329,8 +328,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     }
 
     /**
-     * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Reads the header and the
-     * index. This may overwrite previous set parameters.
+     * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Reads the header and the index.
+     * This may overwrite previous set parameters.
      * 
      * @throws IOException
      */
@@ -352,7 +351,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
 
     public void close() {
         super.close();
-        if(this.index != null) {
+        if (this.index != null) {
             index = null;
         }
         if (indexBuffer != null) {

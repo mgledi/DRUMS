@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
+
 /**
  * This class represents a file, which contains a bunch of datasets. The file also contains a header with some
  * informations and an {@link IndexForHeaderIndexFile}. This class is for managing and handling equal sized storable
@@ -62,7 +63,8 @@ public class FragmentedHeaderIndexFile<Data extends AbstractKVStorable<Data>> ex
      * @throws IOException
      *             if another error with the fileaccess occured
      */
-    public FragmentedHeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, int keySize, int elementSize)
+    public FragmentedHeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, int keySize,
+            int elementSize)
             throws FileLockException, IOException {
         super(fileName, mode, max_retries_connect, keySize, elementSize);
     }
@@ -81,11 +83,11 @@ public class FragmentedHeaderIndexFile<Data extends AbstractKVStorable<Data>> ex
 
     @Override
     public long getFreeSpace() {
-        //TODO
+        // TODO
         return 0;
     }
 
-    //TODO: adapt read, only full chunks can be read and be written
+    // TODO: adapt read, only full chunks can be read and be written
 
     protected void fragementate() {
         if (readChunkSize % elementSize != 0) {
@@ -98,9 +100,9 @@ public class FragmentedHeaderIndexFile<Data extends AbstractKVStorable<Data>> ex
         int elementsPerChunk = readChunkSize / elementSize; // number of elements per chunk
         int elementsPerChunkToWrite = elementsPerChunk / 2; // number of elements per chunk after fragmenting
 
-        System.out.println(chunks);
+        // System.out.println(chunks);
 
-        // calculate documents per chunk 
+        // calculate documents per chunk
         // move elements within file (see Synchronizer process)
     }
 }

@@ -111,7 +111,7 @@ public class IndexForHeaderIndexFile {
             midElement = minElement + (maxElement - minElement) / 2;
             // handle special case (maxElement was 1)
             if (midElement == 0 && KeyUtils.compareKey(key, maxKeyPerChunk[0]) > 0) {
-                if(filledUpTo == 0) {
+                if (filledUpTo == 0) {
                     return -1;
                 }
                 return 1;
@@ -152,7 +152,6 @@ public class IndexForHeaderIndexFile {
      * @param largestKeyInChunk
      */
     public void setLargestKey(int chunkIdx, byte[] largestKeyInChunk) {
-        // System.out.println(maxKeyPerChunk.length + " <? " + chunkIdx);
         maxKeyPerChunk[chunkIdx] = largestKeyInChunk;
         filledUpTo = Math.max(filledUpTo, chunkIdx);
         indexBuffer.position(chunkIdx * keySize);

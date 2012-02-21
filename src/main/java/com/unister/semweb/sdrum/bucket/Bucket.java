@@ -124,15 +124,7 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
         for (int i = 0; i < elementsInBucket; i++) {
             ByteBuffer bufferData = ByteBuffer.wrap(backend[i]);
             Data reconstructedData = prototype.fromByteBuffer(bufferData);
-            // Data clonedPrototype = prototype.clone();
-            // Data reconstructedData = clonedPrototype.fromByteBuffer(bufferData);
-            // System.out.println("Bucket getBackend : " + Arrays.toString(backend[i]));
-            // System.out.println("Bucket getBackend : " + prototype.fromByteBuffer(ByteBuffer.wrap(backend[i])));
-            // System.out.println("Bucket getBackend ByteBufferSize: " + reconstructedData.getByteBufferSize());
             data[i] = reconstructedData;
-            // System.out.println("Bucket getBackend: " + data[i]);
-            // System.out.println("Bucket getBackend: "
-            // + data[i].getClass().getMethod("getRelevanceScore").invoke(data[i]));
         }
 
         SortMachine.quickSort(data);

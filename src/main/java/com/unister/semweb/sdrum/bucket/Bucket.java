@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
+import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
  * An instance of this class is a container of {@link AbstractKVStorable}s.
@@ -93,13 +94,26 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
     public synchronized boolean add(AbstractKVStorable<?> toAdd) {
         boolean wasAdded = false;
         if (size() < allowedBucketSize) {
-            backend[elementsInBucket] = toAdd.toByteBuffer().array();
+            byte[] b = toAdd.toByteBuffer().array();
+            backend[elementsInBucket] = b;
             elementsInBucket++;
             wasAdded = true;
         }
         return wasAdded;
     }
 
+    /** Returns true, of this bucket, contains the given element. */
+    public boolean contains(Data element) {
+        boolean contains = false;
+        for(int i=0; i < elementsInBucket; i++) {
+            if(KeyUtils.compareKey(element.toByteBuffer().array(), backend[i]) == 1) {
+                contains = true;
+                break;
+            }
+        }
+        return contains;
+    }
+    
     /**
      * Adds a number of {@link AbstractKVStorable}-objects. This method have to be synchronized, because it is possible
      * to access the <code>backend</code> in the same moment with the function <code>getBackend()</code>.

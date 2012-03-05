@@ -1,3 +1,8 @@
+Version 0.2.16
+ - AbstactKVStorable: added method: isMarkedAsDeleted()
+ - Synchronizer: added delete in upsert. Elements, which were marked as deleted are not rewritten.
+ - Bucket and BucketContainer: added very simple contains method. This method needs much CPU
+ 
 Version 0.2.15
  - HeaderIndexFile: removing annoying log messages
  

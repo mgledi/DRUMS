@@ -178,6 +178,11 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
         return this.waitingElements.size();
     }
 
+    /** Checks, if the given element is already in memory. */
+    public boolean contains(Data element) {
+        return buckets[hashFunction.getBucketId(element)].contains(element);        
+    }
+    
     /**
      * returns the {@link AbstractHashFunction} for mapping keys to {@link Bucket}s.
      * 

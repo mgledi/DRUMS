@@ -117,7 +117,7 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
         return null;
     }
 
-    /** fills the ReadBuffer form the HeaderIndexFile */
+    /** fills the ReadBuffer from the HeaderIndexFile */
     private void handleReadBuffer() throws IOException {
         if (readBuffer.remaining() == 0) {
             readBuffer.clear();

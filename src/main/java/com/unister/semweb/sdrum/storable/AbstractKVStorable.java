@@ -83,6 +83,15 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
     public abstract void update(Data element);
 
     /**
+     * This method returns true if this element is marked as deleted. 
+     * 
+     * @return boolean
+     */
+    public boolean isMarkedAsDeleted() {
+        return false;
+    }
+    
+    /**
      * This method merges {@link AbstractKVStorable}s in the given array, which have the same key.
      * 
      * @param {@link AbstractKVStorable}[] toAdd, the {@link AbstractKVStorable}s to merge

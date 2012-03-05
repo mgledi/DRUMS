@@ -155,9 +155,13 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
 
                 /* insert element from disk (pendingElements) */
                 if (compare == 1) {
-                    write(dateFromDisk, true); // write date
-                    dateFromDisk = getFromDisk(); // get next date from disk
-                    // processCountData.incrementAndGet();
+                    prototype.initFromByteBuffer(ByteBuffer.wrap(dateFromDisk));
+                    // if the datefromdisk was marked as deleted
+                    if(!prototype.isMarkedAsDeleted()) {
+                        write(dateFromDisk, true); // write date
+                        dateFromDisk = getFromDisk(); // get next date from disk
+                        // processCountData.incrementAndGet();
+                    }
                     continue;
                 }
             }

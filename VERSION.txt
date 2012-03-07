@@ -1,3 +1,7 @@
+Version 0.2.17
+ - Bug fix HeaderIndexFile: if the we want to write more bytes then the enlarge size we have problem; now if
+   we want to add more bytes then the enlarge size the enlarge size will be adapted 
+ 
 Version 0.2.16
  - AbstactKVStorable: added method: isMarkedAsDeleted()
  - Synchronizer: added delete in upsert. Elements, which were marked as deleted are not rewritten.

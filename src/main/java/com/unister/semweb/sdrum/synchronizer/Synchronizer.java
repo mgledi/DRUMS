@@ -6,6 +6,9 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
@@ -24,6 +27,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * @author n.thieme, m.gleditzsch
  */
 public class Synchronizer<Data extends AbstractKVStorable<Data>> {
+    private static final Logger log = LoggerFactory.getLogger(Synchronizer.class);
 
     /** The file instance from which we receive a {@link FileChannel}. */
     protected String dataFilename;
@@ -105,7 +109,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
                     );
             header = dataFile.getIndex(); // Pointer to the Index
         } catch (FileLockException e) {
-            e.printStackTrace();
+            log.error("Errror occurred while opening database file.", e);
         }
         try {
             toAdd = (Data[]) AbstractKVStorable.merge(toAdd);
@@ -114,10 +118,13 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
             }
 
             readOffset = 0;
-            filledUpToWhenStarted = dataFile.getFilledUpFromContentStart(); // need to remember how a many "old" bytes were written in the file (will be overwritten)
+            filledUpToWhenStarted = dataFile.getFilledUpFromContentStart(); // need to remember how a many "old" bytes
+                                                                            // were written in the file (will be
+                                                                            // overwritten)
             writeOffset = 0; // at this position we want to start writing
 
-            // readFirstChunkFromFile(toAdd[0]); // We read the chunk, where the first element has to be inserted or updated from the disk
+            // readFirstChunkFromFile(toAdd[0]); // We read the chunk, where the first element has to be inserted or
+            // updated from the disk
             readNextChunkFromFile();
 
             // We take one AbstractKVStorable from the chunk. The chunk will be automatically incremented
@@ -151,7 +158,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
                     write(newDate.toByteBuffer().array(), true); // write date
                     indexOfToAdd++; // next dateFromBucket
                     dateFromDisk = getFromDisk(); // get next date from disk
-                    
+
                     // Incrementing the number of updated entries.
                     numberOfUpdateEntries++;
                     continue;
@@ -175,7 +182,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
                 for (; indexOfToAdd < toAdd.length; indexOfToAdd++) {
                     if (write(toAdd[indexOfToAdd].toByteBuffer().array(), false)) {
                         numberOfInsertedEntries++; // Incrementing the number of inserted entries.
-                    } 
+                    }
                 }
             }
 
@@ -209,9 +216,9 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
     protected boolean write(byte[] newData, boolean alreadyExist) throws IOException {
         // If the data is invalid.
         if (KeyUtils.isNull(newData, prototype.key.length)) {
-            //            if(alreadyExist) System.err.println("invalid from disk");
+            // if(alreadyExist) System.err.println("invalid from disk");
             return false;
-        } 
+        }
         // if the last readChunk was full
         ByteBuffer toAdd = ByteBuffer.wrap(newData);
         long positionOfToAddInFile = writeOffset + bufferedWriter.position();

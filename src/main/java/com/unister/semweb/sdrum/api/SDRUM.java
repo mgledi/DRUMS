@@ -512,11 +512,11 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
             indexInChunk = midElement * elementSize;
+            
             workingBuffer.position(indexInChunk);
             workingBuffer.get(tempKey);
-
+            
             comp = KeyUtils.compareKey(key, tempKey, prototype.key.length);
-
             if (comp == 0) {
                 return indexInChunk;
             } else if (comp < 0) {

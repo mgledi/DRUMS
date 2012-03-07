@@ -90,14 +90,14 @@ public class FragmentedHeaderIndexFile<Data extends AbstractKVStorable<Data>> ex
     // TODO: adapt read, only full chunks can be read and be written
 
     protected void fragementate() {
-        if (readChunkSize % elementSize != 0) {
+        if (chunkSize % elementSize != 0) {
             throw new RuntimeException();
         }
         // set needed vars
         long offset = 0; // start offset
         long useableBytes = (this.contentEnd - contentStart); // useable bytes
-        int chunks = (int) Math.floor(useableBytes / readChunkSize); // number of possible chunks
-        int elementsPerChunk = readChunkSize / elementSize; // number of elements per chunk
+        int chunks = (int) Math.floor(useableBytes / chunkSize); // number of possible chunks
+        int elementsPerChunk = chunkSize / elementSize; // number of elements per chunk
         int elementsPerChunkToWrite = elementsPerChunk / 2; // number of elements per chunk after fragmenting
 
         // System.out.println(chunks);

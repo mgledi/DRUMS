@@ -281,8 +281,9 @@ public class KeyUtils {
     /** Makes a string representation from the key */
     public static String transform(byte[] key) {
         StringBuilder result = new StringBuilder();
+        int[] key2 = toUnsignedInt(key);
         for (int i = 0; i < key.length; i++) {
-            result.append(key[i]);
+            result.append(key2[i]);
             result.append(' ');
         }
         return result.toString();

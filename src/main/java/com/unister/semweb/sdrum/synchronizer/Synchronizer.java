@@ -56,6 +56,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
 
     /** The number of entries that were updated within the file. */
     private long numberOfUpdateEntries;
+    private long numberOfOldEntries = 0;
 
     LinkedList<byte[]> pendingElements = new LinkedList<byte[]>();
     private long filledUpToWhenStarted;
@@ -96,35 +97,39 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
     public void upsert(Data[] toAdd) throws IOException {
         try {
             /* Another thread can have access to this file in parallel. So we must wait to get exclusive access. */
-            dataFile = new HeaderIndexFile<Data>(dataFilename, AccessMode.READ_WRITE, Integer.MAX_VALUE,
-                    prototype.key.length, prototype.getByteBufferSize());
+            dataFile = new HeaderIndexFile<Data>(
+                    dataFilename,
+                    AccessMode.READ_WRITE,
+                    Integer.MAX_VALUE,
+                    prototype.key.length, elementSize
+                    );
             header = dataFile.getIndex(); // Pointer to the Index
         } catch (FileLockException e) {
             e.printStackTrace();
         }
         try {
             toAdd = (Data[]) AbstractKVStorable.merge(toAdd);
+            if (!dataFile.isConsistent()) {
+                System.err.println("FILE IS NOT CONSISTENT");
+            }
 
             readOffset = 0;
-            writeOffset = 0;
-            filledUpToWhenStarted = dataFile.getFilledUpFromContentStart(); // need to remember how a many "old" bytes
-                                                                            // are
-            // in the file (will be overwritten)
-            // We read one chunk from the disk. The initial chunk
+            filledUpToWhenStarted = dataFile.getFilledUpFromContentStart(); // need to remember how a many "old" bytes were written in the file (will be overwritten)
+            writeOffset = 0; // at this position we want to start writing
+
+            // readFirstChunkFromFile(toAdd[0]); // We read the chunk, where the first element has to be inserted or updated from the disk
             readNextChunkFromFile();
 
             // We take one AbstractKVStorable from the chunk. The chunk will be automatically incremented
-            int indexOfToAdd = 0;
             byte[] dateFromDisk = getFromDisk();
 
+            int indexOfToAdd = 0;
             int keyLength = prototype.key.length;
-            // if the date from disk is null, set key to 0
 
             // handle all AbstractKVStorable (update or insert)
             byte compare;
             for (indexOfToAdd = 0; indexOfToAdd < toAdd.length && dateFromDisk != null;) {
                 Data dateFromBucket = toAdd[indexOfToAdd];
-
                 compare = KeyUtils.compareKey(dateFromBucket.key, dateFromDisk, keyLength);
 
                 /* insert element from bucket */
@@ -146,21 +151,20 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
                     write(newDate.toByteBuffer().array(), true); // write date
                     indexOfToAdd++; // next dateFromBucket
                     dateFromDisk = getFromDisk(); // get next date from disk
+                    
                     // Incrementing the number of updated entries.
                     numberOfUpdateEntries++;
-                    // updatedData.incrementAndGet();
-
                     continue;
                 }
 
                 /* insert element from disk (pendingElements) */
                 if (compare == 1) {
                     prototype.initFromByteBuffer(ByteBuffer.wrap(dateFromDisk));
-                    // if the datefromdisk was marked as deleted
-                    if(!prototype.isMarkedAsDeleted()) {
+                    // if the dateFromDisk was marked as deleted
+                    if (!prototype.isMarkedAsDeleted()) {
                         write(dateFromDisk, true); // write date
                         dateFromDisk = getFromDisk(); // get next date from disk
-                        // processCountData.incrementAndGet();
+                        numberOfOldEntries++;
                     }
                     continue;
                 }
@@ -169,20 +173,21 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
             // end of the already stored elements, but there are still elements from bucket to insert
             if (dateFromDisk == null) {
                 for (; indexOfToAdd < toAdd.length; indexOfToAdd++) {
-                    write(toAdd[indexOfToAdd].toByteBuffer().array(), false);
-                    // Incrementing the number of inserted entries.
-                    numberOfInsertedEntries++;
+                    if (write(toAdd[indexOfToAdd].toByteBuffer().array(), false)) {
+                        numberOfInsertedEntries++; // Incrementing the number of inserted entries.
+                    } 
                 }
             }
 
             // all entries from bucket were added, but there are still pending elements .
             while (dateFromDisk != null) {
-                this.write(dateFromDisk, true);
+                write(dateFromDisk, true);
                 dateFromDisk = getFromDisk();
             }
 
             // write the remaining elements from the bufferedWriter to the disk
             this.writeBuffer();
+
             int lastChunkId = dataFile.getChunkIndex(writeOffset + bufferedWriter.position());
             this.header.setLargestKey(lastChunkId, largestKeyInChunk);
         } finally {
@@ -202,11 +207,11 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
      * @throws IOException
      */
     protected boolean write(byte[] newData, boolean alreadyExist) throws IOException {
-        // If the link data is invalid.
+        // If the data is invalid.
         if (KeyUtils.isNull(newData, prototype.key.length)) {
+            //            if(alreadyExist) System.err.println("invalid from disk");
             return false;
-        }
-
+        } 
         // if the last readChunk was full
         ByteBuffer toAdd = ByteBuffer.wrap(newData);
         long positionOfToAddInFile = writeOffset + bufferedWriter.position();
@@ -214,10 +219,8 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
 
         largestKeyInChunk = Arrays.copyOfRange(newData, 0, prototype.key.length); // elements are stored ordered so we
                                                                                   // can easily remember the largest key
-
         int chunkId = dataFile.getChunkIndex(positionOfToAddInFile);
         header.setLargestKey(chunkId, largestKeyInChunk);
-
         if (bufferedWriter.remaining() == 0) {
             writeBuffer();
         }
@@ -231,7 +234,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
      * @throws IOException
      */
     private void writeBuffer() throws IOException {
-        bufferedWriter.flip();
+        bufferedWriter.flip(); // position is set to zero in dataFile.write
         dataFile.write(writeOffset, bufferedWriter);
         writeOffset += bufferedWriter.limit();
         bufferedWriter.clear();
@@ -259,24 +262,32 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
      * @return a chunk from the file
      * @throws IOException
      */
-    private void readNextChunkFromFile() throws IOException {
-        if (readOffset >= filledUpToWhenStarted) {
-            return;
+    private boolean readNextChunkFromFile() throws IOException {
+        if (readOffset >= filledUpToWhenStarted || readOffset < 0) {
+            return false;
         }
 
         bufferedReader.clear();
         dataFile.read(readOffset, bufferedReader);
         bufferedReader.position(0);
-
         if (bufferedReader.limit() > 0) {
             readOffset += bufferedReader.limit();
-            int numberOfEntries = bufferedReader.limit() / elementSize;
-            for (int i = 0; i < numberOfEntries; i++) {
+            while (bufferedReader.remaining() > 0) {
                 byte[] dst = new byte[elementSize];
                 bufferedReader.get(dst);
                 pendingElements.add(dst);
             }
         }
+        return true;
+    }
+
+    @SuppressWarnings("unused")
+    private boolean readFirstChunkFromFile(Data toAdd) throws IOException {
+        readOffset = header.getStartOffsetOfChunkByKey(toAdd.getKey());
+        if (readOffset < 0) {
+            readOffset = 0;
+        }
+        return readNextChunkFromFile();
     }
 
     /** Closes, if not yet closed, the dataFile */

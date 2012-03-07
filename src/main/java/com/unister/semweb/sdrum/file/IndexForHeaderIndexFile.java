@@ -1,6 +1,5 @@
 package com.unister.semweb.sdrum.file;
 
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 
 import com.unister.semweb.sdrum.utils.KeyUtils;
@@ -17,9 +16,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * </code>
  * 
- * 
  * @author m.gleditzsch
- * 
  */
 public class IndexForHeaderIndexFile {
 
@@ -78,7 +75,6 @@ public class IndexForHeaderIndexFile {
      * returns the position of chunk with the given index in the file.
      * 
      * @param chunkIndex
-     * 
      * @return long, the byte-offset of the chunk
      */
     public long getStartOffsetOfChunk(int chunkIndex) {
@@ -89,7 +85,6 @@ public class IndexForHeaderIndexFile {
      * returns the position in the file, where the chunk, where the key belongs to starts.
      * 
      * @param key
-     * 
      * @return long, the byte-offset of the chunk
      */
     public long getStartOffsetOfChunkByKey(byte[] key) {
@@ -131,11 +126,21 @@ public class IndexForHeaderIndexFile {
         return -1;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < filledUpTo; i++) {
+            sb.append(i + ": " + KeyUtils.transform(maxKeyPerChunk[i])).append("\n");
+        }
+        return sb.toString();
+    }
+
     @Deprecated
     public int getChunkIdLinearSearch(byte[] key) {
         for (int i = 1; i < filledUpTo; i++) {
             byte comp1 = KeyUtils.compareKey(key, maxKeyPerChunk[i - 1]);
             byte comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[i]);
+
             if (comp1 > 0 && comp2 <= 0) {
                 return i;
             } else if (i == 1 && comp1 <= 0) {
@@ -143,6 +148,21 @@ public class IndexForHeaderIndexFile {
             }
         }
         return -1;
+    }
+
+    /**
+     * Checks, if this index is consistent. All inserted keys have to be inserted incrementally.
+     * 
+     * @return boolean
+     */
+    public boolean isConsistent() {
+        for (int i = 1; i < filledUpTo; i++) {
+            byte comp1 = KeyUtils.compareKey(maxKeyPerChunk[i], maxKeyPerChunk[i - 1]);
+            if (comp1 <= 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -156,9 +176,5 @@ public class IndexForHeaderIndexFile {
         filledUpTo = Math.max(filledUpTo, chunkIdx);
         indexBuffer.position(chunkIdx * keySize);
         indexBuffer.put(largestKeyInChunk);
-    }
-
-    private long toLong(byte[] b) {
-        return ByteBuffer.wrap(b).getLong();
     }
 }

@@ -113,9 +113,9 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
         }
         try {
             toAdd = (Data[]) AbstractKVStorable.merge(toAdd);
-            if (!dataFile.isConsistent()) {
-                System.err.println("FILE IS NOT CONSISTENT");
-            }
+            // if (!dataFile.isConsistent()) {
+            // System.err.println("FILE IS NOT CONSISTENT");
+            // }
 
             readOffset = 0;
             filledUpToWhenStarted = dataFile.getFilledUpFromContentStart(); // need to remember how a many "old" bytes

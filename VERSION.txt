@@ -1,3 +1,6 @@
+Version 0.2.18
+ - Synchronizer: removing permanent evaluation of the consistency of the HeaderIndexFile; it needs too much resources!!!
+ 
 Version 0.2.17
  - Bug fix HeaderIndexFile: if the we want to write more bytes then the enlarge size we have problem; now if
    we want to add more bytes then the enlarge size the enlarge size will be adapted 

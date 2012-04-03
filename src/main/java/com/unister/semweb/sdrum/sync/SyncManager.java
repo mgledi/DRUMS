@@ -191,7 +191,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             // if the bucket is full, or the bucket is longer then max bucket storage time within the BucketContainer,
             // or the shutdown was initiated, then try to synchronize the buckets
             // At this point we prevent starvation of one bucket if it not filled for a long period of time.
-            if (oldBucket.elementsInBucket >= oldBucket.getAllowedBucketSize() || elapsedTime > maxBucketStorageTime
+            if (/*oldBucket.elementsInBucket >= oldBucket.getAllowedBucketSize() ||*/ elapsedTime > maxBucketStorageTime
                     || shutDownInitiated) {
                 if (!startNewThread(i)) {
                     sleep();
@@ -201,12 +201,6 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
 
         if (shutDownInitiated) {
             log.info("{} of {} buckets were synchronized.", synchronizedBuckets, bucketContainer.getNumberOfBuckets());
-
-            // TODO Only for testing purpose. Can be deleted.
-            if (synchronizedBuckets >= bucketContainer.getNumberOfBuckets()) {
-                log.info("All bucket were synchronized. Number of elements in waiting queue: {}, Buckets empty: {}",
-                        bucketContainer.getNumberOfWaitingElements(), bucketsEmpty());
-            }
         }
 
         // if the queue is not full try to fill it
@@ -214,8 +208,10 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             int bucketId = getLargestBucketId();
             if (bucketId != -1) {
                 Bucket<Data> pointer = bucketContainer.buckets[bucketId];
-                if (pointer.elementsInBucket >= MINFILL_BEFORE_SYNC * pointer.allowedBucketSize
-                        && !startNewThread(bucketId)) {
+//                TODO: reactivate with memory dependence
+                if (
+                        pointer.elementsInBucket >= 100000 &&
+                        !startNewThread(bucketId)) {
                     sleep();
                 }
             }

@@ -14,6 +14,7 @@ import com.carrotsearch.hppc.cursors.IntObjectCursor;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.BucketContainerException;
+import com.unister.semweb.sdrum.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.file.FileLockException;
@@ -105,14 +106,14 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         this.databaseDirectory = databaseDirectory;
         AbstractHashFunction.INITIAL_BUCKET_SIZE = sizeOfMemoryBuckets;
         this.hashFunction = hashFunction;
-
+        DynamicMemoryAllocater.instantiate(prototype);
         if (accessMode == AccessMode.READ_WRITE) {
             this.sizeOfPreQueue = preQueueSize;
 
             buckets = new Bucket[hashFunction.getNumberOfBuckets()];
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
                 try {
-                    buckets[i] = new Bucket<Data>(i, hashFunction.getBucketSize(i), prototype.clone());
+                    buckets[i] = new Bucket<Data>(i, prototype.clone());
                 } catch (CloneNotSupportedException ex) {
                     log.error("Prototype doesn't provide clone functionality.", ex);
                     throw new RuntimeException(ex);
@@ -178,28 +179,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         }
     }
 
-    /**
-     * Adds or updates the given data expressed as a Map to the file storage. If an error occurs a FileStorageException
-     * is thrown. The call
-     * possibly blocks if all memory buckets are full. If the current thread is interrupted then an
-     * {@link InterruptedException} will be thrown.
-     * 
-     * @param toPersist
-     *            data to insert or update
-     * @throws FileStorageException
-     *             if an error occurs
-     * @throws InterruptedException
-     *             if the call blocks and the current thread is interrupted
-     */
-    // public <K , V> void insertOrMerge(Map<K, V> toPersist) throws FileStorageException, InterruptedException {
-    // try {
-    // bucketContainer.addToCache(toPersist, prototype);
-    // } catch (BucketContainerException ex) {
-    // // This exception can theoretically never be thrown because the hash function should map all keys to a
-    // // bucket.
-    // throw new FileStorageException(ex);
-    // }
-    // }
 
     /**
      * This method are for efficient update operations. Be careful ONLY update is provided. If the given array contains

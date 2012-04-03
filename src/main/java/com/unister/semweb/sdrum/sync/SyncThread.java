@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.sdrum.bucket.Bucket;
+import com.unister.semweb.sdrum.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
@@ -67,6 +68,7 @@ public class SyncThread<Data extends AbstractKVStorable<Data>> implements Runnab
             Synchronizer<Data> synchronizer = synchronizerFactory.createSynchronizer(directoryName + "/" + filename);
             synchronizer.upsert(linkData); // start synchronizing
             actualProcessingBucketIds.remove(bucket.getBucketId());
+            DynamicMemoryAllocater.INSTANCE.freeMemory(bucket.freeMemory());
             synchronizer.close();
             log.debug("Synchronized {} objects in {} ms.", linkData.length, (System.currentTimeMillis() - startTime));
             /* update messages */

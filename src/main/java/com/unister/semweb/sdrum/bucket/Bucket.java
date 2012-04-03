@@ -3,6 +3,7 @@ package com.unister.semweb.sdrum.bucket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
@@ -12,21 +13,21 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * An instance of this class is a container of {@link AbstractKVStorable}s.
  * 
  * @author m.gleditzsch, n.thieme
- * 
  */
 public class Bucket<Data extends AbstractKVStorable<Data>> {
 
     /**
-     * contains all elements to store. We use byte-arrays to save memory, cause mostly the whole object-structure takes
-     * double memory.
+     * contains all memory chunkts and its elements to store. We use byte-arrays to save memory, because mostly the whole
+     * object-structure takes double memory for small objects.
      */
-    private byte[][] backend;
+    private byte[][] memory;
 
+    private int lastChunkIndex = -1;
+    private int position_in_chunk = 0;
+    private long memorySizeInBytes = 0;
+    
     /** the id of the bucket. Should be known by its {@link BucketContainer} and its {@link AbstractHashFunction} */
     private final int bucketId;
-
-    /** the allowed size of the bucket. For faster access, should be public */
-    public final int allowedBucketSize;
 
     /** the number of elements in this bucket. For faster access, should be public */
     public int elementsInBucket;
@@ -42,14 +43,13 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
      * 
      * @param bucketId
      *            the identification number of this bucket. Used in {@link BucketContainer} and other classes
-     * @param allowedBucketSize
-     *            the maximal size of this bucket
+     * @param prototype
+     *            a prototype of the concrete AbstractKVStorable
      */
-    public Bucket(final int bucketId, final int allowedBucketSize, Data prototype) {
+    public Bucket(final int bucketId, Data prototype) {
         this.bucketId = bucketId;
-        this.backend = new byte[allowedBucketSize][];
+        this.memory = new byte[0][];
         this.elementsInBucket = 0;
-        this.allowedBucketSize = allowedBucketSize;
         this.prototype = prototype;
         this.creationTime = System.currentTimeMillis();
     }
@@ -61,17 +61,8 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
      * @throws FileLockException
      */
     public Bucket<Data> getEmptyBucketWithSameProperties() throws FileLockException, IOException {
-        Bucket<Data> newBucket = new Bucket<Data>(this.bucketId, this.allowedBucketSize, prototype);
+        Bucket<Data> newBucket = new Bucket<Data>(this.bucketId, prototype);
         return newBucket;
-    }
-
-    /**
-     * Returns the capacity of the Bucket.
-     * 
-     * @return int
-     */
-    public int getAllowedBucketSize() {
-        return allowedBucketSize;
     }
 
     /**
@@ -93,39 +84,69 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
      */
     public synchronized boolean add(AbstractKVStorable<?> toAdd) {
         boolean wasAdded = false;
-        if (size() < allowedBucketSize) {
-            byte[] b = toAdd.toByteBuffer().array();
-            backend[elementsInBucket] = b;
-            elementsInBucket++;
-            wasAdded = true;
+        if(memorySizeInBytes >= GlobalParameters.MAX_MEMORY_PER_BUCKET) {
+            return wasAdded;
         }
+        // no memory is available
+        try {
+            if (lastChunkIndex == -1) {
+                enlargeMemory();
+            } else if(position_in_chunk == memory[lastChunkIndex].length) {
+                enlargeMemory();
+            }
+        } catch (InterruptedException e) {
+            // TODO: error log
+            e.printStackTrace();
+        }
+
+        byte[] b = toAdd.toByteBuffer().array();
+        for (int i = 0; i < b.length; i++, position_in_chunk++) {
+            memory[lastChunkIndex][position_in_chunk] = b[i];
+        }
+        elementsInBucket++;
+        wasAdded = true;
         return wasAdded;
     }
 
     /** Returns true, of this bucket, contains the given element. */
     public boolean contains(Data element) {
         boolean contains = false;
-        for(int i=0; i < elementsInBucket; i++) {
-            if(KeyUtils.compareKey(element.toByteBuffer().array(), backend[i]) == 1) {
-                contains = true;
+        byte[] dst = new byte[prototype.getByteBufferSize()];
+        for (int m = 0; m < memory.length; m++) {
+            ByteBuffer bb = ByteBuffer.wrap(memory[m]);
+            if(m == memory.length - 1) {
+                bb.limit(position_in_chunk);
+            }
+            while(bb.remaining() > 0) {
+                bb.get(dst);
+                if (KeyUtils.compareKey(element.toByteBuffer().array(), dst) == 1) {
+                    contains = true;
+                    break;
+                }
+            }
+            if(contains) {
                 break;
             }
         }
         return contains;
     }
-    
+
     /**
-     * Adds a number of {@link AbstractKVStorable}-objects. This method have to be synchronized, because it is possible
-     * to access the <code>backend</code> in the same moment with the function <code>getBackend()</code>.
+     * enlarges the memory by one chunk
      * 
-     * @param toAdd
-     *            the {@link AbstractKVStorable}s to add
+     * @throws InterruptedException
      */
-    // public synchronized void addAll(AbstractKVStorable<?>[] toAdd) {
-    // for (AbstractKVStorable<?> oneDate : toAdd) {
-    // add(oneDate);
-    // }
-    // }
+    private void enlargeMemory() throws InterruptedException {
+        byte[] mem = new byte[DynamicMemoryAllocater.INSTANCE.allocateNextChunk()];
+        byte[][] new_mem = new byte[memory.length + 1][];
+        for (int i = 0; i < memory.length; i++) {
+            new_mem[i] = memory[i];
+        }
+        lastChunkIndex++;
+        new_mem[lastChunkIndex] = mem;
+        memory = new_mem;
+        position_in_chunk = 0;
+    }
 
     /**
      * Returns the in <code>backend</code> stored {@link AbstractKVStorable}s. First it rebuilds all objects from their
@@ -135,12 +156,18 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
      */
     public synchronized Data[] getBackend() {
         Data[] data = (Data[]) new AbstractKVStorable[elementsInBucket];
-        for (int i = 0; i < elementsInBucket; i++) {
-            ByteBuffer bufferData = ByteBuffer.wrap(backend[i]);
-            Data reconstructedData = prototype.fromByteBuffer(bufferData);
-            data[i] = reconstructedData;
+        byte[] dst = new byte[prototype.getByteBufferSize()];
+        int i=0;
+        for (int m = 0; m < memory.length; m++) {
+            ByteBuffer bb = ByteBuffer.wrap(memory[m]);
+            if(m == memory.length - 1) {
+                bb.limit(position_in_chunk);
+            }
+            while(bb.remaining() > 0) {
+                bb.get(dst);
+                data[i++] = prototype.fromByteBuffer(ByteBuffer.wrap(dst));                     
+            }
         }
-
         SortMachine.quickSort(data);
         return (Data[]) data;
     }
@@ -154,6 +181,15 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
         return elementsInBucket;
     }
 
+    public int freeMemory() {
+        int size = 0;
+        for(int m=0; m < memory.length; m++) {
+            size += memory[m].length;
+            memory[m] = null;
+        }
+        memory = null;
+        return size;
+    }
     /**
      * Returns the creation time of this bucket.
      * 

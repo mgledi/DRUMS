@@ -1,3 +1,7 @@
+Version 0.2.20
+ - GlobalParameters: some Parameters can now be set by a config-file. 
+ - DynamicMemoryAllocator: manages the allocation of memory for the Buckets.
+
 Version 0.2.18
  - Synchronizer: removing permanent evaluation of the consistency of the HeaderIndexFile; it needs too much resources!!!
  

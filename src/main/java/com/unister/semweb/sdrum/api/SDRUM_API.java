@@ -23,8 +23,6 @@ public class SDRUM_API {
      * 
      * @param databaseDirectory
      *            the path, where to store the database files
-     * @param sizeOfMemoryBuckets
-     *            the size of each bucket within memory
      * @param preQueueSize
      *            the size of the prequeue
      * @param numberOfSynchronizerThreads
@@ -36,23 +34,22 @@ public class SDRUM_API {
      * @return new {@link SDRUM}-object
      */
     public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createTable(String databaseDirectory,
-            int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads,
+            int preQueueSize, int numberOfSynchronizerThreads,
             AbstractHashFunction hashFunction, Data prototype) throws IOException {
         File databaseDirectoryFile = new File(databaseDirectory);
-        AbstractHashFunction.INITIAL_BUCKET_SIZE = sizeOfMemoryBuckets;
         if (databaseDirectoryFile.exists()) {
             throw new IOException("The directory already exist. Can't create a SDRUM.");
         }
         // First we create the directory structure.
         new File(databaseDirectory).mkdirs();
 
-        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, sizeOfMemoryBuckets, preQueueSize,
-                numberOfSynchronizerThreads, hashFunction, prototype, AccessMode.READ_WRITE);
+        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, preQueueSize, numberOfSynchronizerThreads, hashFunction,
+                prototype, AccessMode.READ_WRITE);
 
         // We store the configuration parameters within the given configuration file.
         ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(
                 hashFunction.getNumberOfBuckets(),
-                sizeOfMemoryBuckets,
+                0,
                 numberOfSynchronizerThreads,
                 preQueueSize,
                 databaseDirectory,
@@ -93,8 +90,6 @@ public class SDRUM_API {
      * 
      * @param databaseDirectory
      *            the path, where to store the database files
-     * @param sizeOfMemoryBuckets
-     *            the size of each bucket within memory
      * @param preQueueSize
      *            the size of the prequeue
      * @param numberOfSynchronizerThreads
@@ -106,7 +101,7 @@ public class SDRUM_API {
      * @return new {@link SDRUM}-object
      */
     public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> forceCreateTable(String databaseDirectory,
-            int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads,
+            int preQueueSize, int numberOfSynchronizerThreads,
             AbstractHashFunction hashFunction, Data prototype) throws IOException {
         File databaseDirectoryFile = new File(databaseDirectory);
         if (databaseDirectoryFile.exists()) {
@@ -116,13 +111,12 @@ public class SDRUM_API {
         }
 
         // We store the configuration parameters within the given configuration file.
-        AbstractHashFunction.INITIAL_BUCKET_SIZE = sizeOfMemoryBuckets;
         ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(hashFunction.getNumberOfBuckets(),
-                sizeOfMemoryBuckets, numberOfSynchronizerThreads, preQueueSize, databaseDirectory, hashFunction,
+                0, numberOfSynchronizerThreads, preQueueSize, databaseDirectory, hashFunction,
                 prototype);
         configurationFile.writeTo(databaseDirectory + "/" + CONFIG_FILE);
 
-        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, sizeOfMemoryBuckets, preQueueSize,
+        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, preQueueSize,
                 numberOfSynchronizerThreads, hashFunction, prototype, AccessMode.READ_WRITE);
         return table;
     }
@@ -178,7 +172,7 @@ public class SDRUM_API {
                     "The prototypes of the configuration file and the user given prototype were different in size.");
         }
 
-        SDRUM<Data> table = new SDRUM<Data>(configFile.getDatabaseDirectory(), configFile.getBucketSize(),
+        SDRUM<Data> table = new SDRUM<Data>(configFile.getDatabaseDirectory(),
                 configFile.getPreQueueSize(), configFile.getNumberOfSynchronizerThreads(),
                 configFile.getHashFunction(), configFile.getPrototype(), accessMode);
         return table;
@@ -200,10 +194,10 @@ public class SDRUM_API {
      * @throws ClassNotFoundException
      */
     public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createOrOpenTable(String databaseDirectory,
-            int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads,
-            AbstractHashFunction hashFunction, Data prototype) throws IOException, ClassNotFoundException {
+            int preQueueSize, int numberOfSynchronizerThreads, AbstractHashFunction hashFunction, Data prototype)
+            throws IOException, ClassNotFoundException {
 
-        return createOrOpenTable(databaseDirectory, sizeOfMemoryBuckets, preQueueSize, numberOfSynchronizerThreads,
+        return createOrOpenTable(databaseDirectory, preQueueSize, numberOfSynchronizerThreads,
                 Long.MAX_VALUE, hashFunction, prototype);
     }
 
@@ -225,7 +219,6 @@ public class SDRUM_API {
      * open will be made.
      * 
      * @param databaseDirectory
-     * @param sizeOfMemoryBuckets
      * @param preQueueSize
      * @param numberOfSynchronizerThreads
      * @param maxBucketStorageTime
@@ -236,7 +229,7 @@ public class SDRUM_API {
      * @throws ClassNotFoundException
      */
     public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createOrOpenTable(String databaseDirectory,
-            int sizeOfMemoryBuckets, int preQueueSize, int numberOfSynchronizerThreads, long maxBucketStorageTime,
+            int preQueueSize, int numberOfSynchronizerThreads, long maxBucketStorageTime,
             AbstractHashFunction hashFunction, Data prototype) throws IOException, ClassNotFoundException {
 
         File databaseDirectoryFile = new File(databaseDirectory);
@@ -244,7 +237,7 @@ public class SDRUM_API {
         if (databaseDirectoryFile.exists()) {
             sdrum = openTable(databaseDirectory, AccessMode.READ_WRITE, prototype);
         } else {
-            sdrum = createTable(databaseDirectory, sizeOfMemoryBuckets, preQueueSize, numberOfSynchronizerThreads,
+            sdrum = createTable(databaseDirectory, preQueueSize, numberOfSynchronizerThreads,
                     hashFunction, prototype);
         }
 

@@ -9,21 +9,34 @@ import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
 /**
- * This class manages the dynamic memory distribution for the Buckets
+ * This class manages the dynamic memory distribution for the Buckets. It should be used as Singelton. In Java it is
+ * easily possible to allocate and free memory directly. Therefore we just remember which bucket got how many bytes to
+ * use.
  * 
  * @author m.gleditzsch
  */
 public class DynamicMemoryAllocater<Data extends AbstractKVStorable<Data>> {
-    Logger log = LoggerFactory.getLogger(this.getClass());
-    
+    /** the private Logger */
+    private Logger log = LoggerFactory.getLogger(this.getClass());
+
     @SuppressWarnings("rawtypes")
     public static DynamicMemoryAllocater INSTANCE;
-    
+
+    /** The number of already allocated / used bytes */
     private AtomicLong used_bytes;
+
+    /** The number of the maximal allowed bytes, distributed by this class */
     private final long max_allowed_bytes;
+
     /** The size of one memory chunk. The size is a multiple of the buffersize of a prototype */
     private final int mem_chunksize;
 
+    /**
+     * Instantiates a new {@link DynamicMemoryAllocater}. This method is private, cause we want to this class as
+     * Singelton.
+     * 
+     * @param prototype
+     */
     private DynamicMemoryAllocater(Data prototype) {
         this.used_bytes = new AtomicLong(0);
         this.max_allowed_bytes = GlobalParameters.BUCKET_MEMORY;
@@ -31,9 +44,13 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable<Data>> {
                 GlobalParameters.MEMORY_CHUNK % prototype.getByteBufferSize();
     }
 
+    /** Instantiates the {@link DynamicMemoryAllocater}, only if there is not already an instance */
     public static <Data extends AbstractKVStorable<Data>> void instantiate(Data prototype) {
-        DynamicMemoryAllocater.INSTANCE = new DynamicMemoryAllocater<Data>(prototype);
+        if (INSTANCE == null) {
+            DynamicMemoryAllocater.INSTANCE = new DynamicMemoryAllocater<Data>(prototype);
+        }
     }
+
     /**
      * This method tries to mark memory as allocated. It allocates as much bytes as defined in <code>MEMORY_CHUNK</code>
      * and returns the number of bytes marked as allocated. This method doesn't really allocate memory.
@@ -43,15 +60,25 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable<Data>> {
      */
     public synchronized int allocateNextChunk() throws InterruptedException {
         // if no memory is available, then check every second if now is memory available
-        while ((used_bytes.longValue() + (long)mem_chunksize) > max_allowed_bytes) {
-            log.info("Can't allocate memory. {} bytes already allocated. {} bytes allowed.",used_bytes.longValue() ,max_allowed_bytes );
+        while ((used_bytes.longValue() + (long) mem_chunksize) > max_allowed_bytes) {
+            log.info("Can't allocate memory. {} bytes already allocated. {} bytes allowed.", used_bytes.longValue(),
+                    max_allowed_bytes);
             Thread.sleep(1000);
         }
+        used_bytes.set(used_bytes.longValue() + (long) mem_chunksize);
         return mem_chunksize;
     }
 
-    
+    /**
+     * Marks the given amount of memory as free to use.
+     * 
+     * @param size
+     */
     public synchronized void freeMemory(long size) {
         used_bytes.set(used_bytes.longValue() - size);
+    }
+    
+    public long getUsedMemory() {
+        return used_bytes.get();
     }
 }

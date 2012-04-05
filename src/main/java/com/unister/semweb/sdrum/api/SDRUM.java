@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.carrotsearch.hppc.IntObjectOpenHashMap;
 import com.carrotsearch.hppc.cursors.IntObjectCursor;
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.BucketContainerException;
@@ -85,7 +86,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * 
      * @param databaseDirectory
      * @param preQueueSize
-     * @param sizeOfMemoryBuckets
      *            the size of each bucket within memory
      * @param numberOfSynchronizerThreads
      * @param hashFunction
@@ -94,22 +94,22 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      */
     protected SDRUM(
             String databaseDirectory,
-            int sizeOfMemoryBuckets,
             int preQueueSize,
             int numberOfSynchronizerThreads,
             AbstractHashFunction hashFunction,
             Data prototype,
             AccessMode accessMode) {
+        GlobalParameters.initParameters();
         this.prototype = prototype;
+        DynamicMemoryAllocater.instantiate(prototype);
+
         this.elementSize = prototype.getByteBufferSize();
         this.keySize = prototype.key.length;
         this.databaseDirectory = databaseDirectory;
-        AbstractHashFunction.INITIAL_BUCKET_SIZE = sizeOfMemoryBuckets;
         this.hashFunction = hashFunction;
-        DynamicMemoryAllocater.instantiate(prototype);
+
         if (accessMode == AccessMode.READ_WRITE) {
             this.sizeOfPreQueue = preQueueSize;
-
             buckets = new Bucket[hashFunction.getNumberOfBuckets()];
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
                 try {
@@ -173,12 +173,10 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         try {
             bucketContainer.addToCache(toPersist);
         } catch (BucketContainerException ex) {
-            // This exception can theoretically never be thrown because the hash function should map all keys to a
-            // bucket.
+            // This exception should never be thrown because the hash function should map all keys to a bucket.
             throw new FileStorageException(ex);
         }
     }
-
 
     /**
      * This method are for efficient update operations. Be careful ONLY update is provided. If the given array contains
@@ -481,7 +479,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         workingBuffer.position(indexInChunk);
         int minElement = indexInChunk / elementSize;
         int numberOfEntries = workingBuffer.limit() / elementSize;
-        
+
         // binary search
         int maxElement = numberOfEntries - 1;
         int midElement;
@@ -491,10 +489,10 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
             indexInChunk = midElement * elementSize;
-            
+
             workingBuffer.position(indexInChunk);
             workingBuffer.get(tempKey);
-            
+
             comp = KeyUtils.compareKey(key, tempKey, prototype.key.length);
             if (comp == 0) {
                 return indexInChunk;

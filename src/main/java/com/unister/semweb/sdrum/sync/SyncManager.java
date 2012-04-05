@@ -210,7 +210,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
                 Bucket<Data> pointer = bucketContainer.buckets[bucketId];
 //                TODO: reactivate with memory dependence
                 if (
-                        pointer.elementsInBucket >= 100000 &&
+//                        pointer.elementsInBucket >= 100000 &&
                         !startNewThread(bucketId)) {
                     sleep();
                 }

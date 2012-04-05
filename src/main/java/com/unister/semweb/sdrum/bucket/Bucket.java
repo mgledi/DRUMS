@@ -17,7 +17,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
 public class Bucket<Data extends AbstractKVStorable<Data>> {
 
     /**
-     * contains all memory chunkts and its elements to store. We use byte-arrays to save memory, because mostly the whole
+     * contains all memory chunks and its elements to store. We use byte-arrays to save memory, because mostly the whole
      * object-structure takes double memory for small objects.
      */
     private byte[][] memory;
@@ -80,9 +80,9 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
      * <code>true</code> if the inseration was successful.
      * 
      * @param toAdd
-     *            the {@link AbstractKVStorable} to add
+     *            the Data to add
      */
-    public synchronized boolean add(AbstractKVStorable<?> toAdd) {
+    public synchronized boolean add(Data toAdd) {
         boolean wasAdded = false;
         if(memorySizeInBytes >= GlobalParameters.MAX_MEMORY_PER_BUCKET) {
             return wasAdded;

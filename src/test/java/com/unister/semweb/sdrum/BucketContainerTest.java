@@ -84,7 +84,7 @@ public class BucketContainerTest {
     private List<Bucket<DummyKVStorable>> generateBucketList(int numberOfBuckets) {
         List<Bucket<DummyKVStorable>> result = new ArrayList<Bucket<DummyKVStorable>>();
         for (int i = 0; i < numberOfBuckets; i++) {
-            Bucket<DummyKVStorable> newBucket = new Bucket<DummyKVStorable>(i, 100, new DummyKVStorable());
+            Bucket<DummyKVStorable> newBucket = new Bucket<DummyKVStorable>(i, new DummyKVStorable());
             result.add(newBucket);
         }
         return result;

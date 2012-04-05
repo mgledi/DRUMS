@@ -12,8 +12,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
+import com.unister.semweb.sdrum.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
@@ -208,10 +210,13 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             int bucketId = getLargestBucketId();
             if (bucketId != -1) {
                 Bucket<Data> pointer = bucketContainer.buckets[bucketId];
-//                TODO: reactivate with memory dependence
-                if (
-//                        pointer.elementsInBucket >= 100000 &&
-                        !startNewThread(bucketId)) {
+                boolean threadStarted = false;;
+                if( DynamicMemoryAllocater.INSTANCE.getUsedMemory() == DynamicMemoryAllocater.INSTANCE.getMaxMemory() ||
+                        pointer.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC) {
+                    threadStarted = startNewThread(bucketId);
+                }
+                
+                if ( !threadStarted) {
                     sleep();
                 }
             }

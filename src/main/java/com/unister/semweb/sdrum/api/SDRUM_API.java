@@ -184,7 +184,6 @@ public class SDRUM_API {
      * 
      * @param <Data>
      * @param databaseDirectory
-     * @param sizeOfMemoryBuckets
      * @param preQueueSize
      * @param numberOfSynchronizerThreads
      * @param hashFunction

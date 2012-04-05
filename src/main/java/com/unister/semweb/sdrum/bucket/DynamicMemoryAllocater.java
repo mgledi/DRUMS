@@ -39,9 +39,9 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable<Data>> {
      */
     private DynamicMemoryAllocater(Data prototype) {
         this.used_bytes = new AtomicLong(0);
-        this.max_allowed_bytes = GlobalParameters.BUCKET_MEMORY;
         this.mem_chunksize = GlobalParameters.MEMORY_CHUNK -
                 GlobalParameters.MEMORY_CHUNK % prototype.getByteBufferSize();
+        this.max_allowed_bytes = GlobalParameters.BUCKET_MEMORY - GlobalParameters.BUCKET_MEMORY % this.mem_chunksize;
     }
 
     /** Instantiates the {@link DynamicMemoryAllocater}, only if there is not already an instance */
@@ -80,5 +80,9 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable<Data>> {
     
     public long getUsedMemory() {
         return used_bytes.get();
+    }
+    
+    public long getMaxMemory() {
+        return max_allowed_bytes;
     }
 }

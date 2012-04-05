@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.configuration.ConfigurationException;
 
 import com.unister.semweb.commons.properties.PropertiesFactory;
+import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
 /**
@@ -27,6 +28,8 @@ public class GlobalParameters {
     /** the size of one chunk to read */
     public static long CHUNKSIZE;
 
+    public static int MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = 1;
+    
     /** File extension of the database files that store the {@link AbstractKVStorable}. */
     public static String linkDataFileExtension = ".db";
 
@@ -37,7 +40,9 @@ public class GlobalParameters {
         MEMORY_CHUNK = (int) parseSize(props.getProperty("MEMORY_CHUNK","1K"));
         MAX_MEMORY_PER_BUCKET = parseSize(props.getProperty("MAX_MEMORY_PER_BUCKET","100M"));
         CHUNKSIZE = (int) parseSize(props.getProperty("SYNC_CHUNKSIZE","100M"));
-
+        
+        HeaderIndexFile.INITIAL_FILE_SIZE =  (int) parseSize(props.getProperty("INITIAL_FILE_SIZE","16M"));
+        
         System.out.println(props);
     }
 

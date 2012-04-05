@@ -63,7 +63,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     public static final int INDEX_OFFSET = HEADER_SIZE; // index starts after the header
 
     /** the initial size of the file */
-    public static final int DEFAULT_SIZE = 1 * 1024 * 1024; // 16 *
+    public static int INITIAL_FILE_SIZE;
 
     /** the time to wait for retry the access, if the file was locked */
     public static final int RETRY_CONNECT_WAITTIME = 250;
@@ -344,13 +344,13 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     }
 
     protected void createFile() throws FileLockException, IOException {
-        size = DEFAULT_SIZE;
+        size = INITIAL_FILE_SIZE;
         filledUpTo = contentStart;
         chunkSize = INITIAL_READCHUNKSIZE - (INITIAL_READCHUNKSIZE % elementSize);
         openChannel(false, false);
         setSoftlyClosed(true);
         // have to reset the informations cause in openchannel the empty header was read
-        accessFile.setLength(DEFAULT_SIZE);
+        accessFile.setLength(INITIAL_FILE_SIZE);
         writeHeader();
         readIndex(); // index should be empty
     }
@@ -397,9 +397,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
     }
 
     public void enlargeFile() throws IOException {
-        logger.info("Enlarge filesize to {}", size);
-
         size += incrementSize;
+        logger.info("Enlarge filesize of {} to {}", osFile, size);
         contentEnd = size;
         accessFile.setLength(size);
 

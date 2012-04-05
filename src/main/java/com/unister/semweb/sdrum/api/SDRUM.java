@@ -86,7 +86,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * 
      * @param databaseDirectory
      * @param preQueueSize
-     *            the size of each bucket within memory
      * @param numberOfSynchronizerThreads
      * @param hashFunction
      * @param prototype
@@ -101,13 +100,16 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             AccessMode accessMode) {
         GlobalParameters.initParameters();
         this.prototype = prototype;
+        this.hashFunction = hashFunction;
         DynamicMemoryAllocater.instantiate(prototype);
-
+        GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = 
+                (int) ((GlobalParameters.BUCKET_MEMORY - GlobalParameters.BUCKET_MEMORY % GlobalParameters.MEMORY_CHUNK) / 
+                hashFunction.getNumberOfBuckets() / prototype.getByteBufferSize() / 2);
+        
         this.elementSize = prototype.getByteBufferSize();
         this.keySize = prototype.key.length;
         this.databaseDirectory = databaseDirectory;
-        this.hashFunction = hashFunction;
-
+        
         if (accessMode == AccessMode.READ_WRITE) {
             this.sizeOfPreQueue = preQueueSize;
             buckets = new Bucket[hashFunction.getNumberOfBuckets()];

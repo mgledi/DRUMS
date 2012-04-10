@@ -15,7 +15,8 @@ import com.unister.semweb.sdrum.TestUtils;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.BucketContainerException;
-import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;
+import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
+import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.sync.SyncManager;
 import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
@@ -34,10 +35,8 @@ public class ParameterTest {
     private int numberOfIncrements = 1;
     private int numberOfElementsToAdd = (int) 1e7;
     private int numberOfBuckets = 10;
-    private int sizeOfWaitingQueue = 10000;
     private int numberOfThreads = 2;
     private int numberOfChunksToRead = 100;
-    private int allowedElementsPerBucket;
     private String directoryOfFiles;
 
     /**
@@ -51,28 +50,8 @@ public class ParameterTest {
         this.numberOfIncrements = propertiesConfiguration.getInt("numberOfIncrements", 1);
         this.numberOfElementsToAdd = (int) propertiesConfiguration.getDouble("numberOfElementsToAdd", 1000000);
         this.numberOfBuckets = propertiesConfiguration.getInt("numberOfBuckets", 64);
-        this.sizeOfWaitingQueue = propertiesConfiguration.getInt("sizeOfWaitingQueue", 1000);
         this.numberOfThreads = propertiesConfiguration.getInt("numberOfThreads", 2);
-        this.allowedElementsPerBucket = propertiesConfiguration.getInt("allowedElementsPerBucket", 1000);
         this.directoryOfFiles = propertiesConfiguration.getString("directoryOfFiles", "/tmp");
-    }
-
-    /**
-     * Here we varying the size of the bucket.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void variyingBucketSize() throws Exception {
-        allowedElementsPerBucket = 0;
-        log.info("********************** Making test: Varying bucket size... *********************************");
-        printOutParameterConfiguration();
-        for (allowedElementsPerBucket = 500; allowedElementsPerBucket < 20000; allowedElementsPerBucket += 500) {
-            log.info("======================= One test configuration ==========================");
-            log.info("Bucket size is " + allowedElementsPerBucket);
-            // Here we start one single test with incrementally adding more and more elements.
-            incrementallyAddingOfEntries();
-        }
     }
 
     /**
@@ -93,24 +72,6 @@ public class ParameterTest {
         }
     }
 
-    /**
-     * Here we varying the size of the waiting queue.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void varyingSizeOfWaitingQueue() throws Exception {
-        sizeOfWaitingQueue = 100;
-        log.info("*************************** Making test: Varying number of threads... *********************************");
-        printOutParameterConfiguration();
-        for (sizeOfWaitingQueue = 1; sizeOfWaitingQueue < 10000; sizeOfWaitingQueue += 100) {
-            log.info("======================= One test configuration ==========================");
-            log.info("Size of waiting queue is " + sizeOfWaitingQueue);
-            // Here we start one single test with incrementally adding more and more elements.
-            incrementallyAddingOfEntries();
-        }
-    }
-    
     /**
      * Here we varying the number of the buckets.
      * 
@@ -168,14 +129,14 @@ public class ParameterTest {
      */
     private void makeTest() throws BucketContainerException,
             InterruptedException, Exception {
-        FirstBitHashFunction hashFunction = new FirstBitHashFunction(numberOfBuckets);
+        AbstractHashFunction hashFunction = new RangeHashFunction(numberOfBuckets, new DummyKVStorable().keySize, new File(""));
         Bucket<DummyKVStorable>[] buckets = new Bucket[hashFunction.getNumberOfBuckets()];
         for (int i = 0; i < buckets.length; i++) {
             buckets[i] = new Bucket<DummyKVStorable>(i, new DummyKVStorable());
         }
 
         System.out.println(directoryOfFiles);
-        BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(buckets, sizeOfWaitingQueue, hashFunction);
+        BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(buckets, hashFunction);
         SyncManager<DummyKVStorable> buffer = new SyncManager<DummyKVStorable>(bucketContainer, numberOfThreads, directoryOfFiles,
                 new SynchronizerFactory<DummyKVStorable>(new DummyKVStorable()));
         buffer.start();
@@ -209,10 +170,8 @@ public class ParameterTest {
         log.info("numberOfIncrements: " + numberOfIncrements);
         log.info("numberOfElementsToAdd: " + numberOfElementsToAdd);
         log.info("numberOfBuckets: " + numberOfBuckets);
-        log.info("sizeOfWaitingQueue: " + sizeOfWaitingQueue);
         log.info("numberOfThreads: " + numberOfThreads);
         log.info("numberOfChunksToRead: " + numberOfChunksToRead);
-        log.info("allowedElementsPerBucket: " + allowedElementsPerBucket);
         log.info("directoryOfFiles: " + directoryOfFiles);
     }
 }

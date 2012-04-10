@@ -34,17 +34,8 @@ public class BucketContainerIntegrationTest {
     private static final String TEMP_DIRECTORY = "/data/mgledi/data/newTableTest";
 //    private static final File TEMP_DIRECTORY = new File("/data/mgledi/data");
 
-    /** The maximum bucket size to be used. */
-    private static int allowedElementsPerBucket = 1000;
-
-    /** Size of the intercache that the {@link BucketContainer} is used. */
-    private static int sizeOfWaitingQueue = 10;
-
     /** The number of buffer threads that synchronizes the data with the HDD. */
     private static int numberOfSynchronizingThreads = 1;
-
-    /** The overall number of buckets to be used. */
-    private static int numberOfBuckets = 2;
 
 
     /**
@@ -67,8 +58,8 @@ public class BucketContainerIntegrationTest {
      * @throws Exception
      */
     public static void main(String args[]) throws Exception {
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(10, 10000, 1000, TEMP_DIRECTORY + "tmp.txt", 26);
-        SDRUM sdrum = SDRUM_API.createOrOpenTable(TEMP_DIRECTORY, 1000, 10, 1, hashFunction, new DummyKVStorable());
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(10, 10000, TEMP_DIRECTORY + "tmp.txt", 26);
+        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(TEMP_DIRECTORY, numberOfSynchronizingThreads, hashFunction, new DummyKVStorable());
         DummyKVStorable[] data = TestUtils.generateTestdata(100000, 1);
         sdrum.insertOrMerge(data);
         sdrum.close();

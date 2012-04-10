@@ -36,14 +36,10 @@ public class RangeHashSorter implements Serializable {
     /** The file names. */
     private String[] filenames;
 
-    /** The sizes of the buckets names. */
-    private int[] bucketSizes;
-
     /** Creates a sorting machine with the three arrays. */
-    public RangeHashSorter(byte[][] ranges, String[] filenames, int[] bucketSizes) {
+    public RangeHashSorter(byte[][] ranges, String[] filenames) {
         this.ranges = ranges;
         this.filenames = filenames;
-        this.bucketSizes = bucketSizes;
     }
 
     /** Get the ranges. After sorting the ranges are in sorted order. */
@@ -132,17 +128,14 @@ public class RangeHashSorter implements Serializable {
         for (int p = left + 1; p <= right; p++) {
             byte[] tmpRange = ranges[p];
             String tmpFilename = filenames[p];
-            int tmpBucketSize = bucketSizes[p];
 
             int j;
             for (j = p; j > left && KeyUtils.compareKey(tmpRange, ranges[j - 1]) < 0; j--) {
                 ranges[j] = ranges[j - 1];
                 filenames[j] = filenames[j - 1];
-                bucketSizes[j] = bucketSizes[j - 1];
             }
             ranges[j] = tmpRange;
             filenames[j] = tmpFilename;
-            bucketSizes[j] = tmpBucketSize;
         }
     }
 
@@ -151,10 +144,6 @@ public class RangeHashSorter implements Serializable {
         byte[] ltemp = ranges[i];
         ranges[i] = ranges[j];
         ranges[j] = ltemp;
-
-        int itemp = bucketSizes[i];
-        bucketSizes[i] = bucketSizes[j];
-        bucketSizes[j] = itemp;
 
         String tempFilename = filenames[i];
         filenames[i] = filenames[j];

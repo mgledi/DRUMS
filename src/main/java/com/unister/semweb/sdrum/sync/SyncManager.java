@@ -121,7 +121,6 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     public void run() {
         do {
             synchronizeBucketsWithHDD();
-            bucketContainer.moveElementsFromWaitingQueue();
 
             // We wait for 1 milli second. This is not much but reduces the CPU load a lot.
             try {
@@ -135,9 +134,8 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
         // BucketContainer is not receiving new elements, but there can still be waiting elements
         try {
             do {
-                bucketContainer.moveElementsFromWaitingQueue();
                 synchronizeBucketsWithHDD();
-            } while (bucketContainer.getNumberOfWaitingElements() > 0 || !bucketsEmpty());
+            } while (!bucketsEmpty());
         } catch (Exception ex) {
             log.error("One exception occurred while synchronizing buckets.", ex);
         }

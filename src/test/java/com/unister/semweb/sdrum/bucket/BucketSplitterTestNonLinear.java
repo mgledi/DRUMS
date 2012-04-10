@@ -23,7 +23,6 @@ import com.unister.semweb.sdrum.utils.RangeHashFunctionTestUtils;
  * Tests the {@link BucketSplitter} with non linear keys meaning that the keys within the buckets are not contiguous.
  * 
  * @author n.thieme
- * 
  */
 public class BucketSplitterTestNonLinear {
     private static final String sdrumDirectory = "/tmp/bucketSplitting";
@@ -56,7 +55,7 @@ public class BucketSplitterTestNonLinear {
     @Test
     public void oneBucket2Split10Elements10Width() throws Exception {
         int numberOfElements = 10;
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 10000, 10000,
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 10000,
                 hashFunctionFilename, prototypeKeySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, 10, hashFunction);
 
@@ -97,7 +96,7 @@ public class BucketSplitterTestNonLinear {
     @Test
     public void oneBucket2Split10Elements100Width() throws Exception {
         int numberOfElements = 10;
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 10000, 10000,
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 10000,
                 hashFunctionFilename, prototypeKeySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, 100, hashFunction);
 
@@ -138,7 +137,7 @@ public class BucketSplitterTestNonLinear {
     @Test
     public void oneBucket2Split5000Elements100Width() throws Exception {
         int numberOfElements = 5000;
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 500000, 10000,
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 500000,
                 hashFunctionFilename, prototypeKeySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, 100, hashFunction);
 
@@ -179,7 +178,7 @@ public class BucketSplitterTestNonLinear {
     @Test
     public void oneBucket4Split5000Elements100Width() throws Exception {
         int numberOfElements = 5000;
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 500000, 10000,
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 500000,
                 hashFunctionFilename, prototypeKeySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, 100, hashFunction);
 
@@ -238,7 +237,7 @@ public class BucketSplitterTestNonLinear {
     private DummyKVStorable[] createAndFillSDRUM(int numberOfData, int width, RangeHashFunction hashFunction)
             throws Exception {
         DummyKVStorable[] testData = TestUtils.generateTestdata(numberOfData, width);
-        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(databaseDirectory, 10000, 10000, 1, hashFunction,
+        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(databaseDirectory, 1, hashFunction,
                 prototype);
         sdrum.insertOrMerge(testData);
         sdrum.close();

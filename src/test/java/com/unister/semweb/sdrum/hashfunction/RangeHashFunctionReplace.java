@@ -12,7 +12,6 @@ import com.unister.semweb.sdrum.utils.RangeHashFunctionTestUtils;
  * Tests the <code>replace</code> method of the {@link RangeHashFunction}.
  * 
  * @author n.thieme
- * 
  */
 public class RangeHashFunctionReplace {
     private static final String rangeHashFunctionFilename = "/tmp/rangeHashFunctionTest.txt";
@@ -23,21 +22,19 @@ public class RangeHashFunctionReplace {
      */
     @Test
     public void oneLineOneLine() {
-        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0, 10000,
-                rangeHashFunctionFilename, KEY_SIZE);
+        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0, rangeHashFunctionFilename,
+                KEY_SIZE);
 
         byte[] newLine = new byte[] { 0, 0, 0, 0, 0, 0, 0, (byte) 200 };
         byte[][] newLines = new byte[][] { newLine };
 
-        testFunction.replace(0, newLines, 1000);
+        testFunction.replace(0, newLines);
 
         byte[] functionLine = testFunction.getMaxRange(0);
         String functionFilename = testFunction.getFilename(0);
-        int functionBucketSize = testFunction.getBucketSize(0);
 
         Assert.assertEquals(0, KeyUtils.compareKey(newLine, functionLine));
         Assert.assertEquals("0_0.db", functionFilename);
-        Assert.assertEquals(1000, functionBucketSize);
     }
 
     /**
@@ -45,8 +42,8 @@ public class RangeHashFunctionReplace {
      */
     @Test
     public void oneLineFourLines() {
-        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0, 10000,
-                rangeHashFunctionFilename, KEY_SIZE);
+        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0, rangeHashFunctionFilename,
+                KEY_SIZE);
 
         byte[] newLine1 = KeyUtils.transformFromLong(0, KEY_SIZE);
         byte[] newLine2 = KeyUtils.transformFromLong(100, KEY_SIZE);
@@ -55,21 +52,18 @@ public class RangeHashFunctionReplace {
 
         byte[][] newLines = new byte[][] { newLine1, newLine2, newLine3, newLine4 };
 
-        testFunction.replace(0, newLines, 20000);
+        testFunction.replace(0, newLines);
 
         byte[][] functionLines = new byte[4][];
         String[] functionFilenames = new String[4];
-        int[] functionBucketSizes = new int[4];
         for (int i = 0; i < 4; i++) {
             functionLines[i] = testFunction.getMaxRange(i);
             functionFilenames[i] = testFunction.getFilename(i);
-            functionBucketSizes[i] = testFunction.getBucketSize(i);
         }
 
         for (int i = 0; i < 4; i++) {
             Assert.assertEquals(0, KeyUtils.compareKey(newLines[i], functionLines[i]));
             Assert.assertEquals("0_" + i + ".db", functionFilenames[i]);
-            Assert.assertEquals(20000, functionBucketSizes[i]);
         }
     }
 
@@ -78,7 +72,7 @@ public class RangeHashFunctionReplace {
      */
     @Test
     public void severalLinesLastFourLines() {
-        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100, 1000,
+        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100,
                 rangeHashFunctionFilename, 8);
 
         byte[] newLine1 = KeyUtils.transformFromLong(1000, 8);
@@ -88,12 +82,11 @@ public class RangeHashFunctionReplace {
 
         byte[][] newLines = new byte[][] { newLine1, newLine2, newLine3, newLine4 };
 
-        testFunction.replace(9, newLines, 50000);
+        testFunction.replace(9, newLines);
 
         for (int i = 0; i < 4; i++) {
             Assert.assertEquals(0, KeyUtils.compareKey(newLines[i], testFunction.getMaxRange(9 + i)));
             Assert.assertEquals("9_" + i + ".db", testFunction.getFilename(9 + i));
-            Assert.assertEquals(50000, testFunction.getBucketSize(9 + i));
         }
     }
 
@@ -102,7 +95,7 @@ public class RangeHashFunctionReplace {
      */
     @Test
     public void severalLinesMidFourLines() {
-        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100, 1000,
+        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100,
                 rangeHashFunctionFilename, KEY_SIZE);
 
         byte[] newLine1 = KeyUtils.transformFromLong(300, KEY_SIZE);
@@ -112,12 +105,11 @@ public class RangeHashFunctionReplace {
 
         byte[][] newLines = new byte[][] { newLine1, newLine2, newLine3, newLine4 };
 
-        testFunction.replace(3, newLines, 30000);
+        testFunction.replace(3, newLines);
 
         for (int i = 0; i < 4; i++) {
             Assert.assertEquals(0, KeyUtils.compareKey(newLines[i], testFunction.getMaxRange(3 + i)));
             Assert.assertEquals("3_" + i + ".db", testFunction.getFilename(3 + i));
-            Assert.assertEquals(30000, testFunction.getBucketSize(3 + i));
         }
     }
 
@@ -126,12 +118,12 @@ public class RangeHashFunctionReplace {
      */
     @Test(expected = IllegalArgumentException.class)
     public void invalidBucketId() {
-        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100, 10,
+        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100,
                 rangeHashFunctionFilename, KEY_SIZE);
 
         byte[] newLine1 = KeyUtils.transformFromLong(300, KEY_SIZE);
         byte[][] newLines = new byte[][] { newLine1 };
 
-        testFunction.replace(100, newLines, 10000);
+        testFunction.replace(100, newLines);
     }
 }

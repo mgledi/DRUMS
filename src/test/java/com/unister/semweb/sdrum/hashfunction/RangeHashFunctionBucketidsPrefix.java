@@ -12,11 +12,9 @@ import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
  * Tests the method <code>getBucketIds()</code> from the {@link RangeHashFunction}.
  * 
  * @author n.thieme
- * 
  */
 public class RangeHashFunctionBucketidsPrefix {
     private static final String HASHFUNCTION_FILENAME = "/tmp/prefixGetRangeHashFunction.txt";
-    private static final int BUCKET_SIZE = 100;
 
     /**
      * Some maximal ranges are added to the hash function and only one range of these are returned.
@@ -25,9 +23,8 @@ public class RangeHashFunctionBucketidsPrefix {
     public void oneBucket() {
         byte[][] rangeValues = new byte[][] { { 0, 0, 1, 0 }, { 0, 0, 5, 0 }, { 0, 0, 6, 0 }, { 0, 0, 7, 0 } };
         String[] generatedFilenames = generateFilenames(rangeValues.length);
-        int[] bucketSizes = generateBucketSizes(rangeValues.length, BUCKET_SIZE);
 
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, bucketSizes, new File(
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, new File(
                 HASHFUNCTION_FILENAME));
 
         byte[] prefix = { 0, 0, 2 };
@@ -43,9 +40,8 @@ public class RangeHashFunctionBucketidsPrefix {
     public void twoBuckets() {
         byte[][] rangeValues = new byte[][] { { 0, 0, 1, 0 }, { 0, 0, 2, 0 }, { 0, 0, 3, 0 }, { 0, 0, 4, 0 } };
         String[] generatedFilenames = generateFilenames(rangeValues.length);
-        int[] bucketSizes = generateBucketSizes(rangeValues.length, BUCKET_SIZE);
 
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, bucketSizes, new File(
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, new File(
                 HASHFUNCTION_FILENAME));
 
         byte[] prefix = { 0, 0, 1 };
@@ -63,9 +59,8 @@ public class RangeHashFunctionBucketidsPrefix {
         byte[][] rangeValues = new byte[][] { { 0, 0, 1, 0 }, { 0, 0, 1, 5 }, { 0, 0, 2, 1 }, { 0, 0, 2, 2 },
                 { 0, 0, 3, 0 }, { 0, 0, 4, 0 } };
         String[] generatedFilenames = generateFilenames(rangeValues.length);
-        int[] bucketSizes = generateBucketSizes(rangeValues.length, BUCKET_SIZE);
 
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, bucketSizes, new File(
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, new File(
                 HASHFUNCTION_FILENAME));
 
         byte[] prefix = { 0, 0, 2 };
@@ -85,9 +80,8 @@ public class RangeHashFunctionBucketidsPrefix {
         byte[][] rangeValues = new byte[][] { { 0, 0, 1, 0 }, { 0, 0, 1, 5 }, { 0, 0, 2, 1 }, { 0, 0, 2, 2 },
                 { 0, 0, 3, 0 }, { 0, 0, 4, 0 } };
         String[] generatedFilenames = generateFilenames(rangeValues.length);
-        int[] bucketSizes = generateBucketSizes(rangeValues.length, BUCKET_SIZE);
 
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, bucketSizes, new File(
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, new File(
                 HASHFUNCTION_FILENAME));
 
         byte[] prefix = { 0, 0, 3 };
@@ -106,9 +100,7 @@ public class RangeHashFunctionBucketidsPrefix {
         byte[][] rangeValues = new byte[][] { { 0, 0, 1, 0 }, { 0, 0, 1, 5 }, { 0, 0, 2, 1 }, { 0, 0, 2, 2 },
                 { 0, 0, 3, 0 }, { 0, 0, 4, 0 } };
         String[] generatedFilenames = generateFilenames(rangeValues.length);
-        int[] bucketSizes = generateBucketSizes(rangeValues.length, BUCKET_SIZE);
-
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, bucketSizes, new File(
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, new File(
                 HASHFUNCTION_FILENAME));
 
         byte[] prefix = { 0, 0, 4 };
@@ -127,9 +119,8 @@ public class RangeHashFunctionBucketidsPrefix {
         byte[][] rangeValues = new byte[][] { { 0, 0, 1, 0 }, { 0, 0, 1, 5 }, { 0, 0, 2, 1 }, { 0, 0, 2, 2 },
                 { 0, 0, 3, 0 }, { 0, 0, 4, 0 } };
         String[] generatedFilenames = generateFilenames(rangeValues.length);
-        int[] bucketSizes = generateBucketSizes(rangeValues.length, BUCKET_SIZE);
 
-        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, bucketSizes, new File(
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, new File(
                 HASHFUNCTION_FILENAME));
 
         byte[] prefix = { 0, 0, 2, 1, 1 };

@@ -40,6 +40,36 @@ public class RangeHashFunction extends AbstractHashFunction {
     private RangeHashSorter sortMachine;
 
     /**
+     * This constructor instantiates a new {@link RangeHashFunction} with the given number of ranges. It tries to size
+     * all ranges equally.
+     * 
+     * @param ranges
+     *            the number of ranges
+     * @param keySize
+     *            the size in bytes of the key
+     * @param file
+     *            the file where to store the hashfunction
+     */
+    public RangeHashFunction(int ranges, int keySize, File file /* TODO: prototype */) {
+        this.hashFunctionFile = file;
+        this.buckets = ranges;
+        byte[] max = new byte[keySize];
+        Arrays.fill(max, (byte)-1);
+        try {
+            this.maxRangeValues = KeyUtils.getRanges(new byte[keySize], max, keySize);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.filenames = new String[ranges];
+        for(int i=0; i < ranges; i++) {
+            filenames[i] = i + ".db";
+        }
+        this.keySize = keySize;
+        this.keyComposition = new int[keySize];
+        Arrays.fill(keyComposition, 1);
+    }
+
+    /**
      * This method instantiates a new {@link RangeHashFunction} by the given rangeValues. The given array should contain
      * only the maximal allowed value per bucket. The minimal value will be the direct successor of the previous maximal
      * value. Remember: the array will be handled circular.
@@ -48,12 +78,10 @@ public class RangeHashFunction extends AbstractHashFunction {
      *            the maximum keys for all buckets
      * @param filenames
      *            the filenames for all buckets
-     * @param bucketSizes
-     *            the sizes for all buckets
      * @param file
      *            the file where to store the hashfunction
      */
-    public RangeHashFunction(byte[][] rangeValues, String[] filenames, int[] bucketSizes, File file /* TODO: prototype */) {
+    public RangeHashFunction(byte[][] rangeValues, String[] filenames, File file /* TODO: prototype */) {
         this.hashFunctionFile = file;
         this.buckets = rangeValues.length;
         this.maxRangeValues = rangeValues;
@@ -61,20 +89,11 @@ public class RangeHashFunction extends AbstractHashFunction {
         this.keySize = rangeValues[0].length;
         this.keyComposition = new int[rangeValues[0].length];
         Arrays.fill(keyComposition, 1);
-
-        if (bucketSizes == null) {
-            this.bucketSizes = new int[maxRangeValues.length];
-            Arrays.fill(this.bucketSizes, INITIAL_BUCKET_SIZE);
-        } else {
-            this.bucketSizes = bucketSizes;
-        }
-        sort();
-
     }
 
     /** Sorts the max range values corresponding to the file names and the bucket sizes. */
     private void sort() {
-        sortMachine = new RangeHashSorter(maxRangeValues, filenames, this.bucketSizes);
+        sortMachine = new RangeHashSorter(maxRangeValues, filenames);
         sortMachine.quickSort();
         generateBucketIds();
     }
@@ -93,7 +112,6 @@ public class RangeHashFunction extends AbstractHashFunction {
 
         maxRangeValues = new byte[readData.size() - 1][];
         filenames = new String[readData.size() - 1];
-        bucketSizes = new int[readData.size() - 1];
 
         // analyze header
         String[] header = readData.get(0).split("\t");
@@ -121,9 +139,8 @@ public class RangeHashFunction extends AbstractHashFunction {
                 }
             }
             filenames[i] = Aline[keyComposition.length];
-            bucketSizes[i] = Integer.parseInt(Aline[keyComposition.length + 1]); // TODO: adapt file
         }
-        sortMachine = new RangeHashSorter(maxRangeValues, filenames, bucketSizes);
+        sortMachine = new RangeHashSorter(maxRangeValues, filenames);
         sortMachine.quickSort();
         generateBucketIds();
 
@@ -227,7 +244,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         }
         bufferedWriter.append("filename").append('\t').append("bucketSize").append("\n");
         for (int i = 0; i < maxRangeValues.length; i++) {
-            String oneCSVLine = makeOneLine(maxRangeValues[i], bucketSizes[i], filenames[i]);
+            String oneCSVLine = makeOneLine(maxRangeValues[i], filenames[i]);
             bufferedWriter.append(oneCSVLine);
         }
         bufferedWriter.flush();
@@ -237,12 +254,12 @@ public class RangeHashFunction extends AbstractHashFunction {
     /**
      * Concatenates the given range value and the file name to one string. It is used to write the hash function file.
      */
-    private String makeOneLine(byte[] value, int bucketSize, String filename) {
+    private String makeOneLine(byte[] value, String filename) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < value.length; i++) {
             sb.append(value[i]).append('\t');
         }
-        sb.append(filename).append('\t').append(bucketSize).append('\n');
+        sb.append(filename).append('\n');
         return sb.toString();
     }
 
@@ -265,21 +282,19 @@ public class RangeHashFunction extends AbstractHashFunction {
      * @param bucketId
      * @return
      */
-    public void replace(int bucketId, byte[][] keysToInsert, int sizeOfNewBuckets) {
+    public void replace(int bucketId, byte[][] keysToInsert) {
         if (bucketId < 0 || bucketId >= maxRangeValues.length) {
             throw new IllegalArgumentException("Invalid bucketId: " + bucketId);
         }
         int numberOfPartitions = keysToInsert.length;
         int newSize = this.getNumberOfBuckets() - 1 + numberOfPartitions;
         byte[][] newMaxRangeValues = new byte[newSize][];
-        int[] newBucketSizes = new int[newSize];
         String[] newFileNames = new String[newSize];
 
         int k = 0;
         for (int i = 0; i < this.getNumberOfBuckets(); i++) {
             if (i != bucketId) {
                 newMaxRangeValues[k] = this.getMaxRange(i);
-                newBucketSizes[k] = this.getBucketSize(i);
                 newFileNames[k] = this.getFilename(i);
                 k++;
             }
@@ -287,13 +302,11 @@ public class RangeHashFunction extends AbstractHashFunction {
         for (int i = this.getNumberOfBuckets() - 1; i < newSize; i++) {
             k = i - (this.getNumberOfBuckets() - 1);
             newMaxRangeValues[i] = keysToInsert[k];
-            newBucketSizes[i] = sizeOfNewBuckets;
             newFileNames[i] = generateFileName(k, this.getFilename(bucketId));
         }
 
         this.maxRangeValues = newMaxRangeValues;
         this.filenames = newFileNames;
-        this.bucketSizes = newBucketSizes;
 
         sort();
     }
@@ -303,12 +316,9 @@ public class RangeHashFunction extends AbstractHashFunction {
      * 1 0 0 0 - 1 1 0 0
      * 1 1 0 1 - 1 1 1 1
      * 2 0 0 0 - 2 1 1 1
-     * 
      * The prefix is 1 then the method will return the bucket ids of first two ranges.
-     * 
      * If the <code>prefix</code> has more elements than the keys within the hash function an
      * {@link IllegalArgumentException} is thrown.
-     * 
      * TODO: THIS METHODS IS NOT COMPLETE AND CAUSES AN INAPPROPIATE RESULT. IF ALL RANGES HAVE THE SAME PREFIX THE
      * METHOD DOESN'T RETURNS ALL RANGES IF THE GIVEN prefix IS EQUAL TO THE PREFIX OF ALL RANGES. INSTEAD IT RETURNS
      * ONLY ONE BUCKET ID NOT ALL.
@@ -389,7 +399,7 @@ public class RangeHashFunction extends AbstractHashFunction {
      * @return
      */
     public RangeHashFunction copy() {
-        RangeHashFunction clone = new RangeHashFunction(maxRangeValues, filenames, bucketSizes, hashFunctionFile);
+        RangeHashFunction clone = new RangeHashFunction(maxRangeValues, filenames, hashFunctionFile);
         return clone;
     }
 

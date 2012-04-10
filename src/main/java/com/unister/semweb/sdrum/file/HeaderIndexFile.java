@@ -8,6 +8,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
@@ -50,26 +51,26 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  */
 public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends AbstractHeaderFile {
 
-    /** the initial size by which the file is enlarged */
-    public static int INITIAL_INCREMENT_SIZE = 16 * 1024 * 1024;
+    /** the initial size by which the file is enlarged. Will be set by {@link GlobalParameters} */
+    public static int INITIAL_INCREMENT_SIZE;
 
-    /** the size of the index in bytes */
-    public static final long MAX_INDEX_SIZE_IN_BYTES = 512 * 1024; // 512 kb
-
-    /** the size of a chunk to read, affects the maximal size of the file */
-    public static final int INITIAL_READCHUNKSIZE = 56 * 1024; // 56 kb
-
-    /** the byte offset, where the index starts */
-    public static final int INDEX_OFFSET = HEADER_SIZE; // index starts after the header
-
-    /** the initial size of the file */
+    /** the initial size of the file. Will be set by {@link GlobalParameters} */
     public static int INITIAL_FILE_SIZE;
 
+    /** the size of the index in bytes */
+    protected static final long MAX_INDEX_SIZE_IN_BYTES = 512 * 1024; // 512 kb
+
+    /** the size of a chunk to read, affects the maximal size of the file */
+    protected static final int INITIAL_READCHUNKSIZE = 56 * 1024; // 56 kb
+
+    /** the byte offset, where the index starts */
+    protected static final int INDEX_OFFSET = HEADER_SIZE; // index starts after the header
+
     /** the time to wait for retry the access, if the file was locked */
-    public static final int RETRY_CONNECT_WAITTIME = 250;
+    protected static final int RETRY_CONNECT_WAITTIME = 250;
 
     /** if true, the file enlarges automatically if <code>size</code> is reached */
-    public static final boolean AUTO_ENLARGE = true;
+    protected static final boolean AUTO_ENLARGE = true;
 
     /** the size of a stored element in bytes */
     protected int elementSize;// part of the header
@@ -195,7 +196,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
             logger.debug("Filesize exceeded (contendEnd: {},size: {})", contentEnd, size);
             if (AUTO_ENLARGE) {
                 // if the incrementSize is not large enough
-                if(offset + sourceBuffer.limit() > contentEnd + incrementSize ) {
+                if (offset + sourceBuffer.limit() > contentEnd + incrementSize) {
                     incrementSize = (int) (offset + sourceBuffer.limit() - contentEnd + incrementSize);
                 }
                 this.enlargeFile();
@@ -446,6 +447,51 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
             i++;
         }
         return true;
+    }
+
+    /**
+     * This method checks, if the data is consistent with the index.
+     * 
+     * @return boolean
+     * @throws IOException
+     */
+    public boolean isConsitentWithIndex() throws IOException {
+        byte[] b = new byte[keySize];
+        long offset = 0;
+        int maxChunk = getChunkIndex(getFilledUpFromContentStart());
+        boolean isConsistent = true;
+        for (int i = 1; i <= maxChunk; i++) {
+            offset = i * getChunkSize() - elementSize;
+            read(offset, ByteBuffer.wrap(b));
+            if (KeyUtils.compareKey(getIndex().maxKeyPerChunk[i - 1], b) != 0) {
+                logger.error("Index is not consistent to data. Expected {}, but found {}.",
+                        Arrays.toString(getIndex().maxKeyPerChunk[i - 1]), Arrays.toString(b));
+                isConsistent = false;
+            }
+        }
+        return isConsistent;
+    }
+
+    /**
+     * This method repairs the index. It runs over all chunks and writes the largest element into the
+     * {@link IndexForHeaderIndexFile}.
+     * @throws IOException 
+     */
+    public void repairIndex() throws IOException {
+        byte[] b = new byte[keySize];
+        long offset = 0;
+        int maxChunk = getChunkIndex(getFilledUpFromContentStart());
+        boolean isConsistent = true;
+        for (int i = 1; i <= maxChunk; i++) {
+            offset = i * getChunkSize() - elementSize;
+            read(offset, ByteBuffer.wrap(b));
+            getIndex().setLargestKey(i-1, b);
+            if (KeyUtils.compareKey(getIndex().maxKeyPerChunk[i - 1], b) != 0) {
+                logger.info("Index is not consistent to data. Expected {}, but found {}.",
+                        Arrays.toString(getIndex().maxKeyPerChunk[i - 1]), Arrays.toString(b));
+                isConsistent = false;
+            }
+        }
     }
 
     /** sets the start of the content to zero */

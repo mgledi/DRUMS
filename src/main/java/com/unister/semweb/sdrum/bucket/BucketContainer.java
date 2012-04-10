@@ -1,9 +1,5 @@
 package com.unister.semweb.sdrum.bucket;
 
-import java.util.Iterator;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +21,6 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
     /* public for fast access in buffer */
     public final Bucket<Data>[] buckets;
 
-    /** the queue, containing elements which can not be added to their buckets, because the buckets are full. */
-    private final BlockingQueue<Data> waitingElements;
-
     /** the HashFunction to calculate the bucket-id */
     private final AbstractHashFunction hashFunction;
 
@@ -36,58 +29,13 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
     /**
      * @param buckets
      *            the buckets, where to store the {@link AbstractKVStorable}
-     * @param sizeOfPreQueue
-     *            a preQueue, if a bucket is full this queue is used as buffer, so that the other buckets can further be
-     *            filled with {@link AbstractKVStorable}s
      * @param hashFunction
      *            the {@link AbstractHashFunction} is used to map from the key of a {@link AbstractKVStorable}-object to
      *            the relevant {@link Bucket}
      */
-    public BucketContainer(final Bucket<Data>[] buckets, final int sizeOfPreQueue,
-            final AbstractHashFunction hashFunction) {
+    public BucketContainer(final Bucket<Data>[] buckets, final AbstractHashFunction hashFunction) {
         this.buckets = buckets;
-        this.waitingElements = new ArrayBlockingQueue<Data>(sizeOfPreQueue); // TODO: configure
         this.hashFunction = hashFunction;
-    }
-
-    /**
-     * Moves pending elements from the <code>WaitingQueue</code> to their associated buckets
-     * 
-     * @throws BucketContainerException
-     *             if the {@link Bucket} where to add a {@link AbstractKVStorable} does not exist
-     * @throws InterruptedException
-     */
-    public synchronized void moveElementsFromWaitingQueue() {
-        Iterator<Data> tmp = waitingElements.iterator();
-        while (tmp.hasNext()) {
-            // We catch all exceptions if an error occurs here.
-            try {
-                Data date = tmp.next();
-                if (date != null && this.addToCacheWithoutBlocking(date)) {
-                    tmp.remove();
-                }
-            } catch (Exception ex) {
-                log.error("Error while moving elements from waiting queue.", ex);
-            }
-        }
-    }
-
-    /**
-     * Handles pending {@link AbstractKVStorable}s in the <code>WaitingQueue</code>. Recalls
-     * <code>moveElementsFromWaitingQueue</code> still at least one element can be moved to a {@link Bucket}.
-     * 
-     * @throws BucketContainerException
-     *             if the {@link Bucket} where to add a {@link AbstractKVStorable} does not exist
-     * @throws InterruptedException
-     */
-    public void handleWaitingElements() throws BucketContainerException, InterruptedException {
-        while (waitingElements.remainingCapacity() == 0) {
-            moveElementsFromWaitingQueue();
-            // if the queue is still full, wait a moment
-            if (waitingElements.remainingCapacity() == 0) {
-                Thread.sleep(250);
-            }
-        }
     }
 
     /**
@@ -104,21 +52,17 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
             throw new BucketContainerException("Shutdown was already initiated. Could not add the given elements.");
         }
         int throwBucketException = -1;
-        for (Data linkData : toAdd) {
-            int indexOfCache = hashFunction.getBucketId(linkData.key);
+        for (Data date : toAdd) {
+            int indexOfCache = hashFunction.getBucketId(date.key);
             // safety first, check if the bucket exists. If not, try to move on. Throw exception at the end
             if (indexOfCache < buckets.length) {
                 Bucket<Data> bucket = buckets[indexOfCache];
-                if (!bucket.add(linkData)) {
-                    waitingElements.put(linkData);
+                // Blocking process, try to add element
+                while(!bucket.add(date)) {
+                    Thread.sleep(1000);
                 }
             } else {
                 throwBucketException = indexOfCache;
-            }
-
-            // if there are too many elements waiting
-            if (waitingElements.remainingCapacity() == 0) {
-                handleWaitingElements();
             }
         }
 
@@ -126,29 +70,6 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
             throw new BucketContainerException("Could not insert at least one LinkData-object. One missing bucket was "
                     + throwBucketException);
         }
-    }
-
-    /**
-     * This method tries to add a {@link AbstractKVStorable}-object to its corresponding bucket, without any cache.
-     * Returns true if this action was successful.
-     * 
-     * @param linkData
-     *            the {@link AbstractKVStorable} object to add
-     * @return boolean true, if the operation was successful
-     * @throws BucketContainerException
-     * @throws InterruptedException
-     */
-    private boolean addToCacheWithoutBlocking(Data linkData) {
-        int indexOfCache = hashFunction.getBucketId(linkData.key);
-
-        if (indexOfCache < buckets.length) {
-            Bucket<Data> bucket = buckets[indexOfCache];
-
-            if (bucket.add(linkData)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** returns the number of buckets */
@@ -173,11 +94,6 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
         buckets[bucket.getBucketId()] = bucket;
     }
 
-    /** returns the number of waiting elements in waiting-queue */
-    public int getNumberOfWaitingElements() {
-        return this.waitingElements.size();
-    }
-
     /** Checks, if the given element is already in memory. */
     public boolean contains(Data element) {
         return buckets[hashFunction.getBucketId(element)].contains(element);        
@@ -195,8 +111,8 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
     /* Monitoring methods */
 
     /** Gets the number of elements that are waiting in the pre queue. */
-    public int getFillLevelPreQueue() {
-        return waitingElements.size();
+    public long getFreeMemory() {
+        return DynamicMemoryAllocater.INSTANCE.getFreeMemory();
     }
 
     public void shutdown() {

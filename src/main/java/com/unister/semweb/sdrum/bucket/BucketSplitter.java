@@ -77,11 +77,12 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         keysToInsert[keysToInsert.length - 1] = lastKey;
 
         // Replace the old bucket line with the new ones.
-        hashFunction.replace(bucketId, keysToInsert, hashFunction.getBucketSize(bucketId));
+        hashFunction.replace(bucketId, keysToInsert);
 
         // move elements to files
         this.moveElements(sourceFile, hashFunction, databaseDir);
         sourceFile.delete();
+        
         // store hashfunction
         hashFunction.writeToFile();
 

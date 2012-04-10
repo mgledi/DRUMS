@@ -18,9 +18,8 @@ public class RangeHashSorterTest {
         long ranges[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String filenames[] = createFilenames(10);
-        int[] sizes = createSizes(10);
 
-        RangeHashSorter sorting = new RangeHashSorter(bRanges, filenames, sizes);
+        RangeHashSorter sorting = new RangeHashSorter(bRanges, filenames);
         sorting.quickSort();
 
         byte[][] sortRanges = sorting.getRanges();
@@ -42,10 +41,9 @@ public class RangeHashSorterTest {
         System.out.println("################### Random order Sorting test");
         long ranges[] = new long[]{34, 5, 81, 1, 199, 726384};
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
-        int sizes[] = new int[]{50, 10, 100, 50, 1000, 10000};
         String filenames[] = new String[]{"f1", "f2", "f3", "f4", "f5", "f6"};
 
-        RangeHashSorter sorting = new RangeHashSorter(bRanges, filenames, sizes);
+        RangeHashSorter sorting = new RangeHashSorter(bRanges, filenames);
         sorting.quickSort();
 
         long[] expectedRanges = new long[]{1, 5,  34, 81, 199, 726384};
@@ -58,15 +56,6 @@ public class RangeHashSorterTest {
             Assert.assertTrue(Arrays.equals(bExpectedRanges[i], sorting.getRanges()[i]));
         }
         Assert.assertTrue(Arrays.equals(expectedFilenames, sorting.getFilenames()));
-    }
-
-    /** Creates an array of sizes from 0 to <code>till</code>. */
-    public int[] createSizes(int till) {
-        int[] result = new int[till];
-        for (int i = 0; i < till; i++) {
-            result[i] = i;
-        }
-        return result;
     }
 
     /** Creates an array of ranges from 0 to <code>till</code>. */

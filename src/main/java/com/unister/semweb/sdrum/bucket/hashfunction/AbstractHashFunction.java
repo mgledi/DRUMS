@@ -18,10 +18,6 @@ import com.unister.semweb.sdrum.storable.KVStorable;
 public abstract class AbstractHashFunction implements Serializable {
     private static final long serialVersionUID = -5299645747853624533L;
 
-    public static int INITIAL_BUCKET_SIZE = 1000;
-
-    protected int[] bucketSizes;
-
     public int keySize;
 
     /** the number of buckets */
@@ -49,16 +45,6 @@ public abstract class AbstractHashFunction implements Serializable {
 
     /** Returns the bucketid of the bucket belonging to the given filenam. */
     public abstract int getBucketId(String dbFilename);
-
-    /** Returns the size of the bucket with the given bucket-id. */
-    public int getBucketSize(int bucketId) {
-        return bucketSizes[bucketId];
-    }
-
-    /** Returns the size of the bucket with the given bucket-id. */
-    public void setBucketSize(int bucketId, int bucketSize) {
-        bucketSizes[bucketId] = bucketSize;
-    }
 
     /**
      * This function estimates the optimal bucket size for the given bucket-id from the already stored file. The given

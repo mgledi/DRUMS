@@ -1,5 +1,6 @@
 package com.unister.semweb.sdrum;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +9,7 @@ import org.junit.Test;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
-import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;
+import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
@@ -73,9 +74,8 @@ public class BucketContainerTest {
         Bucket<DummyKVStorable>[] buckets = new Bucket[bucketList.size()];
         buckets = bucketList.toArray(buckets);
 
-        AbstractHashFunction bucketComputer = new FirstBitHashFunction(numberOfBuckets);
-        BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(buckets, 1000,
-                bucketComputer);
+        AbstractHashFunction bucketComputer = new RangeHashFunction(numberOfBuckets, new DummyKVStorable().keySize, new File(""));
+        BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(buckets, bucketComputer);
         bucketContainer.addToCache(linkData);
 
         // Assert.assertEquals(1, bucketList.get(numberOfBucket).size());

@@ -49,7 +49,7 @@ public class BucketSplitterTestLinear {
     @Test
     public void oneBucket2Split() throws Exception {
         int numberOfElements = 100;
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 100, 10000,
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 100,
                 hashFunctionFilename, prototypeKeySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
@@ -85,8 +85,8 @@ public class BucketSplitterTestLinear {
     @Test
     public void oneBucket4Split() throws Exception {
         int numberOfElements = 100;
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 100, 10000,
-                hashFunctionFilename, prototypeKeySize);
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 100, hashFunctionFilename,
+                prototypeKeySize);
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
@@ -134,7 +134,7 @@ public class BucketSplitterTestLinear {
     @Test
     public void oneBigBucketSplit() throws Exception {
         int numberOfElements = 1200000;
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 2000000, 10000,
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 2000000,
                 hashFunctionFilename, prototypeKeySize);
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
@@ -183,8 +183,8 @@ public class BucketSplitterTestLinear {
     @Test
     public void splitSecondBucket() throws Exception {
         int numberOfElements = 2400;
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(2, 1200, 10000,
-                hashFunctionFilename, prototypeKeySize);
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(2, 1200, hashFunctionFilename,
+                prototypeKeySize);
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
@@ -235,7 +235,7 @@ public class BucketSplitterTestLinear {
      */
     private DummyKVStorable[] createAndFillSDRUM(int numberOfData, RangeHashFunction hashFunction) throws Exception {
         DummyKVStorable[] testData = TestUtils.generateTestdata(numberOfData);
-        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(databaseDirectory, 10000, 10000, 1, hashFunction,
+        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(databaseDirectory, 10000, 1, hashFunction,
                 prototype);
         sdrum.insertOrMerge(testData);
         sdrum.close();

@@ -77,12 +77,19 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable<Data>> {
     public synchronized void freeMemory(long size) {
         used_bytes.set(used_bytes.longValue() - size);
     }
-    
+
+    /** Returns the number of used bytes, allocated by this {@link DynamicMemoryAllocater} */
     public long getUsedMemory() {
         return used_bytes.get();
     }
-    
+
+    /** Returns the maximal allowed bytes to be used by this {@link DynamicMemoryAllocater} */
     public long getMaxMemory() {
         return max_allowed_bytes;
+    }
+
+    /** Returns the number of bytes not allocated by the {@link DynamicMemoryAllocater} */
+    public long getFreeMemory() {
+        return max_allowed_bytes - used_bytes.longValue();
     }
 }

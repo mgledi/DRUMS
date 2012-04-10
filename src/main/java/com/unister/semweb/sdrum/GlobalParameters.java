@@ -42,8 +42,7 @@ public class GlobalParameters {
         CHUNKSIZE = (int) parseSize(props.getProperty("SYNC_CHUNKSIZE","100M"));
         
         HeaderIndexFile.INITIAL_FILE_SIZE =  (int) parseSize(props.getProperty("INITIAL_FILE_SIZE","16M"));
-        
-        System.out.println(props);
+        HeaderIndexFile.INITIAL_INCREMENT_SIZE =  (int) parseSize(props.getProperty("INITIAL_INCREMENT_SIZE","16M"));
     }
 
     static Pattern p_mem = Pattern.compile("(\\d+)(K|M|G)");

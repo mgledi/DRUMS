@@ -18,7 +18,6 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * Tests the the distribution of the {@link RangeHashFunction}, meaning that the key is mapped to the right bucket id.
  * 
  * @author n.thieme
- * 
  */
 public class RangeHashFunctionTest {
     private static final Logger log = LoggerFactory.getLogger(RangeHashFunctionTest.class);
@@ -33,11 +32,11 @@ public class RangeHashFunctionTest {
     @Test
     public void correctHashDistribution() {
         System.out.println("############ correctHashDistribution()");
-        long[] ranges = new long[] {5, 10, 20, 30, 40 };
+        long[] ranges = new long[] { 5, 10, 20, 30, 40 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "0", "1", "2", "3", "1" };
 
-        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null, null);
+        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null);
 
         int currentBucketId = -1;
         currentBucketId = hashFunction.getBucketId(11);
@@ -79,13 +78,13 @@ public class RangeHashFunctionTest {
         String[] filenames = generateUniqueFilenames(numberOfRanges);
 
         long overallTime = 0;
-        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null, null);
+        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null);
         for (int i = 0; i < numberOfKeysToSearchFor; i++) {
             long randomKey = randomGenerator.nextLong();
-            if(randomKey < 0 ) {
+            if (randomKey < 0) {
                 randomKey *= -1;
             }
-            
+
             long startTime = System.currentTimeMillis();
             try {
                 hashFunction.getBucketId(randomKey);
@@ -116,7 +115,7 @@ public class RangeHashFunctionTest {
         byte[][] bRanges = KeyUtils.transformToByteArray(rangeValues);
         String[] filenames = new String[] { "f1", "f2", "f3", "f4", "f5" };
 
-        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null, null);
+        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null);
         Assert.assertEquals("f1", hashFunction.getFilename(0));
         Assert.assertEquals("f2", hashFunction.getFilename(1));
         Assert.assertEquals("f3", hashFunction.getFilename(2));
@@ -136,7 +135,7 @@ public class RangeHashFunctionTest {
         byte[][] bRanges = KeyUtils.transformToByteArray(rangeValues);
         String[] filenames = new String[] { "f1", "f2", "f3", "f4", "f5" };
 
-        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null, null);
+        RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null);
         hashFunction.getFilename(6);
     }
 
@@ -144,12 +143,13 @@ public class RangeHashFunctionTest {
     public void loadHashFunctionFromFile() throws IOException {
         File f = new File("src/test/resources/rangehash.hash");
         RangeHashFunction rhf = new RangeHashFunction(f);
-        long l= 16L<<56;
+        long l = 16L << 56;
         Assert.assertEquals(0, rhf.getBucketId(l));
         l++;
         Assert.assertEquals(1, rhf.getBucketId(l));
         Assert.assertEquals(7, rhf.getBucketId(Long.MAX_VALUE));
     }
+
     /* ******************************************** Data generator methods ******************** */
     /* **************************************************************************************** */
 
@@ -157,9 +157,9 @@ public class RangeHashFunctionTest {
     private long[] generateUniqueRanges(int numberOfRanges) {
         long[] result = new long[numberOfRanges];
         for (int i = 0; i < numberOfRanges; i++) {
-            long l= randomGenerator.nextLong();
-            if(l < 0 ) {
-                l*=-1;
+            long l = randomGenerator.nextLong();
+            if (l < 0) {
+                l *= -1;
             }
             result[i] = l;
         }

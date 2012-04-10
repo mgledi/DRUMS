@@ -29,7 +29,6 @@ public class SDrumTest {
 
     private static final String databaseDirectory = "/tmp/createTable/db";
     private static final String configurationFile = databaseDirectory + "/" + "database.properties";
-    private static final int preQueueSize = 10000;
     private static final int numberOfSynchronizerThreads = 1;
     private AbstractHashFunction hashFunction;
     private DummyKVStorable prototype;
@@ -39,10 +38,9 @@ public class SDrumTest {
         long[] ranges = new long[] { 0, 10, 20, 30 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
-        int[] sizes = { 1000, 1000, 1000, 1000 };
         FileUtils.deleteQuietly(new File(databaseDirectory));
 
-        hashFunction = new RangeHashFunction(bRanges, filenames, sizes, new File("/tmp/hash.hs"));
+        hashFunction = new RangeHashFunction(bRanges, filenames, new File("/tmp/hash.hs"));
         prototype = new DummyKVStorable();
     }
 
@@ -52,27 +50,37 @@ public class SDrumTest {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    @Test //by mgledi 
+    @Test
+    //by mgledi 
     public void findElementInReadBufferTest() throws IOException, ClassNotFoundException {
-        SDRUM<DummyKVStorable> table = SDRUM_API.createOrOpenTable(databaseDirectory, preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createOrOpenTable(databaseDirectory, numberOfSynchronizerThreads,
+                hashFunction, prototype);
         // create data
-        DummyKVStorable d1 = new DummyKVStorable(); d1.setKey(new byte[]{0,0,0,0,0,0,0,1});
-        DummyKVStorable d2 = new DummyKVStorable(); d2.setKey(new byte[]{0,0,0,0,0,0,0,2});
-        DummyKVStorable d3 = new DummyKVStorable(); d3.setKey(new byte[]{0,0,0,0,0,0,0,3});
+        DummyKVStorable d1 = new DummyKVStorable();
+        d1.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+        DummyKVStorable d2 = new DummyKVStorable();
+        d2.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 2 });
+        DummyKVStorable d3 = new DummyKVStorable();
+        d3.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 });
         ByteBuffer bb = ByteBuffer.allocate(3 * prototype.byteBufferSize);
         bb.put(d1.toByteBuffer().array());
         bb.put(d2.toByteBuffer().array());
         bb.put(d3.toByteBuffer().array());
-        
-        Assert.assertEquals(-1, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,0}, 0));
-        Assert.assertEquals(0, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,1}, 0));
-        Assert.assertEquals(1 * prototype.byteBufferSize, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,2}, 0));
-        Assert.assertEquals(2 * prototype.byteBufferSize, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,3}, 0));
-        Assert.assertEquals(2 * prototype.byteBufferSize, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,3}, 1*prototype.byteBufferSize));
-        Assert.assertEquals(2 * prototype.byteBufferSize, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,3}, 2*prototype.byteBufferSize));
-        Assert.assertEquals(-1, table.findElementInReadBuffer(bb, new byte[]{0,0,0,0,0,0,0,3}, 3*prototype.byteBufferSize));
+
+        Assert.assertEquals(-1, table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 0));
+        Assert.assertEquals(0, table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }, 0));
+        Assert.assertEquals(1 * prototype.byteBufferSize,
+                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 2 }, 0));
+        Assert.assertEquals(2 * prototype.byteBufferSize,
+                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, 0));
+        Assert.assertEquals(2 * prototype.byteBufferSize,
+                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, 1 * prototype.byteBufferSize));
+        Assert.assertEquals(2 * prototype.byteBufferSize,
+                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, 2 * prototype.byteBufferSize));
+        Assert.assertEquals(-1,
+                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, 3 * prototype.byteBufferSize));
     }
-    
+
     /**
      * Creates a table and inserts 10 elements. After that the file in which the data should be written are read and the
      * data is compared with the generated data.
@@ -82,7 +90,7 @@ public class SDrumTest {
         // Adding elements to the drum.
         DummyKVStorable[] test = TestUtils.createDummyData(10);
         SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory,
-                preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+                numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(test);
         table.close();
 
@@ -120,7 +128,7 @@ public class SDrumTest {
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
 
         SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory,
-                preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+                numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
         table.close();
 
@@ -146,7 +154,7 @@ public class SDrumTest {
         DummyKVStorable[] toAdd = new DummyKVStorable[] { data };
 
         SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory,
-                preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+                numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
         Thread.sleep(2000);
 
@@ -176,7 +184,7 @@ public class SDrumTest {
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
 
         SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory,
-                preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+                numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
 
         Thread.sleep(1000);
@@ -199,7 +207,7 @@ public class SDrumTest {
         List<DummyKVStorable> expectedData = Arrays.asList(toAdd);
 
         SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory,
-                preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+                numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(toAdd);
 
         Thread.sleep(1000);
@@ -218,7 +226,7 @@ public class SDrumTest {
         DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
         SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory,
-                preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+                numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(testdata);
 
         Thread.sleep(1000);
@@ -237,7 +245,7 @@ public class SDrumTest {
         DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
         SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory,
-                preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+                numberOfSynchronizerThreads, hashFunction, prototype);
         table.insertOrMerge(testdata);
 
         Thread.sleep(1000);
@@ -259,8 +267,8 @@ public class SDrumTest {
         DummyKVStorable[] completeTestdata = (DummyKVStorable[]) TestUtils.addAll(testdata, secondRange);
         completeTestdata = (DummyKVStorable[]) TestUtils.addAll(completeTestdata, thirdRange);
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory,
-                preQueueSize, numberOfSynchronizerThreads, hashFunction, prototype);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, numberOfSynchronizerThreads,
+                hashFunction, prototype);
         table.insertOrMerge(completeTestdata);
 
         Thread.sleep(2000);

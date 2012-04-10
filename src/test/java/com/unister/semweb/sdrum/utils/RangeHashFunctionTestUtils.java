@@ -8,7 +8,6 @@ import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
  * Utility class for handling {@link RangeHashFunction} easier.
  * 
  * @author n.thieme
- * 
  */
 public class RangeHashFunctionTestUtils {
     /**
@@ -17,11 +16,9 @@ public class RangeHashFunctionTestUtils {
      * 
      * @param numberOfRanges
      * @param rangeWidth
-     * @param sizeOfBuckets
      * @return
      */
-    public static RangeHashFunction createTestFunction(int numberOfRanges, int rangeWidth, int sizeOfBuckets,
-            String filename, int keySize) {
+    public static RangeHashFunction createTestFunction(int numberOfRanges, int rangeWidth, String filename, int keySize) {
         byte[][] ranges = new byte[numberOfRanges][];
         String[] filenames = new String[numberOfRanges];
         int[] bucketSizes = new int[numberOfRanges];
@@ -29,11 +26,9 @@ public class RangeHashFunctionTestUtils {
             byte[] oneLine = KeyUtils.transformFromLong((i + 1) * rangeWidth, keySize);
             ranges[i] = oneLine;
             filenames[i] = i + ".db";
-            bucketSizes[i] = sizeOfBuckets;
         }
 
-        RangeHashFunction result = new RangeHashFunction(ranges, filenames, bucketSizes, new File(
-                filename));
+        RangeHashFunction result = new RangeHashFunction(ranges, filenames, new File(filename));
         return result;
 
     }

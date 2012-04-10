@@ -1,6 +1,5 @@
 package com.unister.semweb.sdrum.utils;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -254,12 +253,13 @@ public class KeyUtils {
     }
 
     /**
-     * Generates a long based range HashFunction
+     * This method generates equally sized ranges between the given min and the given max. It return the max-value for
+     * each range
      * 
      * @throws Exception
      */
-    public static String generateHashFunction(byte[] min, byte[] max, String[] buckets, String suffix,
-            String prefix) throws Exception {
+    public static byte[][] getRanges(byte[] min, byte[] max, int numberOfRanges) throws Exception {
+        byte[][] ranges = new byte[numberOfRanges][];
         if (compareKey(min, max) > 0) {
             throw new Exception("The given min is not larger than the max. Buckets could not be determined");
         }
@@ -271,8 +271,8 @@ public class KeyUtils {
         byte[] range = new byte[iDiff.length];
         int tmprest = 0;
         for (int i = 0; i < iDiff.length; i++) {
-            iRange[i] += iDiff[i] / buckets.length;
-            tmprest = (iDiff[i] % buckets.length) * 255;
+            iRange[i] += iDiff[i] / numberOfRanges;
+            tmprest = (iDiff[i] % numberOfRanges) * 255;
             if (i < iDiff.length - 1) {
                 iDiff[i + 1] += tmprest;
             }
@@ -282,18 +282,37 @@ public class KeyUtils {
             iRange[max.length - 1]++;
             range[max.length - 1] = (byte) iRange[max.length - 1];
         }
+        
+        byte[] val = min;
+        for (int i = 0; i < numberOfRanges; ++i) {
+            val = sumUnsigned(val, range);
+            if (compareKey(val, max) > 0) {
+                val = max;
+            }
+            ranges[i] = val;
+        }
+        return ranges;
+    }
+    /**
+     * Generates a long based range HashFunction
+     * 
+     * @throws Exception
+     */
+    public static String generateHashFunction(byte[] min, byte[] max, String[] buckets, String suffix,
+            String prefix) throws Exception {
+        if (compareKey(min, max) > 0) {
+            throw new Exception("The given min is not larger than the max. Buckets could not be determined");
+        }
+        byte[][] ranges = getRanges(min, max, buckets.length);
+
         StringBuilder sb = new StringBuilder();
         for(int i=0; i < min.length; i++) {
             sb.append("b").append("\t");
         }
         sb.append("filename").append("\n");
         
-        byte[] val = min;
         for (int i = 0; i < buckets.length; ++i) {
-            val = sumUnsigned(val, range);
-            if (compareKey(val, max) > 0) {
-                val = max;
-            }
+            byte[] val = ranges[i];
             for (int j = 0; j < val.length; j++) {
                 int k = val[j] & 0xff;
                 sb.append(k + "\t");
@@ -303,53 +322,21 @@ public class KeyUtils {
         return sb.toString();
     }
 
-    public static void generateHashFunctionBigInteger(long min, long max, int buckets, int bucketSize, String suffix,
-            String prefix) {
-        int numberOfBytes = 12;
-
-        BigInteger bigMin = BigInteger.valueOf(min);
-        BigInteger bigMax = BigInteger.valueOf(max);
-        BigInteger bigBuckets = BigInteger.valueOf(buckets);
-
-        BigInteger bigMaxMinDifference = bigMax.subtract(bigMin);
-        BigInteger bigRange = bigMaxMinDifference.divide(bigBuckets);
-
-        BigInteger bigVal = bigMin;
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < numberOfBytes; i++) {
-            sb.append("b\t");
-        }
-
-        sb.append("filename\t");
-        sb.append("bucketsize\n");
-        for (int i = 0; i < buckets; ++i) {
-            bigVal = bigVal.add(bigRange);
-            if (bigVal.compareTo(bigMax) == 0 || bigVal.compareTo(bigMax) == 1) {
-                bigVal = bigMax;
-            }
-
-            byte[] bval = ByteBuffer.allocate(12).put(bigVal.toByteArray()).array();
-
-            for (int j = 0; j < bval.length; j++) {
-                int k = bval[j] & 0xff;
-                sb.append(k + "\t");
-            }
-            sb.append(prefix + i + suffix + "\t" + bucketSize + "\n");
-        }
-
-        System.out.println(sb.toString());
-    }
-
     public static void main(String[] args) throws Exception {
         byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
         // byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         // byte[] h1 = new byte[] { (byte) 64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-        // byte[] h2 = new byte[] { (byte) 128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+//         byte[] h2 = new byte[] { (byte) 128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
         // byte[] h3 = new byte[] { (byte) -64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-        byte[] h4 = new byte[] { -1, -1, -1, -1, -1, -1, -1, -1 };
-         String result = generateHashFunction(h0, h4, 10, ".db", "");
-         System.out.println(result);
+        byte[] h4 = new byte[] { -128, -1, -1, -1, -1, -1, -1, -1 };
+        
+        byte[][] ranges = getRanges(h0, h4, 10);
+        for(byte[] b : ranges) {
+            System.out.println((transform(b)));
+        }
+        
+//         String result = generateHashFunction(h0, h4, 10, ".db", "");
+//         System.out.println(result);
 
         // generateHashFunctionBigInteger(-255, 255, 2, 500000, ".db", "");
 

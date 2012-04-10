@@ -1,5 +1,6 @@
 package com.unister.semweb.sdrum;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
@@ -17,7 +18,7 @@ import org.apache.commons.lang.ArrayUtils;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
-import com.unister.semweb.sdrum.bucket.hashfunction.FirstBitHashFunction;
+import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
@@ -60,7 +61,7 @@ public class TestUtils {
      */
     public static List<Bucket<DummyKVStorable>> generateBucketList(int bucketSize, int numberOfBuckets,
             int numberOfDataPerBucket) {
-        AbstractHashFunction hashFunction = new FirstBitHashFunction(numberOfBuckets);
+        AbstractHashFunction hashFunction = new RangeHashFunction(numberOfBuckets, new DummyKVStorable().keySize, new File(""));
         List<Bucket<DummyKVStorable>> result = new ArrayList<Bucket<DummyKVStorable>>();
         for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
             Bucket<DummyKVStorable> newBucket = new Bucket<DummyKVStorable>(i, new DummyKVStorable());

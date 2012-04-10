@@ -57,9 +57,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     /** The directory of the database files. */
     private String databaseDirectory;
 
-    /** the size of the pre queue, used if a specific bucket waits for synchronizing */
-    private int sizeOfPreQueue;
-
     /** an array, containing all used buckets */
     private Bucket<Data>[] buckets;
 
@@ -93,7 +90,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      */
     protected SDRUM(
             String databaseDirectory,
-            int preQueueSize,
             int numberOfSynchronizerThreads,
             AbstractHashFunction hashFunction,
             Data prototype,
@@ -111,7 +107,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         this.databaseDirectory = databaseDirectory;
         
         if (accessMode == AccessMode.READ_WRITE) {
-            this.sizeOfPreQueue = preQueueSize;
             buckets = new Bucket[hashFunction.getNumberOfBuckets()];
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
                 try {
@@ -121,7 +116,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
                     throw new RuntimeException(ex);
                 }
             }
-            bucketContainer = new BucketContainer<Data>(buckets, sizeOfPreQueue, hashFunction);
+            bucketContainer = new BucketContainer<Data>(buckets, hashFunction);
             synchronizerFactory = new SynchronizerFactory<Data>(prototype);
             syncManager = new SyncManager<Data>(
                     bucketContainer,

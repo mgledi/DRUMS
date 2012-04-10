@@ -28,14 +28,13 @@ public class SDrumIteratorTest {
         long[] ranges = new long[] { 0, 10, 20, 30 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2", "3.db", "4.db" };
-        int[] sizes = { 10000, 10000, 10000, 10000 };
         FileUtils.deleteQuietly(new File(databaseDirectory));
 
-        this.hashFunction = new RangeHashFunction(bRanges, filenames, sizes, new File("/tmp/hash.hs"));
+        this.hashFunction = new RangeHashFunction(bRanges, filenames, new File("/tmp/hash.hs"));
         this.prototype = new DummyKVStorable();
 
         // fill with data
-        table = SDRUM_API.createTable(databaseDirectory, 1000, 1, hashFunction, prototype);
+        table = SDRUM_API.createTable(databaseDirectory, 1, hashFunction, prototype);
         // remember, the element with key 0 is ignored
         generatedData = TestUtils.createDummyData(1, 50);
         SortMachine.quickSort(generatedData);

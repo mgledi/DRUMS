@@ -67,6 +67,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         this.keySize = keySize;
         this.keyComposition = new int[keySize];
         Arrays.fill(keyComposition, 1);
+        sort();
     }
 
     /**
@@ -89,6 +90,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         this.keySize = rangeValues[0].length;
         this.keyComposition = new int[rangeValues[0].length];
         Arrays.fill(keyComposition, 1);
+        sort();
     }
 
     /** Sorts the max range values corresponding to the file names and the bucket sizes. */

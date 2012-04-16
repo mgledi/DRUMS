@@ -191,8 +191,10 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             // if the bucket is full, or the bucket is longer then max bucket storage time within the BucketContainer,
             // or the shutdown was initiated, then try to synchronize the buckets
             // At this point we prevent starvation of one bucket if it not filled for a long period of time.
-            if (/*oldBucket.elementsInBucket >= oldBucket.getAllowedBucketSize() ||*/ elapsedTime > maxBucketStorageTime
-                    || shutDownInitiated) {
+            if (    DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
+                    oldBucket.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
+                    elapsedTime > maxBucketStorageTime || 
+                    shutDownInitiated) {
                 if (!startNewThread(i)) {
                     sleep();
                 }
@@ -209,7 +211,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             if (bucketId != -1) {
                 Bucket<Data> pointer = bucketContainer.buckets[bucketId];
                 boolean threadStarted = false;;
-                if( DynamicMemoryAllocater.INSTANCE.getUsedMemory() == DynamicMemoryAllocater.INSTANCE.getMaxMemory() ||
+                if( DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
                         pointer.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC) {
                     threadStarted = startNewThread(bucketId);
                 }
@@ -246,7 +248,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
 
         // BlockingQueue is full
         if (bufferThreads.getQueue().size() == allowedBucketsInBuffer) {
-            log.debug("Can't add BufferThread. Too many threads in queue");
+            log.debug("Can't add BufferThread. Too many threads in queue. {}", actualProcessingBucketIds.toString());
             return false;
         }
 

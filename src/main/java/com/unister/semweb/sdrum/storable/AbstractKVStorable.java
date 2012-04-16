@@ -12,8 +12,8 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  */
 public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
         implements
-            KVStorable<Data>,
-            Serializable {
+        KVStorable<Data>,
+        Serializable {
     /**
      * 
      */
@@ -26,7 +26,26 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
     public byte[] key;
 
     /**
-     * Sets the key of this object. Be careful by overwriting the old key.
+     * value of the object. Storing all values in one byte-array reduces the memory amount of a materialized object
+     */
+    public byte[] value;
+
+    /**
+     * Sets the value of this object. The given array is not copied, only a pointer will be set
+     * 
+     * @param value
+     */
+    public void setValue(byte[] value) {
+        this.value = key;
+    }
+
+    public byte[] getValue() {
+        return value;
+    }
+
+    /**
+     * Sets the key of this object. Be careful by overwriting the old key. The given array is not copied, only a
+     * pointer will be set.
      * 
      * @param key
      */
@@ -38,26 +57,6 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
     public byte[] getKey() {
         return key;
     }
-
-    /**
-     * sets the key of this object. Be careful by overwriting the old key.
-     * 
-     * @param key
-     */
-    // public void setKey(long key) {
-    // // TODO: if key is not 8 byte
-    // ByteBuffer.wrap(this.key).putLong(key);
-    // }
-
-    /**
-     * returns the key as long, if possible
-     * 
-     * @return
-     */
-    // public long getLongKey() {
-    // // TODO: if key is not 8 byte
-    // return ByteBuffer.wrap(this.key).getLong();
-    // }
 
     @Override
     public abstract Data clone() throws CloneNotSupportedException;
@@ -83,14 +82,14 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
     public abstract void update(Data element);
 
     /**
-     * This method returns true if this element is marked as deleted. 
+     * This method returns true if this element is marked as deleted.
      * 
      * @return boolean
      */
     public boolean isMarkedAsDeleted() {
         return false;
     }
-    
+
     /**
      * This method merges {@link AbstractKVStorable}s in the given array, which have the same key.
      * 

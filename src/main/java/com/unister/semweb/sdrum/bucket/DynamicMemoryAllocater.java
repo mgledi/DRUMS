@@ -74,7 +74,7 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable<Data>> {
      * 
      * @param size
      */
-    public synchronized void freeMemory(long size) {
+    public void freeMemory(long size) {
         used_bytes.set(used_bytes.longValue() - size);
     }
 

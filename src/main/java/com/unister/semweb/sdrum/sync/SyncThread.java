@@ -68,6 +68,7 @@ public class SyncThread<Data extends AbstractKVStorable<Data>> implements Runnab
             Synchronizer<Data> synchronizer = synchronizerFactory.createSynchronizer(directoryName + "/" + filename);
             synchronizer.upsert(linkData); // start synchronizing
             actualProcessingBucketIds.remove(bucket.getBucketId());
+            log.debug("Try to free memory.");
             DynamicMemoryAllocater.INSTANCE.freeMemory(bucket.freeMemory());
             synchronizer.close();
             log.debug("Synchronized {} objects in {} ms.", linkData.length, (System.currentTimeMillis() - startTime));

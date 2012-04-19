@@ -2,20 +2,24 @@ package com.unister.semweb.sdrum.hashfunction;
 
 import java.util.Arrays;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.unister.semweb.sdrum.bucket.hashfunction.util.RangeHashSorter;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
-/** Tests the sorting machine for the ranges. */
+/**
+ * This Class tests the sorting machine for the ranges.
+ * 
+ * @author m.gleditzsch
+ */
 public class RangeHashSorterTest {
-    /** The array are already ordered. So this is a test, that the ordering will not damaged. */
+    
+    /** The array is already sorted. So this is a test, that the ordering will not changed. */
     @Test
     public void rightOrderBeforeSearch() {
         System.out.println("################### Preordered Sorting test");
-        long ranges[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        long ranges[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String filenames[] = createFilenames(10);
 
@@ -39,17 +43,17 @@ public class RangeHashSorterTest {
     @Test
     public void randomOrderBeforeSearch() {
         System.out.println("################### Random order Sorting test");
-        long ranges[] = new long[]{34, 5, 81, 1, 199, 726384};
+        long ranges[] = new long[] { 34, 5, 81, 1, 199, 726384 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
-        String filenames[] = new String[]{"f1", "f2", "f3", "f4", "f5", "f6"};
+        String filenames[] = new String[] { "f1", "f2", "f3", "f4", "f5", "f6" };
 
         RangeHashSorter sorting = new RangeHashSorter(bRanges, filenames);
         sorting.quickSort();
 
-        long[] expectedRanges = new long[]{1, 5,  34, 81, 199, 726384};
+        long[] expectedRanges = new long[] { 1, 5, 34, 81, 199, 726384 };
         byte[][] bExpectedRanges = KeyUtils.transformToByteArray(expectedRanges);
-        String[] expectedFilenames = new String[]{"f4", "f2", "f1", "f3", "f5", "f6"};
-        
+        String[] expectedFilenames = new String[] { "f4", "f2", "f1", "f3", "f5", "f6" };
+
         for (int i = 0; i < bExpectedRanges.length; i++) {
             System.out.println(Arrays.toString(sorting.getRanges()[i]));
             System.out.println(Arrays.toString(bExpectedRanges[i]));
@@ -59,7 +63,7 @@ public class RangeHashSorterTest {
     }
 
     /** Creates an array of ranges from 0 to <code>till</code>. */
-    public long[] createRanges(int till) {
+    private long[] createRanges(int till) {
         long[] result = new long[till];
         for (int i = 0; i < till; i++) {
             result[i] = i;
@@ -68,7 +72,7 @@ public class RangeHashSorterTest {
     }
 
     /** Creates an array of filenames from "Filename0" to "Filename<code>till</code>". */
-    public String[] createFilenames(int till) {
+    private String[] createFilenames(int till) {
         String[] result = new String[till];
         for (int i = 0; i < till; i++) {
             result[i] = "Filename" + i;

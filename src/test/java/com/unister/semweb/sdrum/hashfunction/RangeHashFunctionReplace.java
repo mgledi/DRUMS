@@ -1,7 +1,8 @@
 package com.unister.semweb.sdrum.hashfunction;
 
-import junit.framework.Assert;
+import java.io.File;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
@@ -22,8 +23,8 @@ public class RangeHashFunctionReplace {
      */
     @Test
     public void oneLineOneLine() {
-        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0, rangeHashFunctionFilename,
-                KEY_SIZE);
+        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0,
+                rangeHashFunctionFilename, KEY_SIZE);
 
         byte[] newLine = new byte[] { 0, 0, 0, 0, 0, 0, 0, (byte) 200 };
         byte[][] newLines = new byte[][] { newLine };
@@ -42,8 +43,8 @@ public class RangeHashFunctionReplace {
      */
     @Test
     public void oneLineFourLines() {
-        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0, rangeHashFunctionFilename,
-                KEY_SIZE);
+        RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0,
+                rangeHashFunctionFilename, KEY_SIZE);
 
         byte[] newLine1 = KeyUtils.transformFromLong(0, KEY_SIZE);
         byte[] newLine2 = KeyUtils.transformFromLong(100, KEY_SIZE);

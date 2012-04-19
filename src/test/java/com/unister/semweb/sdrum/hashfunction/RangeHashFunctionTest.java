@@ -2,6 +2,7 @@ package com.unister.semweb.sdrum.hashfunction;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Random;
 
 import junit.framework.Assert;
@@ -141,13 +142,17 @@ public class RangeHashFunctionTest {
 
     @Test
     public void loadHashFunctionFromFile() throws IOException {
-        File f = new File("src/test/resources/rangehash.hash");
+        File f = new File("src/test/resources/rangeHashIntTest32.hash");
         RangeHashFunction rhf = new RangeHashFunction(f);
-        long l = 16L << 56;
-        Assert.assertEquals(0, rhf.getBucketId(l));
-        l++;
-        Assert.assertEquals(1, rhf.getBucketId(l));
-        Assert.assertEquals(7, rhf.getBucketId(Long.MAX_VALUE));
+        for(int i=0; i < rhf.getRanges().length; i++) {
+            System.out.println(Arrays.toString(rhf.getRanges()[i]));
+        }
+        byte[] b0 =  {51,-1,-1,-1,-1,-1,-1,-1,-1};
+        byte[] b1 =  {52,0,0,0,0,0,0,0};
+        byte[] b2 =  {52,0,0,0,0,0,0,1};
+        Assert.assertEquals(12, rhf.getBucketId(b0));
+        Assert.assertEquals(12, rhf.getBucketId(b1));
+        Assert.assertEquals(13, rhf.getBucketId(b2));
     }
 
     /* ******************************************** Data generator methods ******************** */

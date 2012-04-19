@@ -1,5 +1,6 @@
 package com.unister.semweb.sdrum.api;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -111,6 +112,18 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
                 try {
                     buckets[i] = new Bucket<Data>(i, prototype.clone());
+                    String tmpFileName = databaseDirectory + hashFunction.getFilename(i);
+                    if(!new File(tmpFileName).exists()) {
+                        HeaderIndexFile<Data> tmpFile;
+                        try {
+                            tmpFile = new HeaderIndexFile<Data>(tmpFileName, HeaderIndexFile.AccessMode.READ_WRITE,1,keySize, elementSize);
+                            tmpFile.close();
+                        } catch (FileLockException e) {
+                            log.error("Can't create file {}, because file is locked by another process.", tmpFileName);
+                        } catch (IOException e) {
+                            log.error("Can't create file {}. {}", tmpFileName, e);
+                        }
+                    }
                 } catch (CloneNotSupportedException ex) {
                     log.error("Prototype doesn't provide clone functionality.", ex);
                     throw new RuntimeException(ex);

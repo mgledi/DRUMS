@@ -7,10 +7,9 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
 /**
  * Code is copied from com.unister.semweb.superfast.storage.bucket.SortMachine to adapt it for the hash function.
  * <p/>
- * 
- * This sort machine takes three arrays with the same number of elements. These arrays corresponds to each other,
- * meaning that the value of the ith element of the first array corresponds of the ith element of the second and third
- * array. So all three arrays represents a set of triples.
+ * This sort machine takes two arrays with the same number of elements. These arrays correspond to each other, meaning
+ * that the value of the ith element of the first array corresponds of the ith element of the second and third array. So
+ * all three arrays represents a set of triples.
  * <p/>
  * The sort machine sorts these triples by the <code>ranges</code>.
  * <p/>
@@ -21,8 +20,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * <li>get all arrays by the corresponding getter methods</li>
  * </ul>
  * 
- * @author n.thieme
- * 
+ * @author n.thieme, m.gleditzsch
  */
 public class RangeHashSorter implements Serializable {
     /**
@@ -55,7 +53,6 @@ public class RangeHashSorter implements Serializable {
     /**
      * Makes a quicksort for the ranges. If the array is small an insertion sort will be made. Algorithm of O( n*log(n)
      * ) asymptotic upper bound.
-     * 
      */
     public void quickSort() {
         quickSort(0, ranges.length - 1);

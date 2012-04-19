@@ -21,7 +21,6 @@ public class RangeHashFunctionTestUtils {
     public static RangeHashFunction createTestFunction(int numberOfRanges, int rangeWidth, String filename, int keySize) {
         byte[][] ranges = new byte[numberOfRanges][];
         String[] filenames = new String[numberOfRanges];
-        int[] bucketSizes = new int[numberOfRanges];
         for (int i = 0; i < numberOfRanges; i++) {
             byte[] oneLine = KeyUtils.transformFromLong((i + 1) * rangeWidth, keySize);
             ranges[i] = oneLine;
@@ -30,6 +29,5 @@ public class RangeHashFunctionTestUtils {
 
         RangeHashFunction result = new RangeHashFunction(ranges, filenames, new File(filename));
         return result;
-
     }
 }

@@ -481,7 +481,6 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
         byte[] b = new byte[keySize];
         long offset = 0;
         int maxChunk = getChunkIndex(getFilledUpFromContentStart());
-        boolean isConsistent = true;
         for (int i = 1; i <= maxChunk; i++) {
             offset = i * getChunkSize() - elementSize;
             read(offset, ByteBuffer.wrap(b));
@@ -489,7 +488,6 @@ public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends Abst
             if (KeyUtils.compareKey(getIndex().maxKeyPerChunk[i - 1], b) != 0) {
                 logger.info("Index is not consistent to data. Expected {}, but found {}.",
                         Arrays.toString(getIndex().maxKeyPerChunk[i - 1]), Arrays.toString(b));
-                isConsistent = false;
             }
         }
     }

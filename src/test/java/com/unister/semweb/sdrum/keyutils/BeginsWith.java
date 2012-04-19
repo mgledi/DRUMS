@@ -1,7 +1,6 @@
 package com.unister.semweb.sdrum.keyutils;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.unister.semweb.sdrum.utils.KeyUtils;

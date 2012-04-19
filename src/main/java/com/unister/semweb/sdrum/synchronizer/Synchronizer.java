@@ -193,7 +193,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
             }
 
             // write the remaining elements from the bufferedWriter to the disk
-            this.writeBuffer();
+            this.writeBuffer(); // TODO: check if the data fits into one chunk
 
             int lastChunkId = dataFile.getChunkIndex(writeOffset + bufferedWriter.position());
             this.header.setLargestKey(lastChunkId, largestKeyInChunk);

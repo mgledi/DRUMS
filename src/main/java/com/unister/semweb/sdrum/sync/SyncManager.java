@@ -191,8 +191,8 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             // if the bucket is full, or the bucket is longer then max bucket storage time within the BucketContainer,
             // or the shutdown was initiated, then try to synchronize the buckets
             // At this point we prevent starvation of one bucket if it not filled for a long period of time.
-            if (    DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
-                    oldBucket.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
+            if (    oldBucket.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
+//                    DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
                     elapsedTime > maxBucketStorageTime || 
                     shutDownInitiated) {
                 if (!startNewThread(i)) {
@@ -212,7 +212,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
                 Bucket<Data> pointer = bucketContainer.buckets[bucketId];
                 boolean threadStarted = false;;
                 if( DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
-                        pointer.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC) {
+                    pointer.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC) {
                     threadStarted = startNewThread(bucketId);
                 }
                 

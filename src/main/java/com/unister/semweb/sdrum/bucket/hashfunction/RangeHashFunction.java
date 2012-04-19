@@ -118,7 +118,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         // analyze header
         String[] header = readData.get(0).split("\t");
         keySize = 0;
-        keyComposition = new int[header.length - 2];
+        keyComposition = new int[header.length - 1];
         for (int i = 0; i < keyComposition.length; i++) {
             int e = stringToByteCount(header[i]);
             if (e == 0) {
@@ -321,6 +321,7 @@ public class RangeHashFunction extends AbstractHashFunction {
      * The prefix is 1 then the method will return the bucket ids of first two ranges.
      * If the <code>prefix</code> has more elements than the keys within the hash function an
      * {@link IllegalArgumentException} is thrown.
+     * 
      * TODO: THIS METHODS IS NOT COMPLETE AND CAUSES AN INAPPROPIATE RESULT. IF ALL RANGES HAVE THE SAME PREFIX THE
      * METHOD DOESN'T RETURNS ALL RANGES IF THE GIVEN prefix IS EQUAL TO THE PREFIX OF ALL RANGES. INSTEAD IT RETURNS
      * ONLY ONE BUCKET ID NOT ALL.

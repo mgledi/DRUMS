@@ -4,7 +4,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.configuration.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.commons.properties.PropertiesFactory;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
@@ -14,6 +15,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * @author m.gleditzsch
  */
 public class GlobalParameters {
+    private static Logger log = LoggerFactory.getLogger(GlobalParameters.class);
     public static String PARAM_FILE = "config.cfg";
 
     /** the size of one chunk to read */
@@ -43,8 +45,20 @@ public class GlobalParameters {
         
         HeaderIndexFile.INITIAL_FILE_SIZE =  (int) parseSize(props.getProperty("INITIAL_FILE_SIZE","16M"));
         HeaderIndexFile.INITIAL_INCREMENT_SIZE =  (int) parseSize(props.getProperty("INITIAL_INCREMENT_SIZE","16M"));
+        configToString();
     }
 
+    public static void configToString() {
+        log.info("----- MEMEORY USAGE -----");
+        log.info("BUCKET_MEMORY = {}", BUCKET_MEMORY);
+        log.info("MEMORY_CHUNK = {}", MEMORY_CHUNK);
+        log.info("MAX_MEMORY_PER_BUCKET = {}", MAX_MEMORY_PER_BUCKET);
+        log.info("CHUNKSIZE = {}", CHUNKSIZE);
+        log.info("----- HeaderIndexFile -----");
+        log.info("INITIAL_FILE_SIZE = {}", HeaderIndexFile.INITIAL_FILE_SIZE);
+        log.info("INITIAL_INCREMENT_SIZE = {}", HeaderIndexFile.INITIAL_INCREMENT_SIZE);
+    }
+    
     static Pattern p_mem = Pattern.compile("(\\d+)(K|M|G)");
     public static long parseSize(String s) {
         Matcher m = p_mem.matcher(s);
@@ -62,10 +76,5 @@ public class GlobalParameters {
             }
         }
         return -1;
-    }
-
-    public static void main(String[] args) throws ConfigurationException, InterruptedException {
-        initParameters();
-//        parseSize("1K");
     }
 }

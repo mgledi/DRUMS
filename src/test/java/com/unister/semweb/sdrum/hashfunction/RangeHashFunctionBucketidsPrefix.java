@@ -2,8 +2,7 @@ package com.unister.semweb.sdrum.hashfunction;
 
 import java.io.File;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
@@ -139,22 +138,6 @@ public class RangeHashFunctionBucketidsPrefix {
         for (int i = 0; i < numberOfFiles; i++) {
             String bucketFilename = "bucket" + i + ".db";
             result[i] = bucketFilename;
-        }
-        return result;
-    }
-
-    /**
-     * Generates an array of bucket sizes. There <code>numberOfSizes</code> values. All have the value <code>size</code>
-     * .
-     * 
-     * @param numberOfSizes
-     * @param size
-     * @return
-     */
-    private int[] generateBucketSizes(int numberOfSizes, int size) {
-        int[] result = new int[numberOfSizes];
-        for (int i = 0; i < numberOfSizes; i++) {
-            result[i] = size;
         }
         return result;
     }

@@ -250,7 +250,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      */
     public List<Data> select(byte[]... keys) throws FileStorageException {
         List<Data> result = new ArrayList<Data>();
-        IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = searchForBuckets(keys);
+        IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = getBucketKeyMapping(keys);
         String filename;
         for (IntObjectCursor<ArrayList<byte[]>> entry : bucketKeyMapping) {
             filename = databaseDirectory + "/" + hashFunction.getFilename(entry.key);
@@ -323,7 +323,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      *            the keys to search for
      * @return
      */
-    private IntObjectOpenHashMap<ArrayList<byte[]>> searchForBuckets(byte[]... keys) {
+    protected IntObjectOpenHashMap<ArrayList<byte[]>> getBucketKeyMapping(byte[]... keys) {
         IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = new IntObjectOpenHashMap<ArrayList<byte[]>>();
         int bucketId;
         for (byte[] key : keys) {
@@ -524,6 +524,19 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         return new SDrumIterator<Data>(databaseDirectory, hashFunction, prototype);
     }
 
+    /**
+     * instantiates a new {@link SDRUM_Reader} and returns it
+     * 
+     * @return
+     * @throws IOException 
+     * @throws FileLockException 
+     */
+    public SDRUM_Reader<Data> getReader() throws FileLockException, IOException {
+        SDRUM_Reader.instantiate(this);
+        return SDRUM_Reader.INSTANCE;
+    }
+
+    
     /** Joins all the SDRUM. */
     public void join() throws InterruptedException {
         syncManager.join();
@@ -531,6 +544,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
 
     /** Closes the SDRUM. */
     public void close() throws InterruptedException {
+        SDRUM_Reader.close();
         syncManager.shutdown();
         syncManager.join();
     }

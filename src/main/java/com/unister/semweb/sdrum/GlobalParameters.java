@@ -16,7 +16,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  */
 public class GlobalParameters {
     private static Logger log = LoggerFactory.getLogger(GlobalParameters.class);
-    public static String PARAM_FILE = "config.cfg";
+    public static String PARAM_FILE = "sdrum.cfg";
 
     /** the size of one chunk to read */
     public static long BUCKET_MEMORY;
@@ -31,20 +31,20 @@ public class GlobalParameters {
     public static long CHUNKSIZE;
 
     public static int MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = 1;
-    
+
     /** File extension of the database files that store the {@link AbstractKVStorable}. */
     public static String linkDataFileExtension = ".db";
 
     public static void initParameters() {
         Properties props = PropertiesFactory.getProperties(PARAM_FILE);
 
-        BUCKET_MEMORY = parseSize(props.getProperty("BUCKET_MEMORY","1G"));
-        MEMORY_CHUNK = (int) parseSize(props.getProperty("MEMORY_CHUNK","1K"));
-        MAX_MEMORY_PER_BUCKET = parseSize(props.getProperty("MAX_MEMORY_PER_BUCKET","100M"));
-        CHUNKSIZE = (int) parseSize(props.getProperty("SYNC_CHUNKSIZE","100M"));
-        
-        HeaderIndexFile.INITIAL_FILE_SIZE =  (int) parseSize(props.getProperty("INITIAL_FILE_SIZE","16M"));
-        HeaderIndexFile.INITIAL_INCREMENT_SIZE =  (int) parseSize(props.getProperty("INITIAL_INCREMENT_SIZE","16M"));
+        BUCKET_MEMORY = parseSize(props.getProperty("BUCKET_MEMORY", "1G"));
+        MEMORY_CHUNK = (int) parseSize(props.getProperty("MEMORY_CHUNK", "1K"));
+        MAX_MEMORY_PER_BUCKET = parseSize(props.getProperty("MAX_MEMORY_PER_BUCKET", "100M"));
+        CHUNKSIZE = (int) parseSize(props.getProperty("SYNC_CHUNKSIZE", "100M"));
+
+        HeaderIndexFile.INITIAL_FILE_SIZE = (int) parseSize(props.getProperty("INITIAL_FILE_SIZE", "16M"));
+        HeaderIndexFile.INITIAL_INCREMENT_SIZE = (int) parseSize(props.getProperty("INITIAL_INCREMENT_SIZE", "16M"));
         configToString();
     }
 
@@ -58,21 +58,22 @@ public class GlobalParameters {
         log.info("INITIAL_FILE_SIZE = {}", HeaderIndexFile.INITIAL_FILE_SIZE);
         log.info("INITIAL_INCREMENT_SIZE = {}", HeaderIndexFile.INITIAL_INCREMENT_SIZE);
     }
-    
+
     static Pattern p_mem = Pattern.compile("(\\d+)(K|M|G)");
+
     public static long parseSize(String s) {
         Matcher m = p_mem.matcher(s);
         if (m.find()) {
             int i = Integer.parseInt(m.group(1));
             char multiplier = m.group(2).charAt(0);
             if (multiplier == 'K') {
-                return (long)i * 1024l;
+                return (long) i * 1024l;
             }
             if (multiplier == 'M') {
-                return (long)i * 1024l * 1024l;
+                return (long) i * 1024l * 1024l;
             }
             if (multiplier == 'G') {
-                return (long)i * 1024l * 1024l * 1024l;
+                return (long) i * 1024l * 1024l * 1024l;
             }
         }
         return -1;

@@ -1,6 +1,7 @@
 Version 0.2.21-SNAPSHOT
  - Implemented a SDRUM Reader. This supports single selects and range selects.
  - When a SDRUM is open, all files not existing yet are created.
+ - A force-mode was implemented. If this mode is enabled, the Synchronizer synchronizes each bucket independent from different constraints.
 
 Version 0.2.20-SNAPSHOT
  - GlobalParameters: some Parameters can now be set by a config-file. 

@@ -206,6 +206,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
     public static void close() {
         if (INSTANCE != null) {
             INSTANCE.closeFiles();
+            INSTANCE = null;
         }
     }
 

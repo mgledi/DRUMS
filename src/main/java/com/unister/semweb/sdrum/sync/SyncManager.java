@@ -47,10 +47,15 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
     private ISynchronizerFactory<Data> synchronizerFactory;
 
     /**
-     * true, if shutdown is initiated. So all buckets will written to HDD. Also the waiting Elements in
-     * {@link BucketContainer}.
+     * true, if shutdown is initiated. So all buckets will written to HDD.
      */
     private boolean shutDownInitiated;
+
+    /**
+     * true, if force is initiated. So all buckets will written to HDD. In different to shutDown SDRUM is not blocking
+     * inserts.
+     */
+    private boolean forceInitiated;
 
     /** A set of bucketIds, which are actual in process */
     private Set<Integer> actualProcessingBucketIds;
@@ -134,6 +139,7 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
         // BucketContainer is not receiving new elements, but there can still be waiting elements
         try {
             do {
+                Thread.sleep(1);
                 synchronizeBucketsWithHDD();
             } while (!bucketsEmpty());
         } catch (Exception ex) {
@@ -191,10 +197,11 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             // if the bucket is full, or the bucket is longer then max bucket storage time within the BucketContainer,
             // or the shutdown was initiated, then try to synchronize the buckets
             // At this point we prevent starvation of one bucket if it not filled for a long period of time.
-            if (    oldBucket.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
-//                    DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
-                    elapsedTime > maxBucketStorageTime || 
-                    shutDownInitiated) {
+            if (oldBucket.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
+                    //                    DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
+                    elapsedTime > maxBucketStorageTime ||
+                    shutDownInitiated ||
+                    forceInitiated) {
                 if (!startNewThread(i)) {
                     sleep();
                 }
@@ -210,13 +217,14 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
             int bucketId = getLargestBucketId();
             if (bucketId != -1) {
                 Bucket<Data> pointer = bucketContainer.buckets[bucketId];
-                boolean threadStarted = false;;
-                if( DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
-                    pointer.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC) {
+                boolean threadStarted = false;
+                if (DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
+                        pointer.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
+                        forceInitiated) {
                     threadStarted = startNewThread(bucketId);
                 }
-                
-                if ( !threadStarted) {
+
+                if (!threadStarted) {
                     sleep();
                 }
             }
@@ -292,6 +300,25 @@ public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
      */
     public void setSynchronizer(ISynchronizerFactory<Data> factory) {
         this.synchronizerFactory = factory;
+    }
+
+    /**
+     * Stops forcing the SDRUM to synchronize all Buckets
+     */
+    public void stopForceMode() {
+        this.bucketContainer.shutdown();
+        log.info("Forcing stopped.");
+        forceInitiated = false;
+    }
+
+    /**
+     * Initiates the a synchronizing of all buckets. All actual buckets with elements will be processed. Be careful. If
+     * someone refills the buckets, the thread won't shut down.
+     */
+    public void startForceMode() {
+        this.bucketContainer.shutdown();
+        log.info("Forcing SDRUM to synchronize its buckets");
+        forceInitiated = true;
     }
 
     /**

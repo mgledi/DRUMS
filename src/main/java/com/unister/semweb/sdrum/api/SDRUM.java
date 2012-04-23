@@ -99,24 +99,26 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         this.prototype = prototype;
         this.hashFunction = hashFunction;
         DynamicMemoryAllocater.instantiate(prototype);
-        GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = 
-                (int) ((GlobalParameters.BUCKET_MEMORY - GlobalParameters.BUCKET_MEMORY % GlobalParameters.MEMORY_CHUNK) / 
-                hashFunction.getNumberOfBuckets() / prototype.getByteBufferSize() / 2);
-        
+        GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC =
+                (int) ((GlobalParameters.BUCKET_MEMORY - GlobalParameters.BUCKET_MEMORY % GlobalParameters.MEMORY_CHUNK)
+                        /
+                        hashFunction.getNumberOfBuckets() / prototype.getByteBufferSize() / 2);
+
         this.elementSize = prototype.getByteBufferSize();
         this.keySize = prototype.key.length;
         this.databaseDirectory = databaseDirectory;
-        
+
         if (accessMode == AccessMode.READ_WRITE) {
             buckets = new Bucket[hashFunction.getNumberOfBuckets()];
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
                 try {
                     buckets[i] = new Bucket<Data>(i, prototype.clone());
                     String tmpFileName = databaseDirectory + hashFunction.getFilename(i);
-                    if(!new File(tmpFileName).exists()) {
+                    if (!new File(tmpFileName).exists()) {
                         HeaderIndexFile<Data> tmpFile;
                         try {
-                            tmpFile = new HeaderIndexFile<Data>(tmpFileName, HeaderIndexFile.AccessMode.READ_WRITE,1,keySize, elementSize);
+                            tmpFile = new HeaderIndexFile<Data>(tmpFileName, HeaderIndexFile.AccessMode.READ_WRITE, 1,
+                                    keySize, elementSize);
                             tmpFile.close();
                         } catch (FileLockException e) {
                             log.error("Can't create file {}, because file is locked by another process.", tmpFileName);
@@ -418,6 +420,10 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         byte[] tmpB = new byte[elementSize]; // stores temporarily the bytestream of an object
         for (byte[] key : keys) {
             // get actual chunkIndex
+            System.out.println(" --------------------------- hier und jetzt");
+            if (index == null) {
+                System.err.println("AUTSCHQc");
+            }
             actualChunkIdx = index.getChunkId(key);
             actualChunkOffset = index.getStartOffsetOfChunk(actualChunkIdx);
 
@@ -528,15 +534,15 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * instantiates a new {@link SDRUM_Reader} and returns it
      * 
      * @return
-     * @throws IOException 
-     * @throws FileLockException 
+     * @throws IOException
+     * @throws FileLockException
      */
+    @SuppressWarnings("unchecked")
     public SDRUM_Reader<Data> getReader() throws FileLockException, IOException {
         SDRUM_Reader.instantiate(this);
         return SDRUM_Reader.INSTANCE;
     }
 
-    
     /** Joins all the SDRUM. */
     public void join() throws InterruptedException {
         syncManager.join();
@@ -547,6 +553,25 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         SDRUM_Reader.close();
         syncManager.shutdown();
         syncManager.join();
+    }
+
+    /**
+     * Enables the force mode of SDRUM. All buckets will be synchronized independent from its fill level and last
+     * sync-time. <br>
+     * Be careful: All buckets will be affected. Even if a bucket contains only one element, the synchronizer is going
+     * to synchronize this bucket. <br>
+     * This method doesn't block the insert-methods.
+     */
+    public void enableForceMode() {
+        syncManager.startForceMode();
+    }
+
+    /**
+     * Disable the force mode of SDRUM. Buckets will be synchronized only if constraints like fill-level and last
+     * sync-time are fulfilled. <br>
+     */
+    public void disableForceMode() {
+        syncManager.stopForceMode();
     }
 
     public int getElementSize() {

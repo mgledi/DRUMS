@@ -1,4 +1,5 @@
 Version 0.2.21-SNAPSHOT
+ - Implemented a SDRUM Reader. This supports single selects and range selects.
  - When a SDRUM is open, all files not existing yet are created.
 
 Version 0.2.20-SNAPSHOT

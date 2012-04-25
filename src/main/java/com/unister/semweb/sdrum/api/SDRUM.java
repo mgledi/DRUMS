@@ -113,7 +113,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
                 try {
                     buckets[i] = new Bucket<Data>(i, prototype.clone());
-                    String tmpFileName = databaseDirectory + hashFunction.getFilename(i);
+                    String tmpFileName = databaseDirectory + "/" + hashFunction.getFilename(i);
                     if (!new File(tmpFileName).exists()) {
                         HeaderIndexFile<Data> tmpFile;
                         try {

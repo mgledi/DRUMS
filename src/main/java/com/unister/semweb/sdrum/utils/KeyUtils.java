@@ -282,7 +282,7 @@ public class KeyUtils {
             iRange[max.length - 1]++;
             range[max.length - 1] = (byte) iRange[max.length - 1];
         }
-        
+
         byte[] val = min;
         for (int i = 0; i < numberOfRanges; ++i) {
             val = sumUnsigned(val, range);
@@ -293,6 +293,7 @@ public class KeyUtils {
         }
         return ranges;
     }
+
     /**
      * Generates a long based range HashFunction
      * 
@@ -306,11 +307,11 @@ public class KeyUtils {
         byte[][] ranges = getRanges(min, max, buckets.length);
 
         StringBuilder sb = new StringBuilder();
-        for(int i=0; i < min.length; i++) {
+        for (int i = 0; i < min.length; i++) {
             sb.append("b").append("\t");
         }
         sb.append("filename").append("\n");
-        
+
         for (int i = 0; i < buckets.length; ++i) {
             byte[] val = ranges[i];
             for (int j = 0; j < val.length; j++) {
@@ -323,24 +324,30 @@ public class KeyUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         // byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         // byte[] h1 = new byte[] { (byte) 64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-//         byte[] h2 = new byte[] { (byte) 128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        // byte[] h2 = new byte[] { (byte) 128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
         // byte[] h3 = new byte[] { (byte) -64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-        byte[] h4 = new byte[] { -128, -1, -1, -1, -1, -1, -1, -1 };
-        
-        byte[][] ranges = getRanges(h0, h4, 10);
-        for(byte[] b : ranges) {
-            System.out.println((transform(b)));
+        byte[] h4 = new byte[] { -128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+
+        String[] bucketNames = new String[4096];
+        for (int i = 0; i < 4096; i++) {
+            bucketNames[i] = String.valueOf(i);
         }
-        
-//         String result = generateHashFunction(h0, h4, 10, ".db", "");
-//         System.out.println(result);
+
+        String function = generateHashFunction(h0, h4, bucketNames, ".db", "");
+        System.out.println(function);
+        // for (byte[] b : ranges) {
+        // System.out.println((transform(b)));
+        // }
+
+        // String result = generateHashFunction(h0, h4, 10, ".db", "");
+        // System.out.println(result);
 
         // generateHashFunctionBigInteger(-255, 255, 2, 500000, ".db", "");
 
-//        generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 2, 10000, ".db", "");
+        // generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 2, 10000, ".db", "");
     }
 
     public static byte[] convert(long key) {

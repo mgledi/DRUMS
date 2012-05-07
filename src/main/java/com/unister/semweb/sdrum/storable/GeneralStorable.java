@@ -194,6 +194,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      */
     public void setValue(String field, byte[] value) throws IOException {
         int hash = Arrays.hashCode(field.getBytes());
+        if(!valueHash2Index.containsKey(hash)) {
+            throw new IOException("The field " + field + " is unknown.");
+        }
         setValue(valueHash2Index.get(hash), value);
     }
 
@@ -206,6 +209,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setValue(int index, byte[] value) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         if (value.length != length) {
             throw new IOException("The length of the given value is not equal to the expected one. (" + value.length
@@ -238,6 +244,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setValue(int index, int value) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         if (4 != length) {
             throw new IOException("The length of the given value is not equal to the expected one. (" + 4 + "!="
@@ -270,6 +279,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setValue(int index, long value) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         if (8 != length) {
             throw new IOException("The length of the given value is not equal to the expected one. (" + 8 + "!="
@@ -302,6 +314,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setValue(int index, char value) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         if (2 != length) {
             throw new IOException("The length of the given value is not equal to the expected one. (" + 2 + "!="
@@ -334,6 +349,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setValue(int index, byte value) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         if (1 != length) {
             throw new IOException("The length of the given value is not equal to the expected one. (" + 1 + "!="
@@ -348,8 +366,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @param field
      *            the name of the field
      * @return
+     * @throws IOException 
      */
-    public ByteBuffer getValue(String field) {
+    public ByteBuffer getValue(String field) throws IOException {
         int hash = Arrays.hashCode(field.getBytes());
         return getValue(valueHash2Index.get(hash));
     }
@@ -360,8 +379,12 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @param index
      *            the index of the requested field
      * @return
+     * @throws IOException 
      */
-    public ByteBuffer getValue(int index) {
+    public ByteBuffer getValue(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         return ByteBuffer.wrap(value, index, length).asReadOnlyBuffer();
     }
@@ -375,6 +398,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public int getValueAsInt(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         if (length != 4) {
             throw new IOException("The length of the requested value-part is not equal to the one of Integer. ("
@@ -406,6 +432,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public long getValueAsLong(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         if (length != 8) {
             throw new IOException("The length of the requested value-part is not equal to the one of Long. (" + length
@@ -436,6 +465,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public char getValueAsChar(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         if (length != 2) {
             throw new IOException("The length of the requested value-part is not equal to the one of Character. ("
@@ -480,6 +512,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public byte getValueAsByte(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = valueSizes.get(index);
         if (length != 1) {
             throw new IOException("The length of the requested value-part is not equal to the one of Character. ("
@@ -510,6 +545,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setKey(int index, byte[] key) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = keySizes.get(index);
         if (key.length != length) {
             throw new IOException("The length of the given key is not equal to the expected one. (" + key.length
@@ -542,6 +580,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setKey(int index, int key) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = keySizes.get(index);
         if (4 != length) {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 4 + "!="
@@ -574,6 +615,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setKey(int index, long key) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = keySizes.get(index);
         if (8 != length) {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 8 + "!="
@@ -606,6 +650,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setKey(int index, char key) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = keySizes.get(index);
         if (2 != length) {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 2 + "!="
@@ -638,6 +685,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public void setKey(int index, byte key) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = keySizes.get(index);
         if (1 != length) {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 1 + "!="
@@ -652,8 +702,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @param field
      *            the name of the field
      * @return
+     * @throws IOException 
      */
-    public ByteBuffer getKey(String field) {
+    public ByteBuffer getKey(String field) throws IOException {
         int hash = Arrays.hashCode(field.getBytes());
         return getKey(keyHash2Index.get(hash));
     }
@@ -664,8 +715,12 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @param index
      *            the index of the requested field
      * @return
+     * @throws IOException 
      */
-    public ByteBuffer getKey(int index) {
+    public ByteBuffer getKey(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = keySizes.get(index);
         return ByteBuffer.wrap(key, index, length).asReadOnlyBuffer();
     }
@@ -679,6 +734,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public int getKeyAsInt(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = keySizes.get(index);
         if (length != 4) {
             throw new IOException("The length of the requested key-part is not equal to the one of Integer. (" + length
@@ -709,6 +767,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public long getKeyAsLong(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = keySizes.get(index);
         if (length != 8) {
             throw new IOException("The length of the requested key-part is not equal to the one of Long. (" + length
@@ -739,6 +800,9 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
      * @throws IOException
      */
     public char getKeyAsChar(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
         int length = keySizes.get(index);
         if (length != 2) {
             throw new IOException("The length of the requested key-part is not equal to the one of Character. ("
@@ -760,6 +824,27 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
         int hash = Arrays.hashCode(field.getBytes());
         return getKeyAsChar(keyHash2Index.get(hash));
     }
+    
+    /**
+     * Returns the key belonging to the given field as byte
+     * 
+     * @param index
+     *            the index of the requested field
+     * @return
+     * @throws IOException
+     */
+    public byte getKeyAsByte(int index) throws IOException {
+        if(index >= valueSizes.size()) {
+            throw new IOException("Index " + index + " is out of range.");
+        }
+        int length = keySizes.get(index);
+        if (length != 1) {
+            throw new IOException("The length of the requested key-part is not equal to the one of Character. ("
+                    + length
+                    + "!=" + 1 + ")");
+        }
+        return ByteBuffer.wrap(key, index, length).get();
+    }
 
     /**
      * Returns the key belonging to the given field as byte
@@ -772,24 +857,6 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
     public byte getKeyAsByte(String field) throws IOException {
         int hash = Arrays.hashCode(field.getBytes());
         return getKeyAsByte(keyHash2Index.get(hash));
-    }
-
-    /**
-     * Returns the key belonging to the given field as byte
-     * 
-     * @param index
-     *            the index of the requested field
-     * @return
-     * @throws IOException
-     */
-    public byte getKeyAsByte(int index) throws IOException {
-        int length = keySizes.get(index);
-        if (length != 1) {
-            throw new IOException("The length of the requested key-part is not equal to the one of Character. ("
-                    + length
-                    + "!=" + 1 + ")");
-        }
-        return ByteBuffer.wrap(key, index, length).get();
     }
 
     public String toString() {
@@ -819,10 +886,11 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
 
         GeneralStorable obj = new GeneralStorable();
         System.out.println(Arrays.toString(obj.getValue()));
-        obj.setValue("int", ByteBuffer.allocate(4).putInt(200).array());
+        obj.setValue("int", ByteBuffer.allocate(4).putInt(400).array());
+        obj.setValue("first", ByteBuffer.allocate(4).putInt(200).array());
         System.out.println(Arrays.toString(obj.getValue()));
+        System.out.println(Arrays.toString(obj.getKey()));
 
-        System.out.println(obj.getValue("int").getInt());
         System.out.println(obj.getValueAsInt("int"));
     }
 }

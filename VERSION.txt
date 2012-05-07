@@ -1,3 +1,6 @@
+Version 0.2.24-SNAPSHOT
+ - Implemented an GeneralStorable. This should help to get an easier start with SDRUM.
+ 
 Version 0.2.23-SNAPSHOT
  - Changing the name of the configuration from "config.cfg" to "sdrum.cfg"
  

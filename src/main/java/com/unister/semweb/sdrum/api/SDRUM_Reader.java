@@ -228,5 +228,4 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
             INSTANCE = null;
         }
     }
-
 }

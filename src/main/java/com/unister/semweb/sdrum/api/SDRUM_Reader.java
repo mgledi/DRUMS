@@ -17,16 +17,17 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
- * This class represents an efficient direct access reader. It holds all files opened for reading.
+ * This class represents an efficient direct access reader. It holds all files opened for reading. Only use this Reader,
+ * when there are no write-operations during reading. The files will be locked.
  * 
  * @author m.gleditzsch
  */
 public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
-    Logger logger = LoggerFactory.getLogger(this.getClass());
+    static Logger logger = LoggerFactory.getLogger(SDRUM_Reader.class);
 
     /** Marks if files are opend. Is set to avoid null-pointer exceptions */
     private boolean filesAreOpend = false;
-    
+
     /** The Instance of this singelton */
     @SuppressWarnings("rawtypes")
     public static SDRUM_Reader INSTANCE;
@@ -97,11 +98,12 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
         filesAreOpend = true;
     }
 
-    /** Returns all elements between lowerKey and upperKey 
+    /**
+     * Returns all elements between lowerKey and upperKey
      * this function is still BUGGY
-     * */
+     */
     public List<Data> getRange(byte[] lowerKey, byte[] upperKey) throws IOException {
-        if( !filesAreOpend ) {
+        if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
         // estimate bounds
@@ -128,7 +130,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
             if (i == upperBucket) {
                 endOffset = Math.max(upperChunkOffset + aktFile.getChunkSize(), filesize);
             }
-            
+
             while (startOffset < endOffset) {
                 destBuffer.clear();
                 aktFile.read(startOffset, destBuffer);
@@ -155,10 +157,10 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
      * 
      * @param key
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public Data getPreviousElement(byte[] key) throws IOException {
-        if( !filesAreOpend ) {
+        if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
         return null;
@@ -169,10 +171,10 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
      * 
      * @param key
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public Data getNextElement(byte[] key) throws IOException {
-        if( !filesAreOpend ) {
+        if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
         return null;
@@ -199,7 +201,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
      * @throws IOException
      */
     public List<Data> get(byte[]... keys) throws FileStorageException, IOException {
-        if( !filesAreOpend ) {
+        if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
         List<Data> result = new ArrayList<Data>();

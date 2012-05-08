@@ -30,6 +30,8 @@ public class GlobalParameters {
     /** the size of one chunk to read */
     public static long CHUNKSIZE;
 
+    public static int NUMBER_OF_SYNCHRONIZER_THREADS = 1;
+    
     public static int MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = 1;
 
     /** File extension of the database files that store the {@link AbstractKVStorable}. */
@@ -42,6 +44,7 @@ public class GlobalParameters {
         MEMORY_CHUNK = (int) parseSize(props.getProperty("MEMORY_CHUNK", "1K"));
         MAX_MEMORY_PER_BUCKET = parseSize(props.getProperty("MAX_MEMORY_PER_BUCKET", "100M"));
         CHUNKSIZE = (int) parseSize(props.getProperty("SYNC_CHUNKSIZE", "100M"));
+        NUMBER_OF_SYNCHRONIZER_THREADS = Integer.valueOf(props.getProperty("NUMBER_OF_SYNCHRONIZER_THREADS", "1"));
 
         HeaderIndexFile.INITIAL_FILE_SIZE = (int) parseSize(props.getProperty("INITIAL_FILE_SIZE", "16M"));
         HeaderIndexFile.INITIAL_INCREMENT_SIZE = (int) parseSize(props.getProperty("INITIAL_INCREMENT_SIZE", "16M"));

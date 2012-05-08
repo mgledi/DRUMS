@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
@@ -17,6 +20,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * @param <Data>
  */
 public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Iterator<Data>, Closeable {
+    static Logger logger = LoggerFactory.getLogger(SDrumIterator.class);
     /** The hash function. Maps an element to a bucket. */
     private AbstractHashFunction hashFunction;
 
@@ -39,7 +43,7 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
     private long actualFileOffset = 0;
 
     /** for fast access a destination buffer. */
-    byte[] actualDestination;
+    byte[] curDestBuffer;
 
     /** for fast access, the number of buckets */
     private int numberOfBuckets = 0;
@@ -59,7 +63,7 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
         this.prototype = prototype;
         this.elementSize = prototype.getByteBufferSize();
         this.hashFunction = hashFunction;
-        this.actualDestination = new byte[elementSize];
+        this.curDestBuffer = new byte[elementSize];
         numberOfBuckets = hashFunction.getNumberOfBuckets();
     }
 
@@ -70,11 +74,23 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
     @Override
     public boolean hasNext() {
         if (readBuffer != null && readBuffer.remaining() != 0) {
+            logger.debug("There are still elements in the readBuffer");
             return true;
         } else if (actualFile != null && actualFileOffset < actualFile.getFilledUpFromContentStart()) {
+            logger.debug("The end of the actual file is not reached yet.");
             return true;
-        } else if (actualBucketId < numberOfBuckets - 1) { // TODO: this is weak, there could be empty buckets
-            return true;
+
+        } // Since version 0.2.23-SNAPSHOT all files are created, even if they don't contain elements 
+        else if (actualBucketId < numberOfBuckets - 1) {
+            logger.debug("Not all files were read. Trying to open next file");
+            try {
+                this.handleFile();
+            } catch (FileLockException e) {
+                logger.error("Skipping file. Not all elements might have been iterated. {}", e);
+            } catch (IOException e) {
+                logger.error("Skipping file. Not all elements might have been iterated. {}", e);
+            }
+            return hasNext();
         }
 
         if (actualFile != null) {
@@ -93,14 +109,8 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
             if (readBuffer.remaining() == 0) {
                 return null;
             }
-            // if (!handleFile()) {
-            // return null;
-            // }
-            // if (readBuffer.remaining() == 0) {
-            // return null;
-            // }
-            readBuffer.get(actualDestination);
-            Data d = prototype.fromByteBuffer(ByteBuffer.wrap(actualDestination));
+            readBuffer.get(curDestBuffer);
+            Data d = prototype.fromByteBuffer(ByteBuffer.wrap(curDestBuffer));
             countElementsRead++;
             return d;
         } catch (FileLockException e) {
@@ -128,33 +138,11 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
     }
 
     /**
-     * 
      * @return true, if a file was set
      * @throws FileLockException
      * @throws IOException
      */
     private boolean handleFile() throws FileLockException, IOException {
-        // while (actualFile == null || (actualFileOffset >= actualFile.getFilledUpFromContentStart())) {
-        // if ((readBuffer == null)
-        // || (readBuffer.remaining() == 0 && actualFileOffset >= actualFile.getFilledUpFromContentStart())) {
-        //
-        // if (actualFile != null) {
-        // actualFile.close();
-        // }
-        //
-        // actualBucketId++;
-        // if (actualBucketId >= numberOfBuckets) {
-        // return false;
-        // }
-        // String filename = directory + "/" + hashFunction.getFilename(actualBucketId);
-        // actualFile = new HeaderIndexFile<Data>(filename, 1);
-        // actualFileOffset = 0;
-        // readBuffer = ByteBuffer.allocate(actualFile.getChunkSize());
-        // readBuffer.clear();
-        // readBuffer.limit(0);
-        // }
-        // }
-
         String filename = null;
         // if we open the first file
         if (readBuffer == null) {
@@ -162,7 +150,7 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
             actualFile = new HeaderIndexFile<Data>(filename, 1);
             readBuffer = ByteBuffer.allocate(actualFile.getChunkSize());
             readBuffer.clear();
-            readBuffer.limit(0);
+            readBuffer.flip();
         } else if (readBuffer.remaining() == 0 && actualFileOffset >= actualFile.getFilledUpFromContentStart()) {
             actualFile.close();
             actualBucketId++;
@@ -173,7 +161,7 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
             actualFile = new HeaderIndexFile<Data>(filename, 1);
             actualFileOffset = 0;
             readBuffer.clear();
-            readBuffer.limit(0);
+            readBuffer.flip();
         }
         return true;
     }

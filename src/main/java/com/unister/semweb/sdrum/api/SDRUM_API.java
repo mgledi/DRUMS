@@ -23,8 +23,6 @@ public class SDRUM_API {
      * 
      * @param databaseDirectory
      *            the path, where to store the database files
-     * @param numberOfSynchronizerThreads
-     *            the number of threads used for synchronizing
      * @param hashFunction
      *            the hash function, decides where to store/search elements
      * @throws IOException
@@ -40,8 +38,7 @@ public class SDRUM_API {
         // First we create the directory structure.
         new File(databaseDirectory).mkdirs();
 
-        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, numberOfSynchronizerThreads, hashFunction,
-                prototype, AccessMode.READ_WRITE);
+        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, hashFunction, prototype, AccessMode.READ_WRITE);
 
         // We store the configuration parameters within the given configuration file.
         ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(
@@ -83,8 +80,6 @@ public class SDRUM_API {
      * 
      * @param databaseDirectory
      *            the path, where to store the database files
-     * @param numberOfSynchronizerThreads
-     *            the number of threads used for synchronizing
      * @param hashFunction
      *            the hash function, decides where to store/search elements
      * @throws IOException
@@ -105,8 +100,7 @@ public class SDRUM_API {
                 numberOfSynchronizerThreads, databaseDirectory, hashFunction, prototype);
         configurationFile.writeTo(databaseDirectory + "/" + CONFIG_FILE);
 
-        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, numberOfSynchronizerThreads, hashFunction, prototype,
-                AccessMode.READ_WRITE);
+        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, hashFunction, prototype, AccessMode.READ_WRITE);
         return table;
     }
 
@@ -161,8 +155,7 @@ public class SDRUM_API {
                     "The prototypes of the configuration file and the user given prototype were different in size.");
         }
 
-        SDRUM<Data> table = new SDRUM<Data>(configFile.getDatabaseDirectory(),
-                configFile.getNumberOfSynchronizerThreads(), configFile.getHashFunction(), configFile.getPrototype(),
+        SDRUM<Data> table = new SDRUM<Data>(configFile.getDatabaseDirectory(), configFile.getHashFunction(), configFile.getPrototype(),
                 accessMode);
         return table;
     }

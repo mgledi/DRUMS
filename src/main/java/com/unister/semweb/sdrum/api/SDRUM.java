@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ import com.unister.semweb.sdrum.sync.SyncManager;
 import com.unister.semweb.sdrum.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.SynchronizerFactory;
 import com.unister.semweb.sdrum.synchronizer.UpdateOnlySynchronizer;
-import com.unister.semweb.sdrum.utils.KeySearcher;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
@@ -42,9 +40,9 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * @author n.thieme, m.gleditzsch
  */
 public class SDRUM<Data extends AbstractKVStorable<Data>> {
-    private static final Logger log = LoggerFactory.getLogger(SDRUM_API.class);
+    private static final Logger logger = LoggerFactory.getLogger(SDRUM_API.class);
 
-    /** the accessmode for SDRUM */
+    /** the possible AccessModes for SDRUM */
     public enum AccessMode {
         READ_ONLY, READ_WRITE;
     }
@@ -52,7 +50,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     /** the number of retries if a file is locked by another process */
     private static final int HEADER_FILE_LOCK_RETRY = 100;
 
-    /** the hashfunction, decides where to search for element, or where to store it */
+    /** the hashfunction, decides where to search for an element, or where to store it */
     private AbstractHashFunction hashFunction;
 
     /** The directory of the database files. */
@@ -83,15 +81,12 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
      * A private constructor.
      * 
      * @param databaseDirectory
-     * @param preQueueSize
-     * @param numberOfSynchronizerThreads
      * @param hashFunction
      * @param prototype
      * @param accessMode
      */
     protected SDRUM(
             String databaseDirectory,
-            int numberOfSynchronizerThreads,
             AbstractHashFunction hashFunction,
             Data prototype,
             AccessMode accessMode) {
@@ -101,9 +96,9 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         DynamicMemoryAllocater.instantiate(prototype);
         GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC =
                 (int) ((GlobalParameters.BUCKET_MEMORY - GlobalParameters.BUCKET_MEMORY % GlobalParameters.MEMORY_CHUNK)
-                        /
-                        hashFunction.getNumberOfBuckets() / prototype.getByteBufferSize() / 2);
-
+                        / hashFunction.getNumberOfBuckets() / prototype.getByteBufferSize() / 2);
+        logger.info("Setted MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC to {}", GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC);
+        
         this.elementSize = prototype.getByteBufferSize();
         this.keySize = prototype.key.length;
         this.databaseDirectory = databaseDirectory;
@@ -121,13 +116,13 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
                                     keySize, elementSize);
                             tmpFile.close();
                         } catch (FileLockException e) {
-                            log.error("Can't create file {}, because file is locked by another process.", tmpFileName);
+                            logger.error("Can't create file {}, because file is locked by another process.", tmpFileName);
                         } catch (IOException e) {
-                            log.error("Can't create file {}. {}", tmpFileName, e);
+                            logger.error("Can't create file {}. {}", tmpFileName, e);
                         }
                     }
                 } catch (CloneNotSupportedException ex) {
-                    log.error("Prototype doesn't provide clone functionality.", ex);
+                    logger.error("Prototype doesn't provide clone functionality.", ex);
                     throw new RuntimeException(ex);
                 }
             }
@@ -135,7 +130,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             synchronizerFactory = new SynchronizerFactory<Data>(prototype);
             syncManager = new SyncManager<Data>(
                     bucketContainer,
-                    numberOfSynchronizerThreads,
+                    GlobalParameters.NUMBER_OF_SYNCHRONIZER_THREADS,
                     databaseDirectory,
                     synchronizerFactory);
             syncManager.start();
@@ -191,10 +186,10 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     }
 
     /**
-     * This method are for efficient update operations. Be careful ONLY update is provided. If the given array contains
-     * element, not stored in the SDRUM they will be not respected.<br>
+     * This method are for efficient update operations. Be careful, ONLY updates are provided. If the given array contains
+     * elements, not already stored in the SDRUM, they will be not respected.<br>
      * <br>
-     * Therefore this method uses the {@link UpdateOnlySynchronizer}, which by itselfs uses the Data's implemented
+     * This method uses the {@link UpdateOnlySynchronizer}, which by itselfs uses the Data's implemented
      * update-function to update elements. If you want to merge objects, use <code>insertOrMerge(...)</code> instead.
      * (this is fairly slower)
      * 
@@ -222,7 +217,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
                 SortMachine.quickSort(toUpdate);
                 synchronizer.upsert(toUpdate);
             } catch (CloneNotSupportedException ex) {
-                log.error("Could not clone the prototype for updating entries.", ex);
+                logger.error("Could not clone the prototype for updating entries.", ex);
                 throw new RuntimeException(ex);
             }
         }
@@ -264,11 +259,11 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
                 ArrayList<byte[]> keyList = entry.value;
                 result.addAll(searchForData(indexFile, keyList.toArray(new byte[keyList.size()][])));
             } catch (FileLockException ex) {
-                log.error("Could not access the file {} within {} retries. The file seems to be locked.", filename,
+                logger.error("Could not access the file {} within {} retries. The file seems to be locked.", filename,
                         HEADER_FILE_LOCK_RETRY);
                 throw new FileStorageException(ex);
             } catch (IOException ex) {
-                log.error("An exception occurred while trying to get objects from the file {}.", filename, ex);
+                logger.error("An exception occurred while trying to get objects from the file {}.", filename, ex);
                 throw new FileStorageException(ex);
             } finally {
                 if (indexFile != null) {
@@ -341,64 +336,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     /**
      * Searches for the {@link AbstractKVStorable}s corresponding the given <code>keys</code> within the given
      * <code>indexFile</code>. This is done by using the {@link IndexForHeaderIndexFile} in the given
-     * {@link HeaderIndexFile}. If you want to read a set of consecutive elements, try to use the method
-     * <code>read()</code>.<br>
-     * <br>
-     * WARNING: This method performs a full FileScan and is therfore very ineffective.
-     * 
-     * @param indexFile
-     *            {@link HeaderIndexFile}, where to search for the keys
-     * @param elementBuffer
-     *            the number of elements to be buffered
-     * @param keys
-     *            the keys to search for
-     * @return Arraylist which contains the found data. Can be less than the number of given keys
-     */
-    public List<Data> searchForDataLinear(HeaderIndexFile<Data> indexFile, int elementBuffer, byte[]... keys)
-            throws IOException {
-        SortMachine.quickSort(keys);
-        List<Data> result = new ArrayList<Data>();
-
-        long position = 0;
-        ByteBuffer buffer = ByteBuffer.allocate(elementBuffer * elementSize);
-        while (position < indexFile.getFilledUpFromContentStart()) {
-            indexFile.read(position, buffer);
-            buffer.flip();
-
-            List<Data> extractedData = extractAndRemoveFoundKey(buffer, keys);
-            result.addAll(extractedData);
-            position = position + (elementBuffer * elementSize);
-            buffer.clear();
-        }
-        return result;
-    }
-
-    /**
-     * Searches for records with the given <code>keys</code> within the given buffer.
-     * 
-     * @param buffer
-     * @param keys
-     * @return
-     */
-    private List<Data> extractAndRemoveFoundKey(ByteBuffer buffer, byte[]... keys) {
-        List<Data> result = new ArrayList<Data>();
-
-        while (buffer.position() < buffer.limit()) {
-            byte[] oneData = new byte[elementSize];
-            buffer.get(oneData);
-            byte[] readKey = Arrays.copyOfRange(oneData, 0, keySize);
-            int indexOfKey = KeySearcher.searchFor(keys, readKey);
-            if (indexOfKey >= 0) {
-                Data newData = prototype.fromByteBuffer(ByteBuffer.wrap(oneData));
-                result.add(newData);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Searches for the {@link AbstractKVStorable}s corresponding the given <code>keys</code> within the given
-     * <code>indexFile</code>. This is done by using the {@link IndexForHeaderIndexFile} in the given
      * {@link HeaderIndexFile}. If you want to do this in a more sequential way, try to use the method
      * <code>read()</code>
      * 
@@ -420,10 +357,6 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         byte[] tmpB = new byte[elementSize]; // stores temporarily the bytestream of an object
         for (byte[] key : keys) {
             // get actual chunkIndex
-            System.out.println(" --------------------------- hier und jetzt");
-            if (index == null) {
-                System.err.println("AUTSCHQc");
-            }
             actualChunkIdx = index.getChunkId(key);
             actualChunkOffset = index.getStartOffsetOfChunk(actualChunkIdx);
 
@@ -449,7 +382,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
             workingBuffer.get(tmpB);
             result.add(prototype.fromByteBuffer(ByteBuffer.wrap(tmpB)));
             if (indexInChunk == -1) {
-                log.warn("Element with key {} was not found and therefore not updated", key);
+                logger.warn("Element with key {} was not found and therefore not updated", key);
                 indexInChunk = 0;
             }
             lastChunkIdx = actualChunkIdx; // remember last chunk
@@ -522,7 +455,7 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
     }
 
     /**
-     * instantiates a new {@link SDrumIterator} and returns it
+     * Instantiates a new {@link SDrumIterator} and returns it
      * 
      * @return
      */
@@ -574,26 +507,35 @@ public class SDRUM<Data extends AbstractKVStorable<Data>> {
         syncManager.stopForceMode();
     }
 
+    /** Returns the size of one record to store in bytes */
     public int getElementSize() {
         return this.elementSize;
     }
 
-    public AbstractHashFunction getHashFunction() {
-        return this.hashFunction;
-    }
-
-    public void setHashFunction(AbstractHashFunction hash) {
-        this.hashFunction = hash;
-    }
-
-    public String getDatabaseDirectory() {
-        return this.databaseDirectory;
-    }
-
+    /** Returns the size of the key of one record */
     public int getElementKeySize() {
         return this.keySize;
     }
 
+    /** Returns the underlying hashfunction */
+    public AbstractHashFunction getHashFunction() {
+        return this.hashFunction;
+    }
+
+    /**
+     * sets a new HashFunction. Be careful with this method. Overwriting the hashfunction, when elements are already
+     * inserted may cause missing elements
+     */
+    public void setHashFunction(AbstractHashFunction hash) {
+        this.hashFunction = hash;
+    }
+
+    /** Returns the database-directory */
+    public String getDatabaseDirectory() {
+        return this.databaseDirectory;
+    }
+
+    /** Returns a pointer to the prototype. This is not a clone. */
     public Data getPrototype() {
         return prototype;
     }

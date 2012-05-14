@@ -57,7 +57,10 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
             String serializedPrototype = Base64.encodeObject(prototype);
             propertyConfiguration.addProperty("prototype", serializedPrototype);
 
-            propertyConfiguration.save(new FileWriter(configurationFilename));
+            FileWriter fileWriter = new FileWriter(configurationFilename);
+            propertyConfiguration.save(fileWriter);
+            fileWriter.flush();
+            fileWriter.close();
         } catch (ConfigurationException ex) {
             throw new IOException(ex);
         }

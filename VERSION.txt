@@ -1,3 +1,6 @@
+Version 0.3.0
+ - Making upgrade from Martin productive
+ 
 Version 0.2.24-SNAPSHOT
  - Implemented an GeneralStorable. This should help to get an easier start with SDRUM.
  
@@ -16,6 +19,9 @@ Version 0.2.20-SNAPSHOT
  - New Constructor in RangeHashFunction
  - implemented checks for Consitency in HeaderIndexFile and IndexForHeaderIndexFile
  - implemented a index-repair method for HeaderIndexFile
+
+Version 0.2.19:
+ - ConfigurationFile: Making sure that the configuration file is written with "flush". 
 
 Version 0.2.18
  - Synchronizer: removing permanent evaluation of the consistency of the HeaderIndexFile; it needs too much resources!!!

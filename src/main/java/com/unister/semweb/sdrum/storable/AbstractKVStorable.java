@@ -36,7 +36,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
      * @param value
      */
     public void setValue(byte[] value) {
-        this.value = key;
+        this.value = value;
     }
 
     public byte[] getValue() {

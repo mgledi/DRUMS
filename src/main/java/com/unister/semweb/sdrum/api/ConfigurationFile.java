@@ -14,30 +14,25 @@ import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
 /** Represents a configuration for the DRUM. */
-public class ConfigurationFile<T extends AbstractKVStorable<T>> {
+public class ConfigurationFile<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(ConfigurationFile.class);
 
-    private int numberOfBuckets;
     private int numberOfSynchronizerThreads;
 
     private String databaseDirectory;
 
     private AbstractHashFunction hashFunction;
-    private T prototype;
+    private Data prototype;
 
     /**
      * Creates a configuration file.
      * 
-     * @param numberOfBuckets
-     * @param numberOfSynchronizerThreads
      * @param databaseDirectory
      * @param hashFunction
      * @param prototype
      */
-    public ConfigurationFile(int numberOfBuckets, int numberOfSynchronizerThreads,
-            String databaseDirectory, AbstractHashFunction hashFunction, T prototype) {
-        this.numberOfBuckets = numberOfBuckets;
-        this.numberOfSynchronizerThreads = numberOfSynchronizerThreads;
+    public ConfigurationFile(String databaseDirectory, AbstractHashFunction hashFunction,
+            Data prototype) {
         this.databaseDirectory = databaseDirectory;
         this.hashFunction = hashFunction;
         this.prototype = prototype;
@@ -47,8 +42,6 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
     public void writeTo(String configurationFilename) throws IOException {
         try {
             PropertiesConfiguration propertyConfiguration = new PropertiesConfiguration();
-            propertyConfiguration.addProperty("numberOfBuckets", numberOfBuckets);
-            propertyConfiguration.addProperty("numberOfSynchronizerThreads", numberOfSynchronizerThreads);
             propertyConfiguration.addProperty("databaseDirectory", databaseDirectory);
 
             String serializedHashFunction = Base64.encodeObject(hashFunction);
@@ -75,23 +68,18 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    @SuppressWarnings("unchecked")
-    public static <Data extends AbstractKVStorable<Data>> ConfigurationFile<Data> readFrom(String configurationFilename)
+    public static <Data extends AbstractKVStorable> ConfigurationFile<Data> readFrom(String configurationFilename)
             throws IOException, ClassNotFoundException {
         ConfigurationFile<Data> result = null;
         try {
             PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration(configurationFilename);
-            int numberOfBuckets = propertiesConfiguration.getInt("numberOfBuckets");
-            int numberOfSynchronizerThreads = propertiesConfiguration.getInt("numberOfSynchronizerThreads");
             String readDatabaseDirectory = propertiesConfiguration.getString("databaseDirectory");
             String serialisedHashFunction = propertiesConfiguration.getString("hashFunction");
             String serialisedPrototype = propertiesConfiguration.getString("prototype");
 
             AbstractHashFunction hashFunction = (AbstractHashFunction) Base64.decodeToObject(serialisedHashFunction);
             Data prototype = (Data) Base64.decodeToObject(serialisedPrototype);
-
-            result = new ConfigurationFile<Data>(numberOfBuckets, numberOfSynchronizerThreads, readDatabaseDirectory,
-                    hashFunction, prototype);
+            result = new ConfigurationFile<Data>(readDatabaseDirectory, hashFunction, prototype);
         } catch (ConfigurationException ex) {
             throw new IOException(ex);
         }
@@ -100,9 +88,8 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
     }
 
     public int getNumberOfBuckets() {
-        return numberOfBuckets;
+        return hashFunction.getNumberOfBuckets();
     }
-
 
     public int getNumberOfSynchronizerThreads() {
         return numberOfSynchronizerThreads;
@@ -116,7 +103,7 @@ public class ConfigurationFile<T extends AbstractKVStorable<T>> {
         return hashFunction;
     }
 
-    public T getPrototype() {
+    public Data getPrototype() {
         return prototype;
     }
 }

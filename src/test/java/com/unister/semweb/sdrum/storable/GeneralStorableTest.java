@@ -18,6 +18,30 @@ import com.unister.semweb.sdrum.storable.GeneralStructure.Basic_Field_Types;
 public class GeneralStorableTest {
 
     @Test
+    public void testByteBuffer() throws IOException, CloneNotSupportedException {
+        GeneralStructure s = new GeneralStructure();
+        s.addKeyPart("int", Basic_Field_Types.Integer);
+        s.addKeyPart("long", Basic_Field_Types.Long);
+        s.addValuePart("int", Basic_Field_Types.Integer);
+        s.addValuePart("long", Basic_Field_Types.Long);
+        GeneralStorable cur = new GeneralStorable(s);
+        cur.setKey("int", 1024);
+        cur.setKey("long", 123456789l);
+        cur.setValue("int", 1024);
+        cur.setValue("long", 123456789l);
+        
+        assertArrayEquals(new byte[]{0, 0, 4, 0, 0, 0, 0, 0, 7, 91, -51, 21,0, 0, 4, 0, 0, 0, 0, 0, 7, 91, -51, 21},cur.toByteBuffer().array());
+        
+        GeneralStorable cur2 = new GeneralStorable(s);
+        cur2.initFromByteBuffer(cur.toByteBuffer());
+        assertArrayEquals(new byte[]{0, 0, 4, 0, 0, 0, 0, 0, 7, 91, -51, 21,0, 0, 4, 0, 0, 0, 0, 0, 7, 91, -51, 21},cur2.toByteBuffer().array());
+        
+        GeneralStorable cur3 = (GeneralStorable) cur2.clone();
+        assertArrayEquals(new byte[]{0, 0, 4, 0, 0, 0, 0, 0, 7, 91, -51, 21,0, 0, 4, 0, 0, 0, 0, 0, 7, 91, -51, 21},cur3.toByteBuffer().array());
+        
+    }
+    
+    @Test
     public void testGetterAndSetter() throws IOException {
         GeneralStructure s = new GeneralStructure();
         s.addKeyPart("byte", Basic_Field_Types.Byte);
@@ -35,7 +59,8 @@ public class GeneralStorableTest {
         s.addValuePart("long", Basic_Field_Types.Long);
 
         GeneralStorable cur = new GeneralStorable(s);
-
+        assertEquals(54, cur.getByteBufferSize());
+        
         // test set keys
         cur.setKey("byte", (byte) 123);
         cur.setKey("char", 'c');

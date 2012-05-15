@@ -20,12 +20,12 @@ import org.slf4j.LoggerFactory;
  * 
  * @author m.gleditzsch
  */
-public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
+public class GeneralStorable extends AbstractKVStorable {
     static Logger logger = LoggerFactory.getLogger(GeneralStorable.class);
     private static final long serialVersionUID = 3853444781559739538L;
     
     /** A pointer to the underlying structure. All cloned elements should point to the same structure. */
-    private GeneralStructure structure;
+    protected GeneralStructure structure;
     
     /**
      * Basic constructor. Should only be used, when the structure of the
@@ -46,29 +46,32 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
     }
 
     /** Constructor for cloning */
-    private GeneralStorable(int keySize, int valueSize) {
+    protected GeneralStorable(int keySize, int valueSize, GeneralStructure s) {
+        this.structure = s;
         this.key = new byte[keySize];
         this.value = new byte[valueSize];
         structure.INSTANCE_EXISITS = true;
     }
-
+    
     @Override
     public void initFromByteBuffer(ByteBuffer bb) {
+        if(bb.remaining() < key.length + value.length) {
+            bb.rewind();
+        }
         bb.get(key).get(value);
     }
 
     @Override
     public GeneralStorable fromByteBuffer(ByteBuffer bb) {
-        GeneralStorable object = new GeneralStorable(this.key.length, this.value.length);
+        GeneralStorable object = new GeneralStorable(this.key.length, this.value.length, structure);
         object.initFromByteBuffer(bb);
         return object;
     }
 
     @Override
     public ByteBuffer toByteBuffer() {
-        return ByteBuffer.allocate(structure.keySize + structure.valueSize).put(key).put(value);
+        return ByteBuffer.allocate(key.length + value.length).put(key).put(value);
     }
-
     @Override
     public GeneralStorable clone() throws CloneNotSupportedException {
         return this.fromByteBuffer(toByteBuffer());
@@ -80,12 +83,12 @@ public class GeneralStorable extends AbstractKVStorable<GeneralStorable> {
     }
 
     @Override
-    public GeneralStorable merge(GeneralStorable element) {
+    public AbstractKVStorable merge(AbstractKVStorable element) {
         return element;
     }
 
     @Override
-    public void update(GeneralStorable element) {
+    public void update(AbstractKVStorable element) {
         this.initFromByteBuffer(element.toByteBuffer());
     }
 

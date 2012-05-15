@@ -21,7 +21,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author n.thieme, m.gleditzsch
  */
-public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
+public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     /** */
     private static Logger log = LoggerFactory.getLogger(UpdateOnlySynchronizer.class);
 
@@ -29,7 +29,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
     protected String dataFilename;
 
     /** a pointer to the file, where data-objects are stored */
-    protected HeaderIndexFile<Data> dataFile;
+    protected HeaderIndexFile dataFile;
 
     /** the header of the bucket, something like an index */
     private IndexForHeaderIndexFile header;
@@ -56,7 +56,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
         this.elementSize = prototype.getByteBufferSize();
         try {
             /* Another thread can have access to this file in parallel. So we must wait to get exclusive access. */
-            dataFile = new HeaderIndexFile<Data>(dataFilename, AccessMode.READ_WRITE, Integer.MAX_VALUE,
+            dataFile = new HeaderIndexFile(dataFilename, AccessMode.READ_WRITE, Integer.MAX_VALUE,
                     prototype.key.length, elementSize);
             header = dataFile.getIndex(); // Pointer to the Index
         } catch (FileLockException e) {
@@ -146,7 +146,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable<Data>> {
                 workingBuffer.position(indexInChunk);
                 byte[] b = new byte[elementSize];
                 workingBuffer.get(b);
-                Data toUpdate = prototype.fromByteBuffer(ByteBuffer.wrap(b));
+                Data toUpdate = (Data) prototype.fromByteBuffer(ByteBuffer.wrap(b));
                 // update the old element and writ it
                 toUpdate.update(data);
                 workingBuffer.position(indexInChunk);

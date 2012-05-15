@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.sdrum.bucket.hashfunction.util.RangeHashSorter;
-import com.unister.semweb.sdrum.storable.KVStorable;
+import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
@@ -223,7 +223,7 @@ public class RangeHashFunction extends AbstractHashFunction {
 
     /** Gets the bucket id from the given date. */
     @Override
-    public int getBucketId(KVStorable<?> key) {
+    public int getBucketId(AbstractKVStorable key) {
         return getBucketId(key.getKey());
     }
 

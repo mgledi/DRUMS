@@ -16,17 +16,18 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
-import com.unister.semweb.sdrum.storable.DummyKVStorable;
 
 /**
  * tests the Handling with the DB-File
  * 
  * @author m.gleditzsch
- * 
  */
 public class HeaderIndexFileTest {
-    static HeaderIndexFile<DummyKVStorable> file;
+    static HeaderIndexFile file;
+    static int keyLength = 8;
+    static int valueLength = 12;
 
     /** create static file access */
     @BeforeClass
@@ -39,13 +40,15 @@ public class HeaderIndexFileTest {
     /** create static file access */
     @Before
     public void createFile() throws IOException, FileLockException {
-        file = new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 1, 8, 26);
+        GlobalParameters.initParameters();
+        file = new HeaderIndexFile("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 1, keyLength,
+                keyLength + valueLength);
     }
 
     /** create static file access */
     @After
     public void closeAndDeleteFile() throws IOException, FileLockException {
-        if(file != null && file.osFile.exists()) {
+        if (file != null && file.osFile.exists()) {
             file.delete();
         }
         file = null;
@@ -80,10 +83,10 @@ public class HeaderIndexFileTest {
         byte[] newHeader = new byte[1024];
         file.headerBuffer.rewind();
         file.headerBuffer.get(newHeader);
-        
+
         System.out.println(Arrays.toString(oldHeader));
         System.out.println(Arrays.toString(newHeader));
-        
+
         Assert.assertTrue(Arrays.equals(oldHeader, newHeader));
     }
 
@@ -102,7 +105,7 @@ public class HeaderIndexFileTest {
         System.out.println("======== fileRead");
         byte[] b = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
         file.write(0, ByteBuffer.wrap(b));
-        
+
         byte[] r = new byte[16];
         file.read(0, ByteBuffer.wrap(r));
         Assert.assertTrue(Arrays.equals(b, r));
@@ -129,7 +132,7 @@ public class HeaderIndexFileTest {
         System.out.println("======== mapRead");
         byte[] b = { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
         byte[] r = new byte[16];
-        
+
         // --------------- write to file
         MappedByteBuffer mbb = file.map(0, 16);
         // mbb.rewind();
@@ -137,10 +140,10 @@ public class HeaderIndexFileTest {
         mbb.force();
         mbb.rewind();
         file.close();
-        
+
         // --------------- read from file
         this.createFile();
-        
+
         mbb = file.map(0, 16);
         mbb.get(r);
         file.read(0, ByteBuffer.wrap(r));
@@ -154,14 +157,14 @@ public class HeaderIndexFileTest {
         file.close();
         createFile();
         try {
-            new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, 8, 26);
+            new HeaderIndexFile("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, 8, 26);
             Assert.assertTrue(false);
         } catch (FileLockException e) {
             Assert.assertTrue(true);
         }
         file.close();
 
-        new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, 8, 26);
+        new HeaderIndexFile("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, 8, 26);
         Assert.assertTrue(true);
     }
 
@@ -169,19 +172,19 @@ public class HeaderIndexFileTest {
     public void indexTest() throws IOException, FileLockException {
         System.out.println("======== indexTest");
         file.delete();
-        
+
         createFile();
         file.close();
 
         file.openChannel();
         byte[] dst = new byte[file.elementSize];
         long oldOffset = 0;
-        for(long i=0; i < 100000; i ++) {
+        for (long i = 0; i < 100000; i++) {
             ByteBuffer b = ByteBuffer.wrap(dst);
             b.putLong(i);
             file.append(b);
             int idx = file.getChunkIndex(oldOffset);
-//            file.index.setLargestKey(idx, i);
+//                        file.index.setLargestKey(idx, i);
             oldOffset += dst.length;
         }
         file.close();
@@ -193,12 +196,13 @@ public class HeaderIndexFileTest {
         file.delete();
         Assert.assertTrue(!(new File("test.db").exists()));
     }
-    
+
     @Test
     public void test() throws Throwable {
-        HeaderIndexFile hif = new HeaderIndexFile("/tmp/test.db", AccessMode.READ_WRITE, 1, 8, 26);
+        HeaderIndexFile hif = new HeaderIndexFile("/tmp/test.db", AccessMode.READ_WRITE, 1, keyLength, keyLength
+                + valueLength);
         hif.delete();
-        
+
         File osFile = new File("/tmp/test.db");
         osFile.createNewFile();
         RandomAccessFile raf = new RandomAccessFile(osFile, "rw");

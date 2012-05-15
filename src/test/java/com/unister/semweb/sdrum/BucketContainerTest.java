@@ -4,10 +4,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.BucketContainer;
+import com.unister.semweb.sdrum.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
@@ -20,6 +22,13 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  */
 public class BucketContainerTest {
+
+    @Before
+    public void loadParams() {
+        GlobalParameters.initParameters();
+        DynamicMemoryAllocater.instantiate(DummyKVStorable.getInstance());
+    }
+    
     /**
      * Tries to add a link data to the bucket 0.
      * 
@@ -64,17 +73,16 @@ public class BucketContainerTest {
 
         fingerprint = fingerprint << 65;
 
-        DummyKVStorable linkData = new DummyKVStorable();
-        linkData.setKey(KeyUtils.transformFromLong(fingerprint, linkData.keySize));
-        linkData.setRelevanceScore(0.34);
-        linkData.setParentCount(10);
-        linkData.setTimestamp(System.currentTimeMillis());
+        DummyKVStorable linkData = DummyKVStorable.getInstance();
+        linkData.setKey(KeyUtils.transformFromLong(fingerprint, linkData.key.length));
+        linkData.setValue("relevanceScore",0.34);
+        linkData.setValue("parentCount",10);
 
         List<Bucket<DummyKVStorable>> bucketList = generateBucketList(numberOfBuckets);
         Bucket<DummyKVStorable>[] buckets = new Bucket[bucketList.size()];
         buckets = bucketList.toArray(buckets);
 
-        AbstractHashFunction bucketComputer = new RangeHashFunction(numberOfBuckets, new DummyKVStorable().keySize, new File(""));
+        AbstractHashFunction bucketComputer = new RangeHashFunction(numberOfBuckets, DummyKVStorable.getInstance().key.length, new File(""));
         BucketContainer<DummyKVStorable> bucketContainer = new BucketContainer<DummyKVStorable>(buckets, bucketComputer);
         bucketContainer.addToCache(linkData);
 
@@ -84,7 +92,7 @@ public class BucketContainerTest {
     private List<Bucket<DummyKVStorable>> generateBucketList(int numberOfBuckets) {
         List<Bucket<DummyKVStorable>> result = new ArrayList<Bucket<DummyKVStorable>>();
         for (int i = 0; i < numberOfBuckets; i++) {
-            Bucket<DummyKVStorable> newBucket = new Bucket<DummyKVStorable>(i, new DummyKVStorable());
+            Bucket<DummyKVStorable> newBucket = new Bucket<DummyKVStorable>(i, DummyKVStorable.getInstance());
             result.add(newBucket);
         }
         return result;

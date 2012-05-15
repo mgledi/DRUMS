@@ -14,7 +14,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.TestUtils;
+import com.unister.semweb.sdrum.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
@@ -34,6 +36,12 @@ public class SDrumTest {
     private DummyKVStorable prototype;
 
     @Before
+    public void loadParams() {
+        GlobalParameters.initParameters();
+        DynamicMemoryAllocater.instantiate(DummyKVStorable.getInstance());
+    }
+
+    @Before
     public void initialise() throws Exception {
         long[] ranges = new long[] { 0, 10, 20, 30 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
@@ -41,7 +49,7 @@ public class SDrumTest {
         FileUtils.deleteQuietly(new File(databaseDirectory));
 
         hashFunction = new RangeHashFunction(bRanges, filenames, new File("/tmp/hash.hs"));
-        prototype = new DummyKVStorable();
+        prototype = DummyKVStorable.getInstance();
     }
 
     /**
@@ -56,29 +64,35 @@ public class SDrumTest {
         SDRUM<DummyKVStorable> table = SDRUM_API.createOrOpenTable(databaseDirectory, numberOfSynchronizerThreads,
                 hashFunction, prototype);
         // create data
-        DummyKVStorable d1 = new DummyKVStorable();
+        DummyKVStorable d1 = DummyKVStorable.getInstance();
         d1.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
-        DummyKVStorable d2 = new DummyKVStorable();
+        DummyKVStorable d2 = DummyKVStorable.getInstance();
         d2.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 2 });
-        DummyKVStorable d3 = new DummyKVStorable();
+        DummyKVStorable d3 = DummyKVStorable.getInstance();
         d3.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 });
-        ByteBuffer bb = ByteBuffer.allocate(3 * prototype.byteBufferSize);
+        ByteBuffer bb = ByteBuffer.allocate(3 * prototype.getByteBufferSize());
         bb.put(d1.toByteBuffer().array());
         bb.put(d2.toByteBuffer().array());
         bb.put(d3.toByteBuffer().array());
 
         Assert.assertEquals(-1, table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 0));
         Assert.assertEquals(0, table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }, 0));
-        Assert.assertEquals(1 * prototype.byteBufferSize,
+        Assert.assertEquals(1 * prototype.getByteBufferSize(),
                 table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 2 }, 0));
-        Assert.assertEquals(2 * prototype.byteBufferSize,
+        Assert.assertEquals(2 * prototype.getByteBufferSize(),
                 table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, 0));
-        Assert.assertEquals(2 * prototype.byteBufferSize,
-                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, 1 * prototype.byteBufferSize));
-        Assert.assertEquals(2 * prototype.byteBufferSize,
-                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, 2 * prototype.byteBufferSize));
-        Assert.assertEquals(-1,
-                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, 3 * prototype.byteBufferSize));
+        Assert.assertEquals(
+                2 * prototype.getByteBufferSize(),
+                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 },
+                        1 * prototype.getByteBufferSize()));
+        Assert.assertEquals(
+                2 * prototype.getByteBufferSize(),
+                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 },
+                        2 * prototype.getByteBufferSize()));
+        Assert.assertEquals(
+                -1,
+                table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 },
+                        3 * prototype.getByteBufferSize()));
     }
 
     /**
@@ -110,18 +124,19 @@ public class SDrumTest {
      */
     @Test
     public void insertDifferentRanges() throws Exception {
-        DummyKVStorable prototype = new DummyKVStorable();
+        DummyKVStorable prototype = DummyKVStorable.getInstance();
         List<DummyKVStorable> expectedFirstRange = new ArrayList<DummyKVStorable>();
         DummyKVStorable firstRange = TestUtils
-                .createDummyData(KeyUtils.transformFromLong(5, prototype.keySize), 1, 0.5);
+                .createDummyData(KeyUtils.transformFromLong(5, prototype.key.length), 1, 0.5);
         expectedFirstRange.add(firstRange);
 
-        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10, prototype.keySize), 12,
+        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10, prototype.key.length),
+                12,
                 0.3);
         expectedFirstRange.add(secondRange);
 
         List<DummyKVStorable> expectedThirdRange = new ArrayList<DummyKVStorable>();
-        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(29, prototype.keySize), 9,
+        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(29, prototype.key.length), 9,
                 0.23);
         expectedThirdRange.add(thirdRange);
 
@@ -149,7 +164,7 @@ public class SDrumTest {
     @Test
     public void selectTestSingleElement() throws Exception {
         List<DummyKVStorable> dataList = new ArrayList<DummyKVStorable>();
-        DummyKVStorable data = TestUtils.createDummyData(KeyUtils.transformFromLong(1, prototype.keySize), 1, 0.23);
+        DummyKVStorable data = TestUtils.createDummyData(KeyUtils.transformFromLong(1, prototype.key.length), 1, 0.23);
         dataList.add(data);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { data };
 
@@ -171,11 +186,13 @@ public class SDrumTest {
     @Test
     public void selectTestSeveralRanges() throws Exception {
         List<DummyKVStorable> rangeData = new ArrayList<DummyKVStorable>();
-        DummyKVStorable firstRange = TestUtils.createDummyData(KeyUtils.transformFromLong(2, prototype.keySize), 2,
+        DummyKVStorable firstRange = TestUtils.createDummyData(KeyUtils.transformFromLong(2, prototype.key.length), 2,
                 0.24);
-        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10, prototype.keySize), 10,
+        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.transformFromLong(10, prototype.key.length),
+                10,
                 0.23);
-        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(12, prototype.keySize), 19,
+        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.transformFromLong(12, prototype.key.length),
+                19,
                 0.29);
         rangeData.add(firstRange);
         rangeData.add(secondRange);
@@ -201,7 +218,7 @@ public class SDrumTest {
      */
     @Test
     public void readTestSingleElement() throws Exception {
-        DummyKVStorable testElement = TestUtils.createDummyData(KeyUtils.transformFromLong(1, prototype.keySize), 2,
+        DummyKVStorable testElement = TestUtils.createDummyData(KeyUtils.transformFromLong(1, prototype.key.length), 2,
                 0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { testElement };
         List<DummyKVStorable> expectedData = Arrays.asList(toAdd);
@@ -291,8 +308,8 @@ public class SDrumTest {
 
     /** Reads from the given file <code>numberOfElementsToRead</code> elements. */
     private List<DummyKVStorable> readFrom(String filename, int numberOfElementsToRead) throws Exception {
-        HeaderIndexFile<DummyKVStorable> file = new HeaderIndexFile<DummyKVStorable>(filename, AccessMode.READ_ONLY, 1,
-                prototype.keySize, prototype.byteBufferSize);
+        HeaderIndexFile file = new HeaderIndexFile(filename, AccessMode.READ_ONLY, 1,
+                prototype.key.length, prototype.getByteBufferSize());
         ByteBuffer dataBuffer = ByteBuffer.allocate(numberOfElementsToRead * prototype.getByteBufferSize());
         file.read(0, dataBuffer);
         dataBuffer.flip();
@@ -301,7 +318,7 @@ public class SDrumTest {
         while (dataBuffer.position() < dataBuffer.limit()) {
             byte[] oneLinkData = new byte[prototype.getByteBufferSize()];
             dataBuffer.get(oneLinkData);
-            DummyKVStorable oneDate = new DummyKVStorable(ByteBuffer.wrap(oneLinkData));
+            DummyKVStorable oneDate = prototype.fromByteBuffer(ByteBuffer.wrap(oneLinkData));
             readData.add(oneDate);
         }
         file.close();
@@ -317,8 +334,10 @@ public class SDrumTest {
      * Compares to list with {@link DummyKVStorable} with each other. The compare criteria are key, parent count and
      * relevance
      * score.
+     * 
+     * @throws IOException
      */
-    private boolean equals(List<DummyKVStorable> firstCompare, List<DummyKVStorable> secondCompare) {
+    private boolean equals(List<DummyKVStorable> firstCompare, List<DummyKVStorable> secondCompare) throws IOException {
         if (firstCompare.size() != secondCompare.size()) {
             log.error("Equals method: the first and second list have unequal size, first list {}, second list {}",
                     firstCompare.size(), secondCompare.size());
@@ -341,8 +360,11 @@ public class SDrumTest {
     /**
      * Compares two list of {@link DummyKVStorable}s with each other. The order of the elements within the lists is not
      * respected.
+     * 
+     * @throws IOException
      */
-    private boolean equalsWithoutOrder(List<DummyKVStorable> firstCompare, List<DummyKVStorable> secondCompare) {
+    private boolean equalsWithoutOrder(List<DummyKVStorable> firstCompare, List<DummyKVStorable> secondCompare)
+            throws IOException {
         if (firstCompare.size() != secondCompare.size()) {
             log.error("The sizes of the two lists are not equal. First list: {}, second list: {}", firstCompare.size(),
                     secondCompare.size());
@@ -375,25 +397,27 @@ public class SDrumTest {
      * Comapares two {@link DummyKVStorable} with each other. The relevant field that are compared are: key, parentCount
      * and
      * relevanceScore.
+     * 
+     * @throws IOException
      */
-    private boolean equals(DummyKVStorable firstData, DummyKVStorable secondData) {
+    private boolean equals(DummyKVStorable firstData, DummyKVStorable secondData) throws IOException {
         if (firstData.key != secondData.key) {
             log.error("The orders of the two lists is wrong. First element key: {}, second element key {}",
                     firstData.key, secondData.key);
             return false;
         }
 
-        if (firstData.getParentCount() != secondData.getParentCount()) {
+        if (firstData.getValueAsInt("parentCount") != secondData.getValueAsInt("parentCount")) {
             log.error(
                     "The orders of the two lists is wrong. First element parent count: {}, second element parent count {}",
-                    firstData.getParentCount(), secondData.getParentCount());
+                    firstData.getValueAsInt("parentCount"), secondData.getValueAsInt("parentCount"));
             return false;
         }
 
-        if (firstData.getRelevanceScore() != secondData.getRelevanceScore()) {
+        if (firstData.getValueAsDouble("relevanceScore") != secondData.getValueAsDouble("relevanceScore")) {
             log.error(
                     "The orders of the two lists is wrong. First element relevance score: {}, second element relevance score {}",
-                    firstData.getRelevanceScore(), secondData.getRelevanceScore());
+                    firstData.getValueAsDouble("relevanceScore"), secondData.getValueAsDouble("relevanceScore"));
             return false;
         }
         return true;
@@ -403,21 +427,21 @@ public class SDrumTest {
     /* ------------------Test data output -------------------- */
     /* ------------------------------------------------------- */
 
-    private void logOut(List<DummyKVStorable> firstList, List<DummyKVStorable> secondList) {
+    private void logOut(List<DummyKVStorable> firstList, List<DummyKVStorable> secondList) throws IOException {
         log.info("================ Elements of the first list ===================");
         for (DummyKVStorable oneDate : firstList) {
             log.info("***************** One date ********************");
             log.info("Key: {}", oneDate.key);
-            log.info("Parent count: {}", oneDate.getParentCount());
-            log.info("Relevance score: {}", oneDate.getRelevanceScore());
+            log.info("Parent count: {}", oneDate.getValueAsInt("parentCount"));
+            log.info("Relevance score: {}", oneDate.getValueAsDouble("relevanceScore"));
         }
 
         log.info("======================== Elements of the second list ==================");
         for (DummyKVStorable oneDate : secondList) {
             log.info("***************** One date ********************");
             log.info("Key: {}", oneDate.key);
-            log.info("Parent count: {}", oneDate.getParentCount());
-            log.info("Relevance score: {}", oneDate.getRelevanceScore());
+            log.info("Parent count: {}", oneDate.getValueAsInt("parentCount"));
+            log.info("Relevance score: {}", oneDate.getValueAsDouble("relevanceScore"));
         }
     }
 }

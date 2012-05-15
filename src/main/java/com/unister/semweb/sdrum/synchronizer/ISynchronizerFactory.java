@@ -11,7 +11,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * 
  * @author m.gleditzsch
  */
-public interface ISynchronizerFactory<Data extends AbstractKVStorable<Data>>  {
+public interface ISynchronizerFactory<Data extends AbstractKVStorable>  {
     /**
      * Creates a {@link Synchronizer}, which synchronizes the given {@link Bucket}.
      * 

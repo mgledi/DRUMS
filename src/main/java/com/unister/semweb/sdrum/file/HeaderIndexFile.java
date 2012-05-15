@@ -9,7 +9,6 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
 import com.unister.semweb.sdrum.GlobalParameters;
-import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
@@ -49,7 +48,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author m.gleditzsch
  */
-public class HeaderIndexFile<Data extends AbstractKVStorable<Data>> extends AbstractHeaderFile {
+public class HeaderIndexFile extends AbstractHeaderFile {
 
     /** the initial size by which the file is enlarged. Will be set by {@link GlobalParameters} */
     public static int INITIAL_INCREMENT_SIZE;

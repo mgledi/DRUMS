@@ -4,8 +4,10 @@ import java.io.File;
 
 import junit.framework.Assert;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.TestUtils;
 import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
@@ -19,6 +21,11 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  */
 public class UpdateOnlySynchronizerTest {
 
+    @Before
+    public void loadParams() {
+        GlobalParameters.initParameters();
+    }
+    
     @Test
     /** This function tests, if update will be stored correctly */
     public void updateTest() throws Exception {
@@ -28,9 +35,8 @@ public class UpdateOnlySynchronizerTest {
         new File(dbFileName).delete();
         DummyKVStorable[] linkDataList = new DummyKVStorable[204000];
         for (int i = 0; i < linkDataList.length; i++) {
-            linkDataList[i] = new DummyKVStorable();
-            linkDataList[i].setKey(KeyUtils.transformFromLong(i * 1 + 1, linkDataList[i].keySize));
-            linkDataList[i].setTimestamp(0);
+            linkDataList[i] = DummyKVStorable.getInstance();
+            linkDataList[i].setKey(KeyUtils.transformFromLong(i * 1 + 1, linkDataList[i].key.length));
         }
         TestUtils.createFile(dbFileName, linkDataList);
         Assert.assertTrue(TestUtils.checkContentFile(dbFileName, linkDataList));
@@ -39,7 +45,6 @@ public class UpdateOnlySynchronizerTest {
         DummyKVStorable[] toUpdate = new DummyKVStorable[linkDataList.length];
         for (int i = 0; i < linkDataList.length; i++) {
             toUpdate[i] = linkDataList[i];
-            toUpdate[i].setTimestamp(2300000);
         }
 
         // DummyKVStorable[] toUpdate = new DummyKVStorable[3];
@@ -56,7 +61,7 @@ public class UpdateOnlySynchronizerTest {
 
         // ############### perform the update, this is the real test
         UpdateOnlySynchronizer<DummyKVStorable> updateSync = new UpdateOnlySynchronizer<DummyKVStorable>(dbFileName,
-                new DummyKVStorable());
+                DummyKVStorable.getInstance());
         updateSync.upsert(toUpdate);
 
         // ############### check if the file was written correctly, the file have to be compared to the linkDataList

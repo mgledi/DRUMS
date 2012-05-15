@@ -20,8 +20,8 @@ public class SortMachine {
      * @param j
      *            index of second element
      */
-    public static void swap(AbstractKVStorable<?>[] A, int i, int j) {
-        AbstractKVStorable<?> temp = A[i];
+    public static void swap(AbstractKVStorable[] A, int i, int j) {
+        AbstractKVStorable temp = A[i];
         A[i] = A[j];
         A[j] = temp;
     }
@@ -34,7 +34,7 @@ public class SortMachine {
      *            The array to be sorted.
      * @return A reference to the array that was sorted.
      */
-    public static AbstractKVStorable<?>[] quickSort(AbstractKVStorable<?>[] A) {
+    public static AbstractKVStorable[] quickSort(AbstractKVStorable[] A) {
         quickSort(A, 0, A.length - 1);
         return A;
     }
@@ -54,7 +54,7 @@ public class SortMachine {
      *            The right boundary of what will be sorted.
      * @return A reference to the array that was sorted.
      */
-    public static AbstractKVStorable<?>[] quickSort(AbstractKVStorable<?>[] A, int left, int right) {
+    public static AbstractKVStorable[] quickSort(AbstractKVStorable[] A, int left, int right) {
         if (left + 10 <= right) {
             int partitionIndex = partition(A, left, right);
             quickSort(A, left, partitionIndex - 1);
@@ -79,10 +79,10 @@ public class SortMachine {
      *            The right bound of the array.
      * @return The index of the pivot after the partition has occured.
      */
-    private static int partition(AbstractKVStorable<?> A[], int left, int right) {
+    private static int partition(AbstractKVStorable A[], int left, int right) {
         int i = left;
         int j = right;
-        AbstractKVStorable<?> pivot = A[(left + right) / 2];
+        AbstractKVStorable pivot = A[(left + right) / 2];
         while (i <= j) {
             while (KeyUtils.compareKey(A[i].key, pivot.key) < 0)
                 i++;
@@ -109,9 +109,9 @@ public class SortMachine {
      * @param right
      *            the right-most index of the subarray.
      */
-    private static void insertionSort(AbstractKVStorable<?>[] A, int left, int right) {
+    private static void insertionSort(AbstractKVStorable[] A, int left, int right) {
         for (int p = left + 1; p <= right; p++) {
-            AbstractKVStorable<?> tmp = A[p];
+            AbstractKVStorable tmp = A[p];
             int j;
             for (j = p; j > left && KeyUtils.compareKey(tmp.key, A[j - 1].key) == -1; j--)
                 A[j] = A[j - 1];

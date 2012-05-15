@@ -9,7 +9,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * 
  * @author m.gleditzsch
  */
-public class SynchronizerFactory<Data extends AbstractKVStorable<Data>> implements ISynchronizerFactory<Data> {
+public class SynchronizerFactory<Data extends AbstractKVStorable> implements ISynchronizerFactory<Data> {
 
     /** a prototype from a concrete AbstractKVStorable */
     final private Data prototype;

@@ -7,6 +7,11 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Some very important and useful functions for the keys (byte-arrays) in SDRUM.
+ * 
+ * @author m.gleditzsch
+ */
 public class KeyUtils {
     private static final Logger log = LoggerFactory.getLogger(KeyUtils.class);
 
@@ -36,8 +41,7 @@ public class KeyUtils {
 
     /** Transforms the given long value into a byte array. */
     public static byte[] transformFromLong(long toTransform, int keySize) {
-        ByteBuffer converter = ByteBuffer.allocate(8);
-        converter.putLong(toTransform);
+        ByteBuffer converter = ByteBuffer.allocate(8).putLong(toTransform);
 
         byte[] result = null;
         if (keySize >= 8) {
@@ -49,6 +53,12 @@ public class KeyUtils {
         return result;
     }
 
+
+    /** Converts a long to a byte-array */
+    public static byte[] convert(long key) {
+        return transformFromLong(key, 8);
+    }
+    
     /**
      * Cheks if the elements of the given key up the given length are 0, or the whole array is NULL
      * 
@@ -79,12 +89,7 @@ public class KeyUtils {
         if (key == null) {
             return true;
         }
-        for (byte b : key) {
-            if (b != 0) {
-                return false;
-            }
-        }
-        return true;
+        return isNull(key, key.length);
     }
 
     /**
@@ -94,7 +99,6 @@ public class KeyUtils {
      * 
      * @param key1
      * @param key2
-     * 
      * @return -1 if key1 < key2<br>
      *         0 if key1 == key2<br>
      *         1 if key1 > key2
@@ -112,7 +116,6 @@ public class KeyUtils {
      * @param key1
      * @param key2
      * @param length
-     * 
      * @return -1 if key1 < key2<br>
      *         0 if key1 == key2<br>
      *         1 if key1 > key2
@@ -321,39 +324,5 @@ public class KeyUtils {
             sb.append(prefix + buckets[i] + suffix + "\n");
         }
         return sb.toString();
-    }
-
-    public static void main(String[] args) throws Exception {
-        byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        // byte[] h0 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        // byte[] h1 = new byte[] { (byte) 64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-        // byte[] h2 = new byte[] { (byte) 128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-        // byte[] h3 = new byte[] { (byte) -64, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-        byte[] h4 = new byte[] { -128, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-
-        String[] bucketNames = new String[4096];
-        for (int i = 0; i < 4096; i++) {
-            bucketNames[i] = String.valueOf(i);
-        }
-
-        String function = generateHashFunction(h0, h4, bucketNames, ".db", "");
-        System.out.println(function);
-        // for (byte[] b : ranges) {
-        // System.out.println((transform(b)));
-        // }
-
-        // String result = generateHashFunction(h0, h4, 10, ".db", "");
-        // System.out.println(result);
-
-        // generateHashFunctionBigInteger(-255, 255, 2, 500000, ".db", "");
-
-        // generateHashFunctionBigInteger(Long.MIN_VALUE, Long.MAX_VALUE, 2, 10000, ".db", "");
-    }
-
-    public static byte[] convert(long key) {
-        ByteBuffer converter = ByteBuffer.allocate(8);
-        converter.putLong(key);
-        converter.flip();
-        return converter.array();
     }
 }

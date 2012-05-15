@@ -22,18 +22,17 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author m.gleditzsch
  */
-public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
+public class SDRUM_Reader<Data extends AbstractKVStorable> {
     static Logger logger = LoggerFactory.getLogger(SDRUM_Reader.class);
 
     /** Marks if files are opend. Is set to avoid null-pointer exceptions */
     private boolean filesAreOpend = false;
 
     /** The Instance of this singelton */
-    @SuppressWarnings("rawtypes")
     public static SDRUM_Reader INSTANCE;
 
     /** An array containing all used files. All files are opened when instantiating for performance reasons. */
-    private HeaderIndexFile<Data>[] files;
+    private HeaderIndexFile[] files;
 
     /** A pointer to the used SDRUM */
     private SDRUM<Data> sdrum;
@@ -42,7 +41,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
     int[] cumulativeElementsPerFile;
 
     /** a prototype of Data */
-    private Data prototype;
+    private AbstractKVStorable prototype;
 
     private int numberOfBuckets;
     private int elementSize;
@@ -60,7 +59,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
     }
 
     /** Instantiates a new SDRUM_Reader */
-    public static <Data extends AbstractKVStorable<Data>> void instantiate(SDRUM<Data> sdrum)
+    public static <Data extends AbstractKVStorable> void instantiate(SDRUM<Data> sdrum)
             throws FileLockException, IOException {
         if (INSTANCE == null) {
             INSTANCE = new SDRUM_Reader<Data>(sdrum);
@@ -85,7 +84,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
                 cumulativeElementsPerFile[i] = 0;
             } else {
                 lastfile = i;
-                files[i] = new HeaderIndexFile<Data>(filename, 10);
+                files[i] = new HeaderIndexFile(filename, 10);
                 cumulativeElementsPerFile[i] = (int) (files[i].getFilledUpFromContentStart() / elementSize);
             }
             if (i > 0) {
@@ -102,7 +101,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
      * Returns all elements between lowerKey and upperKey
      * this function is still BUGGY
      */
-    public List<Data> getRange(byte[] lowerKey, byte[] upperKey) throws IOException {
+    public List<AbstractKVStorable> getRange(byte[] lowerKey, byte[] upperKey) throws IOException {
         if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
@@ -114,10 +113,10 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
         long filesize, startOffset, endOffset;
         byte[] tmpB = new byte[elementSize];
 
-        ArrayList<Data> elements = new ArrayList<Data>();
+        ArrayList<AbstractKVStorable> elements = new ArrayList<AbstractKVStorable>();
         // run over all files
         for (int i = lowerBucket; i <= upperBucket; i++) {
-            HeaderIndexFile<Data> aktFile = files[i];
+            HeaderIndexFile aktFile = files[i];
             filesize = aktFile.getFilledUpFromContentStart();
             startOffset = 0;
             endOffset = filesize;
@@ -137,7 +136,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
                 destBuffer.flip();
                 while (destBuffer.remaining() > elementSize) {
                     destBuffer.get(tmpB); // get the element
-                    Data record = prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
+                    AbstractKVStorable record = prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
                     if (KeyUtils.compareKey(record.key, lowerKey) >= 0 &&
                             KeyUtils.compareKey(record.key, upperKey) <= 0) {
                         elements.add(record);
@@ -159,7 +158,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
      * @return
      * @throws IOException
      */
-    public Data getPreviousElement(byte[] key) throws IOException {
+    public AbstractKVStorable getPreviousElement(byte[] key) throws IOException {
         if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
@@ -173,7 +172,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
      * @return
      * @throws IOException
      */
-    public Data getNextElement(byte[] key) throws IOException {
+    public AbstractKVStorable getNextElement(byte[] key) throws IOException {
         if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
@@ -188,7 +187,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
      * @throws FileStorageException
      * @throws IOException
      */
-    public List<Data> get(long... keys) throws FileStorageException, IOException {
+    public List<AbstractKVStorable> get(long... keys) throws FileStorageException, IOException {
         return this.get(KeyUtils.transformToByteArray(keys));
     }
 
@@ -200,11 +199,11 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
      * @throws FileStorageException
      * @throws IOException
      */
-    public List<Data> get(byte[]... keys) throws FileStorageException, IOException {
+    public List<AbstractKVStorable> get(byte[]... keys) throws FileStorageException, IOException {
         if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
-        List<Data> result = new ArrayList<Data>();
+        List<AbstractKVStorable> result = new ArrayList<AbstractKVStorable>();
         IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = sdrum.getBucketKeyMapping(keys);
         for (IntObjectCursor<ArrayList<byte[]>> entry : bucketKeyMapping) {
             ArrayList<byte[]> keyList = entry.value;
@@ -216,7 +215,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable<Data>> {
     /** Closes all files */
     public void closeFiles() {
         filesAreOpend = false;
-        for (HeaderIndexFile<Data> file : files) {
+        for (HeaderIndexFile file : files) {
             if (file != null) {
                 file.close();
             }

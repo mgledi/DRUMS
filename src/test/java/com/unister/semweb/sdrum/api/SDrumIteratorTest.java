@@ -31,7 +31,7 @@ public class SDrumIteratorTest {
         FileUtils.deleteQuietly(new File(databaseDirectory));
 
         this.hashFunction = new RangeHashFunction(bRanges, filenames, new File("/tmp/hash.hs"));
-        this.prototype = new DummyKVStorable();
+        this.prototype = DummyKVStorable.getInstance();
 
         // fill with data
         table = SDRUM_API.createTable(databaseDirectory, 1, hashFunction, prototype);
@@ -43,13 +43,15 @@ public class SDrumIteratorTest {
     }
 
     @Test
-    public void iteratoreTest() throws FileStorageException {
+    public void iteratorTest() throws FileStorageException {
         SDrumIterator<DummyKVStorable> it = new SDrumIterator<DummyKVStorable>("/tmp/createTable/db", hashFunction,
-                new DummyKVStorable());
+                DummyKVStorable.getInstance());
         ArrayList<DummyKVStorable> elements = new ArrayList<DummyKVStorable>();
+        System.out.println(prototype.getClass());
         while (it.hasNext()) {
-            DummyKVStorable d = it.next();
-            elements.add(d);
+            Object d = it.next();
+            System.out.println(d.getClass());
+            elements.add((DummyKVStorable) d);
             // elements should be read in ascending order
         }
 

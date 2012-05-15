@@ -31,7 +31,7 @@ import com.unister.semweb.sdrum.synchronizer.Synchronizer;
  * 
  * @author n.thieme, m.gleditzsch
  */
-public class SyncManager<Data extends AbstractKVStorable<Data>> extends Thread {
+public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     private static final Logger log = LoggerFactory.getLogger(SyncManager.class);
 
     /** at least this * allowedElementsPerBucket Elements have to be in a bucket, before synchronizing the bucket */

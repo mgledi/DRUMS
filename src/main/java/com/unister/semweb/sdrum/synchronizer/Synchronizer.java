@@ -26,13 +26,13 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author n.thieme, m.gleditzsch
  */
-public class Synchronizer<Data extends AbstractKVStorable<Data>> {
+public class Synchronizer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(Synchronizer.class);
 
     /** The file instance from which we receive a {@link FileChannel}. */
     protected String dataFilename;
 
-    protected HeaderIndexFile<Data> dataFile;
+    protected HeaderIndexFile dataFile;
 
     /** Number of entries that are read into memory. */
     protected int numberOfEntriesInOneChunk;
@@ -66,7 +66,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
     private long filledUpToWhenStarted;
 
     // TODO
-    Data prototype;
+    AbstractKVStorable prototype;
 
     // TODO: comment
     private int elementSize;
@@ -82,7 +82,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public Synchronizer(String dataFilename, Data prototype) {
+    public Synchronizer(String dataFilename, AbstractKVStorable prototype) {
         this.prototype = prototype;
         this.dataFilename = dataFilename;
         this.elementSize = prototype.getByteBufferSize();
@@ -98,24 +98,23 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
      * @param toAdd
      * @throws IOException
      */
-    public void upsert(Data[] toAdd) throws IOException {
+    public void upsert(AbstractKVStorable[] toAdd) throws IOException {
         try {
             /* Another thread can have access to this file in parallel. So we must wait to get exclusive access. */
-            dataFile = new HeaderIndexFile<Data>(
+            dataFile = new HeaderIndexFile(
                     dataFilename,
                     AccessMode.READ_WRITE,
                     Integer.MAX_VALUE,
-                    prototype.key.length, elementSize
+                    prototype.getKey().length,
+                    prototype.getByteBufferSize()
+                    
                     );
             header = dataFile.getIndex(); // Pointer to the Index
         } catch (FileLockException e) {
             log.error("Errror occurred while opening database file.", e);
         }
         try {
-            toAdd = (Data[]) AbstractKVStorable.merge(toAdd);
-            // if (!dataFile.isConsistent()) {
-            // System.err.println("FILE IS NOT CONSISTENT");
-            // }
+            toAdd = AbstractKVStorable.merge(toAdd);
 
             readOffset = 0;
             filledUpToWhenStarted = dataFile.getFilledUpFromContentStart(); // need to remember how a many "old" bytes
@@ -131,12 +130,12 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
             byte[] dateFromDisk = getFromDisk();
 
             int indexOfToAdd = 0;
-            int keyLength = prototype.key.length;
+            int keyLength = prototype.getKey().length;
 
             // handle all AbstractKVStorable (update or insert)
             byte compare;
             for (indexOfToAdd = 0; indexOfToAdd < toAdd.length && dateFromDisk != null;) {
-                Data dateFromBucket = toAdd[indexOfToAdd];
+                AbstractKVStorable dateFromBucket = toAdd[indexOfToAdd];
                 compare = KeyUtils.compareKey(dateFromBucket.key, dateFromDisk, keyLength);
 
                 /* insert element from bucket */
@@ -152,7 +151,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
                 /* merges element from bucket and element from disk */
                 if (compare == 0) {
                     prototype.initFromByteBuffer(ByteBuffer.wrap(dateFromDisk));
-                    Data newDate = prototype.merge(dateFromBucket);
+                    AbstractKVStorable newDate = prototype.merge(dateFromBucket);
 
                     // TODO: think about update
                     write(newDate.toByteBuffer().array(), true); // write date
@@ -289,7 +288,7 @@ public class Synchronizer<Data extends AbstractKVStorable<Data>> {
     }
 
     @SuppressWarnings("unused")
-    private boolean readFirstChunkFromFile(Data toAdd) throws IOException {
+    private boolean readFirstChunkFromFile(AbstractKVStorable toAdd) throws IOException {
         readOffset = header.getStartOffsetOfChunkByKey(toAdd.getKey());
         if (readOffset < 0) {
             readOffset = 0;

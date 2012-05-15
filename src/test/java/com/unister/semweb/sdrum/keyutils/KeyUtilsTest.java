@@ -60,7 +60,7 @@ public class KeyUtilsTest {
         byte[] key1 = intArrayToByteArray(6, 36, 58, -20, 0, 0, 0, 0);
         byte[] key2 = intArrayToByteArray(-112, -26, 122, -60, 0, 0, 0, 0);
 
-        if (KeyUtils.compareKey(key1, key2) == 1) {
+        if (KeyUtils.compareKey(key2, key1) == 1) {
             Assert.assertTrue(true);
         }
 

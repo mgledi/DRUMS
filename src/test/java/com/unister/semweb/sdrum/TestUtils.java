@@ -23,6 +23,7 @@ import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
+import com.unister.semweb.sdrum.storable.GeneralStorable;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
@@ -211,13 +212,13 @@ public class TestUtils {
      */
     public static void createFile(String dbFileName, DummyKVStorable[] linkDataList) throws IOException {
         SortMachine.quickSort(linkDataList);
-        Synchronizer<DummyKVStorable> sync = new Synchronizer<DummyKVStorable>(dbFileName, new DummyKVStorable());
+        Synchronizer<GeneralStorable> sync = new Synchronizer<GeneralStorable>(dbFileName, DummyKVStorable.getInstance());
         sync.upsert(linkDataList);
         sync.close();
     }
 
     /**
-     * this function checks, if the file with the given filename contains exactly the given LinkData-objects.
+     * This function checks, if the file with the given filename contains exactly the given LinkData-objects.
      * 
      * @param dbFileName
      *            the name of the file
@@ -229,18 +230,16 @@ public class TestUtils {
     public static boolean checkContentFile(String dbFileName, DummyKVStorable[] linkDataList) throws IOException,
             FileLockException {
         // load file
-        DummyKVStorable prototype = new DummyKVStorable();
-        HeaderIndexFile<DummyKVStorable> dbfile = new HeaderIndexFile<DummyKVStorable>(dbFileName,
-                AccessMode.READ_ONLY, 1, prototype.keySize, prototype.byteBufferSize);
-        ByteBuffer buffer = ByteBuffer.allocate(prototype.byteBufferSize);
+        DummyKVStorable prototype = DummyKVStorable.getInstance();
+        HeaderIndexFile dbfile = new HeaderIndexFile(dbFileName,
+                AccessMode.READ_ONLY, 1, prototype.key.length, prototype.getByteBufferSize());
+        ByteBuffer buffer = ByteBuffer.allocate(prototype.getByteBufferSize());
         long offset = 0;
         int k = 0;
         while (offset < dbfile.getFilledUpFromContentStart()) {
             dbfile.read(offset, buffer);
             buffer.flip();
-            DummyKVStorable newLinkData = new DummyKVStorable(buffer);
-            // System.out.println(newLinkData);
-            // System.out.println(linkDataList[k]);
+            DummyKVStorable newLinkData = (DummyKVStorable) prototype.fromByteBuffer(buffer);
             if (!newLinkData.equals(linkDataList[k])) {
                 return false;
             }
@@ -252,12 +251,13 @@ public class TestUtils {
         return true;
     }
 
-    /** Creates <code>numberOfData</code> dummy {@link DummyKVStorable}. */
-    public static DummyKVStorable[] createDummyData(int numberOfData) {
-        DummyKVStorable prototype = new DummyKVStorable();
+    /** Creates <code>numberOfData</code> dummy {@link DummyKVStorable}. 
+     * @throws IOException */
+    public static DummyKVStorable[] createDummyData(int numberOfData) throws IOException {
+        DummyKVStorable prototype = DummyKVStorable.getInstance();
         DummyKVStorable[] result = new DummyKVStorable[numberOfData];
         for (int i = 0; i < numberOfData; i++) {
-            DummyKVStorable newData = createDummyData(KeyUtils.transformFromLong(i + 1, prototype.keySize), i, 1d / i);
+            DummyKVStorable newData = createDummyData(KeyUtils.transformFromLong(i + 1, prototype.key.length), i, 1d / i);
             result[i] = newData;
         }
         return result;
@@ -271,35 +271,37 @@ public class TestUtils {
      * @param firstKey
      * @param lastKey
      * @return
+     * @throws IOException 
      */
-    public static DummyKVStorable[] createDummyData(int firstKey, int lastKey) {
-        DummyKVStorable prototype = new DummyKVStorable();
+    public static DummyKVStorable[] createDummyData(int firstKey, int lastKey) throws IOException {
+        DummyKVStorable prototype = DummyKVStorable.getInstance();
         DummyKVStorable[] result = new DummyKVStorable[lastKey - firstKey];
         for (int i = firstKey; i < lastKey; i++) {
-            DummyKVStorable oneDate = createDummyData(KeyUtils.transformFromLong(i, prototype.keySize), i + 1, 1d / i);
+            DummyKVStorable oneDate = createDummyData(KeyUtils.transformFromLong(i, prototype.key.length), i + 1, 1d / i);
             result[i - firstKey] = oneDate;
         }
         return result;
     }
 
-    /** Creates a specific {@link DummyKVStorable} with the given key, parentCount and relevanceScore. */
-    public static DummyKVStorable createDummyData(byte[] key, int parentCount, double relevanceScore) {
-        DummyKVStorable result = new DummyKVStorable();
-        result.setKey(key);
-        result.setParentCount(parentCount);
-        result.setRelevanceScore(relevanceScore);
-        return result;
+    /** Creates a specific {@link DummyKVStorable} with the given key, parentCount and relevanceScore. 
+     * @throws IOException */
+    public static DummyKVStorable createDummyData(byte[] key, int parentCount, double relevanceScore) throws IOException {
+        DummyKVStorable kv = DummyKVStorable.getInstance();
+        kv.setKey(key);
+        kv.setValue("parentCount", parentCount);
+        kv.setValue("relevanceScore",relevanceScore);
+        return kv;
     }
 
     /** merges the given two arrays to one */
-    public static <T> T[] addAll(T[] o1, T[] o2) {
-        T[] all = (T[]) Array.newInstance(o1.getClass().getComponentType(), o1.length + o2.length);
+    public static DummyKVStorable[] addAll(DummyKVStorable[] o1, DummyKVStorable[] o2) {
+        DummyKVStorable[] all = new DummyKVStorable[o1.length + o2.length];
         int k = 0;
-        for (T d : o1) {
+        for (DummyKVStorable d : o1) {
             all[k] = d;
             k++;
         }
-        for (T d : o2) {
+        for (DummyKVStorable d : o2) {
             all[k] = d;
             k++;
         }

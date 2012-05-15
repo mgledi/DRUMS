@@ -3,8 +3,6 @@ package com.unister.semweb.sdrum.bucket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import javax.lang.model.element.Element;
-
 import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.file.FileLockException;
@@ -16,7 +14,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author m.gleditzsch, n.thieme
  */
-public class Bucket<Data extends AbstractKVStorable<Data>> {
+public class Bucket<Data extends AbstractKVStorable> {
 
     /**
      * contains all memory chunks and its elements to store. We use byte-arrays to save memory, because mostly the whole
@@ -88,7 +86,7 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
      * @param toAdd
      *            the Data to add
      */
-    public synchronized boolean add(Data toAdd) {
+    public synchronized boolean add(AbstractKVStorable toAdd) {
         boolean wasAdded = false;
         if (memorySizeInBytes >= GlobalParameters.MAX_MEMORY_PER_BUCKET) {
             return wasAdded;
@@ -181,10 +179,10 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
      * 
      * @return {@link AbstractKVStorable}[] all {@link AbstractKVStorable}s ascending sorted
      */
-    public synchronized Data[] getBackend() {
+    public synchronized AbstractKVStorable[] getBackend() {
         sort();
 
-        Data[] data = (Data[]) new AbstractKVStorable[elementsInBucket];
+        AbstractKVStorable[] data = new AbstractKVStorable[elementsInBucket];
         byte[] dst = new byte[prototype.getByteBufferSize()];
         int i = 0;
         for (int m = 0; m < memory.length; m++) {
@@ -198,7 +196,7 @@ public class Bucket<Data extends AbstractKVStorable<Data>> {
             }
         }
         SortMachine.quickSort(data);
-        return (Data[]) data;
+        return data;
     }
 
     /**

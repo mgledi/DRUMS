@@ -16,7 +16,7 @@ import com.unister.semweb.sdrum.synchronizer.Synchronizer;
  * 
  * @author m.gleditzsch
  */
-public class SyncThread<Data extends AbstractKVStorable<Data>> implements Runnable {
+public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(SyncThread.class);
 
     /** It is used to share buckets between the {@link SyncManager} and the {@link SyncThread}s. */
@@ -57,7 +57,7 @@ public class SyncThread<Data extends AbstractKVStorable<Data>> implements Runnab
      * runs the processing of the {@link Bucket}
      */
     public void run() {
-        Data[] linkData = bucket.getBackend(); // get all LinkData
+        AbstractKVStorable[] linkData = bucket.getBackend(); // get all LinkData
 
         long startTime = System.currentTimeMillis(); // remember the, time when synchronizing is started (for logging)
 

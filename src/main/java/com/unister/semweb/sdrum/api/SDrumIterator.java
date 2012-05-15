@@ -17,21 +17,21 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * This class instantiates an Read-Only-Iterator for a given SDRUM
  * 
  * @author m.gleditzsch
- * @param <Data>
+ * @param 
  */
-public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Iterator<Data>, Closeable {
+public class SDrumIterator<Data extends AbstractKVStorable> implements Iterator<Data>, Closeable {
     static Logger logger = LoggerFactory.getLogger(SDrumIterator.class);
     /** The hash function. Maps an element to a bucket. */
     private AbstractHashFunction hashFunction;
 
     /** a prototype of the elements to handle */
-    private Data prototype;
+    private AbstractKVStorable prototype;
 
     /** the size of one element, for fast access */
     private int elementSize;
 
     /** a pointer to the actual file */
-    private HeaderIndexFile<Data> actualFile;
+    private HeaderIndexFile actualFile;
 
     /** the temporary readBuffer. The size of a read-Chunk is coded in {@link HeaderIndexFile} */
     private ByteBuffer readBuffer;
@@ -110,9 +110,10 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
                 return null;
             }
             readBuffer.get(curDestBuffer);
-            Data d = prototype.fromByteBuffer(ByteBuffer.wrap(curDestBuffer));
+            AbstractKVStorable d = prototype.fromByteBuffer(ByteBuffer.wrap(curDestBuffer));
             countElementsRead++;
-            return d;
+            System.out.println("Im Iterator " + prototype.getClass());
+            return (Data) d;
         } catch (FileLockException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -147,7 +148,7 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
         // if we open the first file
         if (readBuffer == null) {
             filename = directory + "/" + hashFunction.getFilename(actualBucketId);
-            actualFile = new HeaderIndexFile<Data>(filename, 1);
+            actualFile = new HeaderIndexFile(filename, 1);
             readBuffer = ByteBuffer.allocate(actualFile.getChunkSize());
             readBuffer.clear();
             readBuffer.flip();
@@ -158,7 +159,7 @@ public class SDrumIterator<Data extends AbstractKVStorable<Data>> implements Ite
                 return false;
             }
             filename = directory + "/" + hashFunction.getFilename(actualBucketId);
-            actualFile = new HeaderIndexFile<Data>(filename, 1);
+            actualFile = new HeaderIndexFile(filename, 1);
             actualFileOffset = 0;
             readBuffer.clear();
             readBuffer.flip();

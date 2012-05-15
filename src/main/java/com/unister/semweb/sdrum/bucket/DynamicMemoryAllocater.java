@@ -15,7 +15,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * 
  * @author m.gleditzsch
  */
-public class DynamicMemoryAllocater<Data extends AbstractKVStorable<Data>> {
+public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
     /** the private Logger */
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -45,7 +45,7 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable<Data>> {
     }
 
     /** Instantiates the {@link DynamicMemoryAllocater}, only if there is not already an instance */
-    public static <Data extends AbstractKVStorable<Data>> void instantiate(Data prototype) {
+    public static <Data extends AbstractKVStorable> void instantiate(Data prototype) {
         if (INSTANCE == null) {
             DynamicMemoryAllocater.INSTANCE = new DynamicMemoryAllocater<Data>(prototype);
         }

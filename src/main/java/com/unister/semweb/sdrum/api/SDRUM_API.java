@@ -29,8 +29,8 @@ public class SDRUM_API {
      *             is thrown if an error occurs or if the SDRUM already exists
      * @return new {@link SDRUM}-object
      */
-    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createTable(String databaseDirectory,
-            int numberOfSynchronizerThreads, AbstractHashFunction hashFunction, Data prototype) throws IOException {
+    public static <Data extends AbstractKVStorable> SDRUM<Data> createTable(String databaseDirectory,
+            AbstractHashFunction hashFunction, Data prototype) throws IOException {
         File databaseDirectoryFile = new File(databaseDirectory);
         if (databaseDirectoryFile.exists()) {
             throw new IOException("The directory already exist. Can't create a SDRUM.");
@@ -42,8 +42,6 @@ public class SDRUM_API {
 
         // We store the configuration parameters within the given configuration file.
         ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(
-                hashFunction.getNumberOfBuckets(),
-                numberOfSynchronizerThreads,
                 databaseDirectory,
                 hashFunction,
                 prototype);
@@ -59,14 +57,12 @@ public class SDRUM_API {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public static <Data extends AbstractKVStorable<Data>> void storeasNewConfigFile(SDRUM<Data> sdrum)
+    public static <Data extends AbstractKVStorable> void storeasNewConfigFile(SDRUM<Data> sdrum)
             throws IOException, ClassNotFoundException {
         ConfigurationFile<Data> oldConfig = ConfigurationFile
                 .readFrom(sdrum.getDatabaseDirectory() + "/" + CONFIG_FILE);
 
         ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(
-                sdrum.getHashFunction().getNumberOfBuckets(),
-                oldConfig.getNumberOfSynchronizerThreads(),
                 sdrum.getDatabaseDirectory(),
                 sdrum.getHashFunction(),
                 sdrum.getPrototype());
@@ -86,7 +82,7 @@ public class SDRUM_API {
      *             if an error occurs while writing the configuration file
      * @return new {@link SDRUM}-object
      */
-    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> forceCreateTable(String databaseDirectory,
+    public static <Data extends AbstractKVStorable> SDRUM<Data> forceCreateTable(String databaseDirectory,
             int numberOfSynchronizerThreads, AbstractHashFunction hashFunction, Data prototype) throws IOException {
         File databaseDirectoryFile = new File(databaseDirectory);
         if (databaseDirectoryFile.exists()) {
@@ -96,8 +92,8 @@ public class SDRUM_API {
         }
 
         // We store the configuration parameters within the given configuration file.
-        ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(hashFunction.getNumberOfBuckets(),
-                numberOfSynchronizerThreads, databaseDirectory, hashFunction, prototype);
+        ConfigurationFile<Data> configurationFile = new ConfigurationFile<Data>(databaseDirectory, hashFunction,
+                prototype);
         configurationFile.writeTo(databaseDirectory + "/" + CONFIG_FILE);
 
         SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, hashFunction, prototype, AccessMode.READ_WRITE);
@@ -125,7 +121,7 @@ public class SDRUM_API {
      * @param databaseDirectory
      * @return boolean
      */
-    public static <Data extends AbstractKVStorable<Data>> boolean tableExists(String databaseDirectory) {
+    public static <Data extends AbstractKVStorable> boolean tableExists(String databaseDirectory) {
         File f = new File(databaseDirectory + "/" + CONFIG_FILE);
         return f.exists();
     }
@@ -142,7 +138,7 @@ public class SDRUM_API {
      *            a prototype of the elments stored in this drum
      * @return the table
      */
-    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> openTable(String databaseDirectory,
+    public static <Data extends AbstractKVStorable> SDRUM<Data> openTable(String databaseDirectory,
             AccessMode accessMode, Data prototype) throws IOException, ClassNotFoundException {
 
         ConfigurationFile<Data> configFile = ConfigurationFile.readFrom(databaseDirectory + "/" + CONFIG_FILE);
@@ -155,7 +151,8 @@ public class SDRUM_API {
                     "The prototypes of the configuration file and the user given prototype were different in size.");
         }
 
-        SDRUM<Data> table = new SDRUM<Data>(configFile.getDatabaseDirectory(), configFile.getHashFunction(), configFile.getPrototype(),
+        SDRUM<Data> table = new SDRUM<Data>(configFile.getDatabaseDirectory(), configFile.getHashFunction(),
+                configFile.getPrototype(),
                 accessMode);
         return table;
     }
@@ -166,19 +163,17 @@ public class SDRUM_API {
      * 
      * @param <Data>
      * @param databaseDirectory
-     * @param numberOfSynchronizerThreads
      * @param hashFunction
      * @param prototype
      * @return
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createOrOpenTable(String databaseDirectory,
-            int numberOfSynchronizerThreads, AbstractHashFunction hashFunction, Data prototype)
+    public static <Data extends AbstractKVStorable> SDRUM<Data> createOrOpenTable(String databaseDirectory,
+            AbstractHashFunction hashFunction, Data prototype)
             throws IOException, ClassNotFoundException {
 
-        return createOrOpenTable(databaseDirectory, numberOfSynchronizerThreads,
-                Long.MAX_VALUE, hashFunction, prototype);
+        return createOrOpenTable(databaseDirectory, Long.MAX_VALUE, hashFunction, prototype);
     }
 
     /**
@@ -186,7 +181,6 @@ public class SDRUM_API {
      * open will be made.
      * 
      * @param databaseDirectory
-     * @param numberOfSynchronizerThreads
      * @param maxBucketStorageTime
      * @param hashFunction
      * @param prototype
@@ -194,16 +188,16 @@ public class SDRUM_API {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public static <Data extends AbstractKVStorable<Data>> SDRUM<Data> createOrOpenTable(String databaseDirectory,
-            int numberOfSynchronizerThreads, long maxBucketStorageTime, AbstractHashFunction hashFunction,
-            Data prototype) throws IOException, ClassNotFoundException {
+    public static <Data extends AbstractKVStorable> SDRUM<Data> createOrOpenTable(String databaseDirectory,
+            long maxBucketStorageTime, AbstractHashFunction hashFunction, Data prototype) throws IOException,
+            ClassNotFoundException {
 
         File databaseDirectoryFile = new File(databaseDirectory);
         SDRUM<Data> sdrum = null;
         if (databaseDirectoryFile.exists()) {
             sdrum = openTable(databaseDirectory, AccessMode.READ_WRITE, prototype);
         } else {
-            sdrum = createTable(databaseDirectory, numberOfSynchronizerThreads, hashFunction, prototype);
+            sdrum = createTable(databaseDirectory, hashFunction, prototype);
         }
 
         sdrum.getSyncManager().setMaxBucketStorageTime(maxBucketStorageTime);

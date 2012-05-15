@@ -1,6 +1,8 @@
 package com.unister.semweb.sdrum.storable;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
@@ -10,13 +12,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author m.gleditzsch
  */
-public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
-        implements
-        KVStorable<Data>,
-        Serializable {
-    /**
-     * 
-     */
+public abstract class AbstractKVStorable implements Serializable, Cloneable {
     private static final long serialVersionUID = -3973787626582319301L;
 
     /**
@@ -53,16 +49,20 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
         this.key = key;
     }
 
-    @Override
     public byte[] getKey() {
         return key;
     }
 
     @Override
-    public abstract Data clone() throws CloneNotSupportedException;
+    public abstract AbstractKVStorable clone() throws CloneNotSupportedException;
 
-    @Override
     public abstract int getByteBufferSize();
+
+    public abstract ByteBuffer toByteBuffer();
+
+    public abstract void initFromByteBuffer(ByteBuffer bb);
+
+    public abstract AbstractKVStorable fromByteBuffer(ByteBuffer bb);
 
     /**
      * merges the given {@link AbstractKVStorable} with this one by your implementation and returns an
@@ -71,7 +71,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
      * @param element
      * @return
      */
-    public abstract Data merge(Data element);
+    public abstract AbstractKVStorable merge(AbstractKVStorable element);
 
     /**
      * updates this {@link AbstractKVStorable} with values from the given one by your implementation
@@ -79,7 +79,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
      * @param element
      * @return
      */
-    public abstract void update(Data element);
+    public abstract void update(AbstractKVStorable element);
 
     /**
      * This method returns true if this element is marked as deleted.
@@ -90,6 +90,18 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
         return false;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (getClass() != obj.getClass())
+            return false;
+        AbstractKVStorable other = (AbstractKVStorable) obj;
+        if (!Arrays.equals(key, other.key))
+            return false;
+        if (!Arrays.equals(value, other.value))
+            return false;
+        return true;
+    }
+
     /**
      * This method merges {@link AbstractKVStorable}s in the given array, which have the same key.
      * 
@@ -97,7 +109,7 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
      * @return {@link AbstractKVStorable}[], the merged {@link AbstractKVStorable}s
      */
     @SuppressWarnings("unchecked")
-    public static <Data extends AbstractKVStorable<Data>> Data[] merge(Data[] toAdd) {
+    public static <Data extends AbstractKVStorable> Data[] merge(Data[] toAdd) {
         if (toAdd.length == 1) {
             return toAdd;
         }
@@ -109,10 +121,10 @@ public abstract class AbstractKVStorable<Data extends AbstractKVStorable<Data>>
             }
         }
 
-        AbstractKVStorable<Data>[] realToAdd = new AbstractKVStorable[count];
+        AbstractKVStorable[] realToAdd = new AbstractKVStorable[count];
         count = 0;
         // merge Elements in toAdd
-        AbstractKVStorable<Data> first = toAdd[0];
+        AbstractKVStorable first = toAdd[0];
         for (int k = 1; k < toAdd.length; k++) {
             while (k < toAdd.length && KeyUtils.compareKey(toAdd[k].key, first.key) == 0) {
                 first = first.merge(toAdd[k]);

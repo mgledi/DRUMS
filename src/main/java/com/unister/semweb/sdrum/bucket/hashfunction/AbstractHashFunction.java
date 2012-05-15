@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
-import com.unister.semweb.sdrum.storable.KVStorable;
+import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
 /**
  * This abstract class reflects the usage of the hash-function. If the concrete implementation is correct, we just need
@@ -38,7 +38,7 @@ public abstract class AbstractHashFunction implements Serializable {
     }
 
     /** returns the bucket-id belonging to the given {@link KVStorable} */
-    public abstract int getBucketId(KVStorable<?> key);
+    public abstract int getBucketId(AbstractKVStorable key);
 
     /** Returns the filename of the bucket with the given bucket. */
     public abstract String getFilename(int bucketId);
@@ -67,7 +67,6 @@ public abstract class AbstractHashFunction implements Serializable {
         }
 
         String fileName = hashfunction.getFilename(bucketId);
-        @SuppressWarnings("rawtypes")
         HeaderIndexFile file = new HeaderIndexFile(fileName, 100);
         return (int) (file.getFilledUpFromContentStart() / file.getElementSize());
     }
@@ -87,7 +86,6 @@ public abstract class AbstractHashFunction implements Serializable {
         int[] sizes = new int[hashfunction.getNumberOfBuckets()];
         for (int i = 0; i < hashfunction.getNumberOfBuckets(); i++) {
             String fileName = hashfunction.getFilename(i);
-            @SuppressWarnings("rawtypes")
             HeaderIndexFile file = new HeaderIndexFile(fileName, 100);
             sizes[i] = (int) (file.getFilledUpFromContentStart() / file.getElementSize());
         }

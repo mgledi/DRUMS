@@ -12,7 +12,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * 
  * @author m.gleditzsch
  */
-public class BucketContainer<Data extends AbstractKVStorable<Data>> {
+public class BucketContainer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(BucketContainer.class);
     /**
      * array containing all {@link Bucket}s. The index of the bucket in this array should also be the bucketId of the
@@ -47,12 +47,12 @@ public class BucketContainer<Data extends AbstractKVStorable<Data>> {
      * @return true if the insertion was successful, otherwise false
      * @throws BucketContainerException
      */
-    public void addToCache(Data... toAdd) throws BucketContainerException, InterruptedException {
+    public void addToCache(Data ... toAdd) throws BucketContainerException, InterruptedException {
         if (shutDownInitiated) {
             throw new BucketContainerException("Shutdown was already initiated. Could not add the given elements.");
         }
         int throwBucketException = -1;
-        for (Data date : toAdd) {
+        for (AbstractKVStorable date : toAdd) {
             int indexOfCache = hashFunction.getBucketId(date.key);
             // safety first, check if the bucket exists. If not, try to move on. Throw exception at the end
             if (indexOfCache < buckets.length) {

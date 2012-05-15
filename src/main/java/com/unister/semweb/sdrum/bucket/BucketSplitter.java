@@ -20,13 +20,13 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * @author m.gleditzsch
  */
 // TODO: remember KeyComposition in RangeHashFunction
-public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
+public class BucketSplitter<Data extends AbstractKVStorable> {
 
     /** the directory of the database */
     protected String databaseDir;
 
     /** the file to split */
-    protected HeaderIndexFile<Data> sourceFile;
+    protected HeaderIndexFile sourceFile;
 
     /** the old HashFunction */
     protected RangeHashFunction hashFunction;
@@ -65,7 +65,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
         this.oldBucketId = bucketId;
         // open the file (READ_ONLY)
         String fileName = hashFunction.getFilename(bucketId);
-        this.sourceFile = new HeaderIndexFile<Data>(databaseDir + "/" + fileName, AccessMode.READ_WRITE, 100,
+        this.sourceFile = new HeaderIndexFile(databaseDir + "/" + fileName, AccessMode.READ_WRITE, 100,
                 hashFunction.keySize,
                 prototype.getByteBufferSize());
 
@@ -97,10 +97,10 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
      * @throws IOException
      * @throws FileLockException
      */
-    protected void moveElements(HeaderIndexFile<Data> source, RangeHashFunction targetHashfunction, String workingDir)
+    protected void moveElements(HeaderIndexFile source, RangeHashFunction targetHashfunction, String workingDir)
             throws IOException, FileLockException {
         ByteBuffer elem = ByteBuffer.allocate(source.getElementSize());
-        HeaderIndexFile<Data> tmp = null;
+        HeaderIndexFile tmp = null;
         newBucketIds = new IntArrayList();
         long offset = 0;
         byte[] key = new byte[keySize];
@@ -117,7 +117,7 @@ public class BucketSplitter<Data extends AbstractKVStorable<Data>> {
                     tmp.close();
                 }
                 String fileName = workingDir + "/" + targetHashfunction.getFilename(newBucket);
-                tmp = new HeaderIndexFile<Data>(fileName, AccessMode.READ_WRITE, 100, targetHashfunction.keySize,
+                tmp = new HeaderIndexFile(fileName, AccessMode.READ_WRITE, 100, targetHashfunction.keySize,
                         source.getElementSize());
                 oldBucket = newBucket;
             }

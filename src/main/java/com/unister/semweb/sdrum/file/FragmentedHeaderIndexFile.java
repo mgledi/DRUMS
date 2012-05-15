@@ -47,7 +47,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * @author m.gleditzsch
  * 
  */
-public class FragmentedHeaderIndexFile<Data extends AbstractKVStorable<Data>> extends HeaderIndexFile<Data> {
+public class FragmentedHeaderIndexFile extends HeaderIndexFile {
 
     /**
      * This constructor instantiates a new {@link FragmentedHeaderIndexFile} with the given <code>fileName</code> in the

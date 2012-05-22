@@ -54,14 +54,14 @@ public class RangeHashFunction extends AbstractHashFunction {
         this.hashFunctionFile = file;
         this.buckets = ranges;
         byte[] max = new byte[keySize];
-        Arrays.fill(max, (byte)-1);
+        Arrays.fill(max, (byte) -1);
         try {
             this.maxRangeValues = KeyUtils.getRanges(new byte[keySize], max, keySize);
         } catch (Exception e) {
             e.printStackTrace();
         }
         this.filenames = new String[ranges];
-        for(int i=0; i < ranges; i++) {
+        for (int i = 0; i < ranges; i++) {
             filenames[i] = i + ".db";
         }
         this.keySize = keySize;
@@ -173,6 +173,7 @@ public class RangeHashFunction extends AbstractHashFunction {
             }
             bucketIds[i] = tmpSeenFilenames.get(filenames[i]);
         }
+        this.buckets = bucketIds.length;
     }
 
     /** Returns the maximal key in the bucket with the given bucketId. */
@@ -314,12 +315,9 @@ public class RangeHashFunction extends AbstractHashFunction {
     }
 
     /**
-     * Returns the bucket ids for the given byte prefix. Example: Suppose you have the following ranges:
-     * 1 0 0 0 - 1 1 0 0
-     * 1 1 0 1 - 1 1 1 1
-     * 2 0 0 0 - 2 1 1 1
-     * The prefix is 1 then the method will return the bucket ids of first two ranges.
-     * If the <code>prefix</code> has more elements than the keys within the hash function an
+     * Returns the bucket ids for the given byte prefix. Example: Suppose you have the following ranges: 1 0 0 0 - 1 1 0
+     * 0 1 1 0 1 - 1 1 1 1 2 0 0 0 - 2 1 1 1 The prefix is 1 then the method will return the bucket ids of first two
+     * ranges. If the <code>prefix</code> has more elements than the keys within the hash function an
      * {@link IllegalArgumentException} is thrown.
      * 
      * TODO: THIS METHODS IS NOT COMPLETE AND CAUSES AN INAPPROPIATE RESULT. IF ALL RANGES HAVE THE SAME PREFIX THE

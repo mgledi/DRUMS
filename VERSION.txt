@@ -1,3 +1,6 @@
+Version 0.3.1
+ - RangeHashFunction: the number of buckets was not set correctly while using File-constructor
+ 
 Version 0.3.0
  - Making upgrade from Martin productive
  

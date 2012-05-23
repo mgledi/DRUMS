@@ -491,8 +491,9 @@ public class HeaderIndexFile extends AbstractHeaderFile {
         }
     }
 
-    /** sets the start of the content to zero */
+    /** sets the start of filledUpTo to zero */
     public void clear() {
+        this.filledUpTo = 0;
         this.contentStart = HEADER_SIZE + MAX_INDEX_SIZE_IN_BYTES;
     }
 

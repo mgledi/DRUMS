@@ -108,13 +108,6 @@ public class BucketContainer<Data extends AbstractKVStorable> {
         return this.hashFunction;
     }
 
-    /* Monitoring methods */
-
-    /** Gets the number of elements that are waiting in the pre queue. */
-    public long getFreeMemory() {
-        return DynamicMemoryAllocater.INSTANCE.getFreeMemory();
-    }
-
     public void shutdown() {
         this.shutDownInitiated = true;
         log.info("Shutting down the bucket container.");

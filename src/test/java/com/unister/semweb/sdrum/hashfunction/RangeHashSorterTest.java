@@ -54,12 +54,8 @@ public class RangeHashSorterTest {
         byte[][] bExpectedRanges = KeyUtils.transformToByteArray(expectedRanges);
         String[] expectedFilenames = new String[] { "f4", "f2", "f1", "f3", "f5", "f6" };
 
-        for (int i = 0; i < bExpectedRanges.length; i++) {
-            System.out.println(Arrays.toString(sorting.getRanges()[i]));
-            System.out.println(Arrays.toString(bExpectedRanges[i]));
-            Assert.assertTrue(Arrays.equals(bExpectedRanges[i], sorting.getRanges()[i]));
-        }
-        Assert.assertTrue(Arrays.equals(expectedFilenames, sorting.getFilenames()));
+        Assert.assertArrayEquals(bExpectedRanges, sorting.getRanges());
+        Assert.assertArrayEquals(expectedFilenames, sorting.getFilenames());
     }
 
     /** Creates an array of ranges from 0 to <code>till</code>. */

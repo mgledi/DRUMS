@@ -144,9 +144,6 @@ public class RangeHashFunctionTest {
     public void loadHashFunctionFromFile() throws IOException {
         File f = new File("src/test/resources/rangeHashIntTest32.hash");
         RangeHashFunction rhf = new RangeHashFunction(f);
-        for(int i=0; i < rhf.getRanges().length; i++) {
-            System.out.println(Arrays.toString(rhf.getRanges()[i]));
-        }
         byte[] b0 =  {51,-1,-1,-1,-1,-1,-1,-1,-1};
         byte[] b1 =  {52,0,0,0,0,0,0,0};
         byte[] b2 =  {52,0,0,0,0,0,0,1};

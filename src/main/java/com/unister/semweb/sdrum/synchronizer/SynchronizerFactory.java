@@ -1,7 +1,6 @@
 package com.unister.semweb.sdrum.synchronizer;
 
-import java.io.IOException;
-
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
 /**
@@ -10,22 +9,10 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * @author m.gleditzsch
  */
 public class SynchronizerFactory<Data extends AbstractKVStorable> implements ISynchronizerFactory<Data> {
-
-    /** a prototype from a concrete AbstractKVStorable */
-    final private Data prototype;
-
-    public SynchronizerFactory(Data prototype) {
-        this.prototype = prototype;
-    }
-
     @Override
-    public Synchronizer<Data> createSynchronizer(String databaseFilename) throws IOException {
+    public Synchronizer<Data> createSynchronizer(String databaseFilename, GlobalParameters<Data> gp) {
         Synchronizer<Data> synchronizer = null;
-        try {
-            synchronizer = new Synchronizer<Data>(databaseFilename, prototype.clone());
-        } catch (CloneNotSupportedException e) {
-            throw new IOException("TODO"); // TODO
-        }
+        synchronizer = new Synchronizer<Data>(databaseFilename, gp);
         return synchronizer;
     }
 }

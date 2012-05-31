@@ -32,7 +32,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
     /** The file instance from which we receive a {@link FileChannel}. */
     protected String dataFilename;
 
-    protected HeaderIndexFile dataFile;
+    protected HeaderIndexFile<Data> dataFile;
 
     /** Number of entries that are read into memory. */
     protected int numberOfEntriesInOneChunk;
@@ -71,22 +71,26 @@ public class Synchronizer<Data extends AbstractKVStorable> {
     // TODO: comment
     private int elementSize;
 
+    /** A Pointer to the GlobalParameters used by the SDRUM containing this Synchronizer */
+    GlobalParameters<Data> gp;
+
     /**
      * This method constructs a {@link Synchronizer}. The name of the file were to write the elements to have to be
      * given.
      * 
      * @param dataFilename
      *            the file, where to store the {@link AbstractKVStorable}
-     * @param Data
-     *            prototype, a prototype of {@link AbstractKVStorable}. Will be further use as Flyweight-pattern.
+     * @param gp
+     *            a pointer to the {@link GlobalParameters}
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public Synchronizer(String dataFilename, AbstractKVStorable prototype) {
-        this.prototype = prototype;
+    public Synchronizer(String dataFilename, GlobalParameters<Data> gp) {
+        this.gp = gp;
+        this.prototype = gp.getPrototype();
         this.dataFilename = dataFilename;
         this.elementSize = prototype.getByteBufferSize();
-        this.numberOfEntriesInOneChunk = (int) Math.floor(GlobalParameters.CHUNKSIZE / elementSize);
+        this.numberOfEntriesInOneChunk = (int) Math.floor(gp.CHUNKSIZE / elementSize);
         this.bufferedWriter = ByteBuffer.allocate(numberOfEntriesInOneChunk * elementSize);
         this.bufferedReader = ByteBuffer.allocate(numberOfEntriesInOneChunk * elementSize);
     }
@@ -101,13 +105,11 @@ public class Synchronizer<Data extends AbstractKVStorable> {
     public void upsert(AbstractKVStorable[] toAdd) throws IOException {
         try {
             /* Another thread can have access to this file in parallel. So we must wait to get exclusive access. */
-            dataFile = new HeaderIndexFile(
+            dataFile = new HeaderIndexFile<Data>(
                     dataFilename,
                     AccessMode.READ_WRITE,
                     Integer.MAX_VALUE,
-                    prototype.getKey().length,
-                    prototype.getByteBufferSize()
-                    
+                    gp
                     );
             header = dataFile.getIndex(); // Pointer to the Index
         } catch (FileLockException e) {

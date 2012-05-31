@@ -2,6 +2,7 @@ package com.unister.semweb.sdrum.synchronizer;
 
 import java.io.IOException;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
@@ -11,7 +12,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * 
  * @author m.gleditzsch
  */
-public interface ISynchronizerFactory<Data extends AbstractKVStorable>  {
+public interface ISynchronizerFactory<Data extends AbstractKVStorable> {
     /**
      * Creates a {@link Synchronizer}, which synchronizes the given {@link Bucket}.
      * 
@@ -19,9 +20,12 @@ public interface ISynchronizerFactory<Data extends AbstractKVStorable>  {
      *            the name of the database file which the synchronizer uses
      * @param String
      *            typeOfStorable the classname of the {@link AbstractKVStorable} to be handled by a Synchronizer
+     * @param gp
+     *            a pointer to the GlobalParameters
      * @return a new {@link Synchronizer}-instance
      * @throws IOException
      *             if some FileHandling fail
      */
-    Synchronizer<Data> createSynchronizer(String databaseFilename) throws IOException;
+    Synchronizer<Data> createSynchronizer(String databaseFilename, GlobalParameters<Data> gp);
+
 }

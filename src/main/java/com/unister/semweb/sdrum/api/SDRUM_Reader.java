@@ -25,14 +25,11 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
 public class SDRUM_Reader<Data extends AbstractKVStorable> {
     static Logger logger = LoggerFactory.getLogger(SDRUM_Reader.class);
 
-    /** Marks if files are opend. Is set to avoid null-pointer exceptions */
+    /** Marks if files are open. Is set to avoid null-pointer exceptions */
     private boolean filesAreOpend = false;
 
-    /** The Instance of this singelton */
-    public static SDRUM_Reader INSTANCE;
-
     /** An array containing all used files. All files are opened when instantiating for performance reasons. */
-    private HeaderIndexFile[] files;
+    private HeaderIndexFile<Data>[] files;
 
     /** A pointer to the used SDRUM */
     private SDRUM<Data> sdrum;
@@ -45,25 +42,19 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
 
     private int numberOfBuckets;
     private int elementSize;
-    private int elementsPerChunk;
 
     /** temporarily used destination buffer */
     private ByteBuffer destBuffer;
 
-    private SDRUM_Reader(SDRUM<Data> sdrum) throws FileLockException, IOException {
+    
+    protected boolean isClosed = true;
+    
+    protected SDRUM_Reader(SDRUM<Data> sdrum) throws FileLockException, IOException {
         this.sdrum = sdrum;
-        numberOfBuckets = sdrum.getHashFunction().getNumberOfBuckets();
-        elementSize = sdrum.getElementSize();
-        prototype = sdrum.getPrototype();
+        this.numberOfBuckets = sdrum.getHashFunction().getNumberOfBuckets();
+        this.elementSize = sdrum.getElementSize();
+        this.prototype = sdrum.getPrototype();
         openFiles();
-    }
-
-    /** Instantiates a new SDRUM_Reader */
-    public static <Data extends AbstractKVStorable> void instantiate(SDRUM<Data> sdrum)
-            throws FileLockException, IOException {
-        if (INSTANCE == null) {
-            INSTANCE = new SDRUM_Reader<Data>(sdrum);
-        }
     }
 
     /**
@@ -84,7 +75,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
                 cumulativeElementsPerFile[i] = 0;
             } else {
                 lastfile = i;
-                files[i] = new HeaderIndexFile(filename, 10);
+                files[i] = new HeaderIndexFile<Data>(filename, 10);
                 cumulativeElementsPerFile[i] = (int) (files[i].getFilledUpFromContentStart() / elementSize);
             }
             if (i > 0) {
@@ -92,7 +83,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
             }
         }
 
-        elementsPerChunk = files[lastfile].getChunkSize() / elementSize;
+        // elementsPerChunk = files[lastfile].getChunkSize() / elementSize;
         destBuffer = ByteBuffer.allocate(files[lastfile].getChunkSize());
         filesAreOpend = true;
     }
@@ -116,7 +107,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
         ArrayList<AbstractKVStorable> elements = new ArrayList<AbstractKVStorable>();
         // run over all files
         for (int i = lowerBucket; i <= upperBucket; i++) {
-            HeaderIndexFile aktFile = files[i];
+            HeaderIndexFile<Data> aktFile = files[i];
             filesize = aktFile.getFilledUpFromContentStart();
             startOffset = 0;
             endOffset = filesize;
@@ -215,18 +206,10 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
     /** Closes all files */
     public void closeFiles() {
         filesAreOpend = false;
-        for (HeaderIndexFile file : files) {
+        for (HeaderIndexFile<Data> file : files) {
             if (file != null) {
                 file.close();
             }
-        }
-    }
-
-    /** Closes the Instance of the SDRUM_Reader */
-    public static void close() {
-        if (INSTANCE != null) {
-            INSTANCE.closeFiles();
-            INSTANCE = null;
         }
     }
 }

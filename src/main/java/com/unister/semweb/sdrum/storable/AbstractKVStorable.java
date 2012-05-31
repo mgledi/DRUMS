@@ -54,7 +54,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
     }
 
     @Override
-    public abstract AbstractKVStorable clone() throws CloneNotSupportedException;
+    public abstract AbstractKVStorable clone();
 
     public abstract int getByteBufferSize();
 
@@ -74,7 +74,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
     public abstract AbstractKVStorable merge(AbstractKVStorable element);
 
     /**
-     * updates this {@link AbstractKVStorable} with values from the given one by your implementation
+     * updates the given {@link AbstractKVStorable} with values from this one by your implementation
      * 
      * @param element
      * @return

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import com.carrotsearch.hppc.IntArrayList;
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
@@ -26,7 +27,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
     protected String databaseDir;
 
     /** the file to split */
-    protected HeaderIndexFile sourceFile;
+    protected HeaderIndexFile<Data> sourceFile;
 
     /** the old HashFunction */
     protected RangeHashFunction hashFunction;
@@ -40,34 +41,30 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
     /** the old bucket-id */
     protected int oldBucketId;
 
-    protected int keySize;
-    protected Data prototype;
+    /** A pointer to the GlobalParameters of this SDRUM */
+    protected GlobalParameters<Data> gp;
 
     /**
      * Instantiates a new BucketSplitter
      * 
      * @param databaseDir
      * @param hashFunction
-     * @param bucketId
-     * @param numberOfPartitions
+     * @param gp
      * @throws IOException
      * @throws FileLockException
      */
-    public BucketSplitter(String databaseDir, RangeHashFunction hashFunction, Data prototype) {
+    public BucketSplitter(String databaseDir, RangeHashFunction hashFunction, GlobalParameters<Data> gp) {
+        this.gp = gp;
         this.hashFunction = hashFunction;
-        this.keySize = hashFunction.keySize;
         // this.newHashFunction = hashFunction.copy();
         this.databaseDir = databaseDir;
-        this.prototype = prototype;
     }
 
     public void splitAndStoreConfiguration(int bucketId, int numberOfPartitions) throws IOException, FileLockException {
         this.oldBucketId = bucketId;
         // open the file (READ_ONLY)
         String fileName = hashFunction.getFilename(bucketId);
-        this.sourceFile = new HeaderIndexFile(databaseDir + "/" + fileName, AccessMode.READ_WRITE, 100,
-                hashFunction.keySize,
-                prototype.getByteBufferSize());
+        this.sourceFile = new HeaderIndexFile<Data>(databaseDir + "/" + fileName, AccessMode.READ_WRITE, 100, gp);
 
         // determine new thresholds
         byte[][] keysToInsert = determineNewLargestElements(numberOfPartitions);
@@ -82,10 +79,9 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
         // move elements to files
         this.moveElements(sourceFile, hashFunction, databaseDir);
         sourceFile.delete();
-        
+
         // store hashfunction
         hashFunction.writeToFile();
-
     }
 
     /**
@@ -97,13 +93,13 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
      * @throws IOException
      * @throws FileLockException
      */
-    protected void moveElements(HeaderIndexFile source, RangeHashFunction targetHashfunction, String workingDir)
+    protected void moveElements(HeaderIndexFile<Data> source, RangeHashFunction targetHashfunction, String workingDir)
             throws IOException, FileLockException {
         ByteBuffer elem = ByteBuffer.allocate(source.getElementSize());
-        HeaderIndexFile tmp = null;
+        HeaderIndexFile<Data> tmp = null;
         newBucketIds = new IntArrayList();
         long offset = 0;
-        byte[] key = new byte[keySize];
+        byte[] key = new byte[gp.keySize];
         int oldBucket = -1, newBucket;
         while (offset < source.getFilledUpFromContentStart()) {
             source.read(offset, elem);
@@ -117,8 +113,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
                     tmp.close();
                 }
                 String fileName = workingDir + "/" + targetHashfunction.getFilename(newBucket);
-                tmp = new HeaderIndexFile(fileName, AccessMode.READ_WRITE, 100, targetHashfunction.keySize,
-                        source.getElementSize());
+                tmp = new HeaderIndexFile<Data>(fileName, AccessMode.READ_WRITE, 100, gp);
                 oldBucket = newBucket;
             }
 

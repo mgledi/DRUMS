@@ -5,6 +5,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
@@ -34,6 +35,9 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     /** The buffer that created this thread. */
     private SyncManager<Data> buffer;
 
+    /** A Pointer to the GlobalParameters used by the SDRUM containing this SyncThread */
+    GlobalParameters<Data> gp;
+
     /**
      * Constructor. The given {@link Bucket} will be processed.
      * 
@@ -45,8 +49,13 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
      *            a {@link ISynchronizerFactory} for instantiating a {@link Synchronizer}. The latter is responsible for
      *            writing the {@link Bucket} to its corresponding file on HDD
      */
-    public SyncThread(SyncManager<Data> buffer, Bucket<Data> bucket, Set<Integer> actualProcessingBucketIds,
-            ISynchronizerFactory<Data> synchronizerFactory) {
+    public SyncThread(
+            SyncManager<Data> buffer,
+            Bucket<Data> bucket,
+            Set<Integer> actualProcessingBucketIds,
+            ISynchronizerFactory<Data> synchronizerFactory,
+            GlobalParameters<Data> gp) {
+        this.gp = gp;
         this.bucket = bucket;
         this.actualProcessingBucketIds = actualProcessingBucketIds;
         this.synchronizerFactory = synchronizerFactory;
@@ -65,11 +74,12 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
         try {
             String filename = buffer.bucketContainer.getHashFunction().getFilename(bucket.getBucketId());
             String directoryName = buffer.getPathToDbFiles();
-            Synchronizer<Data> synchronizer = synchronizerFactory.createSynchronizer(directoryName + "/" + filename);
+            Synchronizer<Data> synchronizer = synchronizerFactory
+                    .createSynchronizer(directoryName + "/" + filename, gp);
             synchronizer.upsert(linkData); // start synchronizing
             actualProcessingBucketIds.remove(bucket.getBucketId());
             log.debug("Try to free memory.");
-            DynamicMemoryAllocater.INSTANCE.freeMemory(bucket.freeMemory());
+            DynamicMemoryAllocater.INSTANCES[gp.ID].freeMemory(bucket.freeMemory());
             synchronizer.close();
             log.debug("Synchronized {} objects in {} ms.", linkData.length, (System.currentTimeMillis() - startTime));
             /* update messages */

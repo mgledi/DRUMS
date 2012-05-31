@@ -7,6 +7,7 @@ import java.nio.channels.FileChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
@@ -29,7 +30,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     protected String dataFilename;
 
     /** a pointer to the file, where data-objects are stored */
-    protected HeaderIndexFile dataFile;
+    protected HeaderIndexFile<Data> dataFile;
 
     /** the header of the bucket, something like an index */
     private IndexForHeaderIndexFile header;
@@ -40,9 +41,9 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     /** the ByteBuffer to work on. Is used for reading and writing, could be replaced by a MappedByteBuffer */
     ByteBuffer workingBuffer;
 
-    /** the size of one Data-object. For fast access only */
-    private int elementSize;
-
+    /** A pointer to the global Parameters */
+    GlobalParameters<Data> gp;
+    
     /**
      * This method constructs a {@link Synchronizer}. The name of the file were to write the elements to have to be
      * given.
@@ -50,14 +51,13 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
      * @param dataFilename
      * @param header
      */
-    public UpdateOnlySynchronizer(final String dataFilename, final Data prototype) {
+    public UpdateOnlySynchronizer(final String dataFilename, final GlobalParameters<Data> gp) {
+        this.gp = gp;
         this.dataFilename = dataFilename;
-        this.prototype = prototype;
-        this.elementSize = prototype.getByteBufferSize();
+        this.prototype = gp.getPrototype();
         try {
             /* Another thread can have access to this file in parallel. So we must wait to get exclusive access. */
-            dataFile = new HeaderIndexFile(dataFilename, AccessMode.READ_WRITE, Integer.MAX_VALUE,
-                    prototype.key.length, elementSize);
+            dataFile = new HeaderIndexFile<Data>(dataFilename, AccessMode.READ_WRITE, Integer.MAX_VALUE, gp);
             header = dataFile.getIndex(); // Pointer to the Index
         } catch (FileLockException e) {
             e.printStackTrace();
@@ -127,8 +127,8 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     /** traverses the readBuffer */
     private int updateElementInReadBuffer(Data data, int indexInChunk) {
         workingBuffer.position(indexInChunk);
-        int minElement = indexInChunk / elementSize;
-        int numberOfEntries = workingBuffer.limit() / elementSize;
+        int minElement = indexInChunk / gp.elementSize;
+        int numberOfEntries = workingBuffer.limit() / gp.elementSize;
         byte[] actualKey = data.key;
         // binary search
         int maxElement = numberOfEntries - 1;
@@ -137,14 +137,14 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
         byte[] tmpKey = new byte[actualKey.length];
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
-            indexInChunk = midElement * elementSize;
+            indexInChunk = midElement * gp.elementSize;
             workingBuffer.position(indexInChunk);
             workingBuffer.get(tmpKey);
             compare = KeyUtils.compareKey(actualKey, tmpKey);
             if (compare == 0) {
                 // first read the old element
                 workingBuffer.position(indexInChunk);
-                byte[] b = new byte[elementSize];
+                byte[] b = new byte[gp.elementSize];
                 workingBuffer.get(b);
                 Data toUpdate = (Data) prototype.fromByteBuffer(ByteBuffer.wrap(b));
                 // update the old element and writ it

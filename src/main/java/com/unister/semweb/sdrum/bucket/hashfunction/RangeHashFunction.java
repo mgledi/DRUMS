@@ -25,8 +25,6 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
 public class RangeHashFunction extends AbstractHashFunction {
     private static final Logger log = LoggerFactory.getLogger(RangeHashFunction.class);
 
-    private static final long serialVersionUID = 1197410536026296596L;
-
     /** the file where the hashfunction is stored human-readable */
     private File hashFunctionFile;
 

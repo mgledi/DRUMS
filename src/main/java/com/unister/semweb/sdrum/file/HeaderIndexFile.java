@@ -9,6 +9,7 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
 import com.unister.semweb.sdrum.GlobalParameters;
+import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
@@ -48,14 +49,8 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author m.gleditzsch
  */
-public class HeaderIndexFile extends AbstractHeaderFile {
-
-    /** the initial size by which the file is enlarged. Will be set by {@link GlobalParameters} */
-    public static int INITIAL_INCREMENT_SIZE;
-
-    /** the initial size of the file. Will be set by {@link GlobalParameters} */
-    public static int INITIAL_FILE_SIZE;
-
+public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHeaderFile {
+    
     /** the size of the index in bytes */
     protected static final long MAX_INDEX_SIZE_IN_BYTES = 512 * 1024; // 512 kb
 
@@ -73,7 +68,6 @@ public class HeaderIndexFile extends AbstractHeaderFile {
 
     /** the size of a stored element in bytes */
     protected int elementSize;// part of the header
-
     protected int keySize;
 
     /** shows if the file was closed correctly */
@@ -83,7 +77,7 @@ public class HeaderIndexFile extends AbstractHeaderFile {
     protected int chunkSize;
 
     /** a constant size, by which the file will be resized in byte */
-    protected int incrementSize = INITIAL_INCREMENT_SIZE;
+    protected int incrementSize;
 
     /** a mappedByteBuffer to the index-region. So changes can be made directly */
     protected MappedByteBuffer indexBuffer;
@@ -97,6 +91,9 @@ public class HeaderIndexFile extends AbstractHeaderFile {
     /** A pseudo-index (not each element is indexed, but the chunks where they belong to */
     protected IndexForHeaderIndexFile index;
 
+    /** A pointer to the GlobalParameters used by this SDRUM */
+    protected GlobalParameters<Data> gp;
+    
     /**
      * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
      * {@link AccessMode}.
@@ -104,17 +101,20 @@ public class HeaderIndexFile extends AbstractHeaderFile {
      * @param <b>String</b> fileName, the filename of the underlying OSfile.
      * @param <b>AccessMode</b> mode, the mode the file should be accessed. READ_ONLY or READ_WRITE
      * @param <b>int</b> max_retries_connect, the number of retries to open a channel, if the file is locked
+     * 
      * @param TODO
      * @throws FileLockException
      *             if the <code>max_retries_connect</code> is exceeded
      * @throws IOException
      *             if another error with the fileaccess occured
      */
-    public HeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, int keySize, int elementSize)
+    public HeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, GlobalParameters<Data> gp)
             throws FileLockException,
             IOException {
-        this.elementSize = elementSize;
-        this.keySize = keySize;
+        this.gp = gp;
+        this.incrementSize = gp.INITIAL_INCREMENT_SIZE;
+        this.elementSize = gp.elementSize;
+        this.keySize = gp.keySize;
         this.osFile = new File(fileName);
         this.mode = mode;
         this.max_retries_connect = max_retries_connect;
@@ -344,13 +344,13 @@ public class HeaderIndexFile extends AbstractHeaderFile {
     }
 
     protected void createFile() throws FileLockException, IOException {
-        size = INITIAL_FILE_SIZE;
+        size = gp.INITIAL_FILE_SIZE;
         filledUpTo = contentStart;
         chunkSize = INITIAL_READCHUNKSIZE - (INITIAL_READCHUNKSIZE % elementSize);
         openChannel(false, false);
         setSoftlyClosed(true);
         // have to reset the informations cause in openchannel the empty header was read
-        accessFile.setLength(INITIAL_FILE_SIZE);
+        accessFile.setLength(gp.INITIAL_FILE_SIZE);
         writeHeader();
         readIndex(); // index should be empty
     }

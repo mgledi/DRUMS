@@ -7,8 +7,8 @@ import com.unister.semweb.sdrum.storable.GeneralStructure.Basic_Field_Types;
 
 /**
  * A {@link DummyKVStorable} for our test szenarios.
+ * 
  * @author m.gleditzsch
- *
  */
 public class DummyKVStorable extends GeneralStorable {
     private static final long serialVersionUID = -4331461212163985711L;
@@ -22,16 +22,38 @@ public class DummyKVStorable extends GeneralStorable {
     }
 
     @Override
+    public AbstractKVStorable merge(AbstractKVStorable element) {
+        DummyKVStorable date = (DummyKVStorable) element;
+        try {
+            date.setValue("parentCount", date.getValueAsInt("parentCount") + this.getValueAsInt("parentCount"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
+    @Override
     public DummyKVStorable fromByteBuffer(ByteBuffer bb) {
         DummyKVStorable object = new DummyKVStorable(this.key.length, this.value.length, super.structure);
         object.initFromByteBuffer(bb);
         return object;
     }
-    
+
+    @Override
+    public String toString() {
+        try {
+            return "Key: " + getKeyAsLong("key") + " | ParentCount: " + getValueAsInt("parentCount") + " | Relevance: "
+                    + getValueAsDouble("relevanceScore");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     public static DummyKVStorable getInstance() {
         try {
             GeneralStructure s = new GeneralStructure();
-            s.addKeyPart("part1", Basic_Field_Types.Long);
+            s.addKeyPart("key", Basic_Field_Types.Long);
             s.addValuePart("parentCount", Basic_Field_Types.Integer);
             s.addValuePart("relevanceScore", Basic_Field_Types.Double);
             return new DummyKVStorable(s);

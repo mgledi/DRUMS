@@ -15,10 +15,14 @@ import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
+/**
+ * This class tests the {@link SDrumIterator}.
+ * 
+ * @author m.gleditzsch
+ */
 public class SDrumIteratorTest {
     RangeHashFunction hashFunction;
     private static final String databaseDirectory = "/tmp/createTable/db";
-    private DummyKVStorable prototype;
 
     private SDRUM<DummyKVStorable> table;
     private DummyKVStorable[] generatedData;
@@ -31,10 +35,9 @@ public class SDrumIteratorTest {
         FileUtils.deleteQuietly(new File(databaseDirectory));
 
         this.hashFunction = new RangeHashFunction(bRanges, filenames, new File("/tmp/hash.hs"));
-        this.prototype = DummyKVStorable.getInstance();
 
         // fill with data
-        table = SDRUM_API.createTable(databaseDirectory, 1, hashFunction, prototype);
+        table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
         // remember, the element with key 0 is ignored
         generatedData = TestUtils.createDummyData(1, 50);
         SortMachine.quickSort(generatedData);
@@ -47,15 +50,11 @@ public class SDrumIteratorTest {
         SDrumIterator<DummyKVStorable> it = new SDrumIterator<DummyKVStorable>("/tmp/createTable/db", hashFunction,
                 DummyKVStorable.getInstance());
         ArrayList<DummyKVStorable> elements = new ArrayList<DummyKVStorable>();
-        System.out.println(prototype.getClass());
         while (it.hasNext()) {
             Object d = it.next();
-            System.out.println(d.getClass());
             elements.add((DummyKVStorable) d);
             // elements should be read in ascending order
         }
-
         assertEquals(generatedData.length, elements.size());
-
     }
 }

@@ -2,11 +2,11 @@ package com.unister.semweb.sdrum.bucket;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,18 +27,12 @@ import com.unister.semweb.sdrum.utils.RangeHashFunctionTestUtils;
 public class BucketSplitterTestLinear {
     private static final String sdrumDirectory = "/tmp/bucketSplitting";
     private static final String databaseDirectory = sdrumDirectory + "/db";
-
     private static final String hashFunctionFilename = "/tmp/hash.hs";
-
-    private DummyKVStorable prototype;
-    private int prototypeKeySize;
 
     @Before
     public void initialise() throws IOException {
         FileUtils.deleteQuietly(new File(sdrumDirectory));
         new File(sdrumDirectory).mkdirs();
-        prototype = new DummyKVStorable();
-        prototypeKeySize = prototype.keySize;
     }
 
     /**
@@ -50,15 +44,15 @@ public class BucketSplitterTestLinear {
     public void oneBucket2Split() throws Exception {
         int numberOfElements = 100;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 100,
-                hashFunctionFilename, prototypeKeySize);
+                hashFunctionFilename, TestUtils.gp.keySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
-                prototype);
+                TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 2);
 
-        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, AccessMode.READ_ONLY,
-                prototype);
+        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, hashFunction,
+                AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         sdrumAfterSplitting.setHashFunction(hashFunction);
 
@@ -86,16 +80,16 @@ public class BucketSplitterTestLinear {
     public void oneBucket4Split() throws Exception {
         int numberOfElements = 100;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 100, hashFunctionFilename,
-                prototypeKeySize);
+                TestUtils.gp.keySize);
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
-                prototype);
+                TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 4);
 
-        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, AccessMode.READ_ONLY,
-                prototype);
+        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, hashFunction,
+                AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         sdrumAfterSplitting.setHashFunction(hashFunction);
 
@@ -127,55 +121,6 @@ public class BucketSplitterTestLinear {
     }
 
     /**
-     * Generates a bucket with 1.200.000 test data elements and splits them into 4 buckets.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void oneBigBucketSplit() throws Exception {
-        int numberOfElements = 1200000;
-        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 2000000,
-                hashFunctionFilename, prototypeKeySize);
-
-        DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
-
-        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
-                prototype);
-        splitter.splitAndStoreConfiguration(0, 4);
-
-        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, AccessMode.READ_ONLY,
-                prototype);
-        // We must set the hash function because the hash function is loaded from the curious configuration file.
-        sdrumAfterSplitting.setHashFunction(hashFunction);
-
-        List<DummyKVStorable> firstBucketElements = sdrumAfterSplitting.read(0, 0, 1000000);
-        List<DummyKVStorable> secondBucketElements = sdrumAfterSplitting.read(1, 0, 1000000);
-        List<DummyKVStorable> thirdBucketElements = sdrumAfterSplitting.read(2, 0, 1000000);
-        List<DummyKVStorable> fourthBucketElements = sdrumAfterSplitting.read(3, 0, 1000000);
-
-        Assert.assertEquals(300000, firstBucketElements.size());
-        Assert.assertEquals(300000, secondBucketElements.size());
-        Assert.assertEquals(300000, thirdBucketElements.size());
-        Assert.assertEquals(300000, fourthBucketElements.size());
-
-        for (int i = 0; i < firstBucketElements.size(); i++) {
-            Assert.assertEquals(testData[i], firstBucketElements.get(i));
-        }
-
-        for (int i = 0; i < secondBucketElements.size(); i++) {
-            Assert.assertEquals(testData[i + 300000], secondBucketElements.get(i));
-        }
-
-        for (int i = 0; i < thirdBucketElements.size(); i++) {
-            Assert.assertEquals(testData[i + 600000], thirdBucketElements.get(i));
-        }
-
-        for (int i = 0; i < secondBucketElements.size(); i++) {
-            Assert.assertEquals(testData[i + 900000], fourthBucketElements.get(i));
-        }
-    }
-
-    /**
      * Generates 2400 test elements, stores them into two buckets and the second bucket is split to four buckets.
      * 
      * @throws Exception
@@ -184,16 +129,16 @@ public class BucketSplitterTestLinear {
     public void splitSecondBucket() throws Exception {
         int numberOfElements = 2400;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(2, 1200, hashFunctionFilename,
-                prototypeKeySize);
+                TestUtils.gp.keySize);
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
-                prototype);
+                TestUtils.gp);
         splitter.splitAndStoreConfiguration(1, 4);
 
-        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, AccessMode.READ_ONLY,
-                prototype);
+        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, hashFunction,
+                AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         sdrumAfterSplitting.setHashFunction(hashFunction);
 
@@ -207,21 +152,14 @@ public class BucketSplitterTestLinear {
         Assert.assertEquals(300, thirdBucketElements.size());
         Assert.assertEquals(300, fourthBucketElements.size());
 
-        for (int i = 0; i < firstBucketElements.size(); i++) {
-            Assert.assertEquals(testData[1200 + i], firstBucketElements.get(i));
-        }
-
-        for (int i = 0; i < secondBucketElements.size(); i++) {
-            Assert.assertEquals(testData[1200 + i + 300], secondBucketElements.get(i));
-        }
-
-        for (int i = 0; i < thirdBucketElements.size(); i++) {
-            Assert.assertEquals(testData[1200 + i + 600], thirdBucketElements.get(i));
-        }
-
-        for (int i = 0; i < secondBucketElements.size(); i++) {
-            Assert.assertEquals(testData[1200 + i + 900], fourthBucketElements.get(i));
-        }
+        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 1200, 1500),
+                firstBucketElements.toArray(new DummyKVStorable[firstBucketElements.size()]));
+        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 1500, 1800),
+                secondBucketElements.toArray(new DummyKVStorable[secondBucketElements.size()]));
+        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 1800, 2100),
+                thirdBucketElements.toArray(new DummyKVStorable[thirdBucketElements.size()]));
+        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 2100, 2400),
+                fourthBucketElements.toArray(new DummyKVStorable[fourthBucketElements.size()]));
     }
 
     /**
@@ -235,8 +173,7 @@ public class BucketSplitterTestLinear {
      */
     private DummyKVStorable[] createAndFillSDRUM(int numberOfData, RangeHashFunction hashFunction) throws Exception {
         DummyKVStorable[] testData = TestUtils.generateTestdata(numberOfData);
-        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(databaseDirectory, 10000, 1, hashFunction,
-                prototype);
+        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(databaseDirectory, hashFunction, TestUtils.gp);
         sdrum.insertOrMerge(testData);
         sdrum.close();
         return testData;

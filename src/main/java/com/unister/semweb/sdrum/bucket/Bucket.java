@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import com.unister.semweb.sdrum.GlobalParameters;
+import com.unister.semweb.sdrum.api.SDRUM;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
@@ -38,24 +39,24 @@ public class Bucket<Data extends AbstractKVStorable> {
     /** Stores the creation time of this bucket. */
     private long creationTime;
 
-    /** the size in byte of one element */
-    private int elementsize;
-
+    /** A pointer to the {@link GlobalParameters} used by this {@link SDRUM} */ 
+    private GlobalParameters<Data> gp;
+    
     /**
      * Constructor. Needs to know the id of the {@link Bucket} and the maximum size of the {@link Bucket}.
      * 
      * @param bucketId
      *            the identification number of this bucket. Used in {@link BucketContainer} and other classes
-     * @param prototype
-     *            a prototype of the concrete AbstractKVStorable
+     * @param gp
+     *            a pointer to the {@link GlobalParameters}
      */
-    public Bucket(final int bucketId, Data prototype) {
+    public Bucket(final int bucketId, GlobalParameters<Data> gp) {
         this.bucketId = bucketId;
         this.memory = new byte[0][];
         this.elementsInBucket = 0;
-        this.prototype = prototype;
+        this.prototype = gp.getPrototype();
         this.creationTime = System.currentTimeMillis();
-        this.elementsize = prototype.getByteBufferSize();
+        this.gp = gp;
     }
 
     /**
@@ -65,7 +66,7 @@ public class Bucket<Data extends AbstractKVStorable> {
      * @throws FileLockException
      */
     public Bucket<Data> getEmptyBucketWithSameProperties() throws FileLockException, IOException {
-        Bucket<Data> newBucket = new Bucket<Data>(this.bucketId, prototype);
+        Bucket<Data> newBucket = new Bucket<Data>(this.bucketId, gp);
         return newBucket;
     }
 
@@ -88,7 +89,7 @@ public class Bucket<Data extends AbstractKVStorable> {
      */
     public synchronized boolean add(AbstractKVStorable toAdd) {
         boolean wasAdded = false;
-        if (memorySizeInBytes >= GlobalParameters.MAX_MEMORY_PER_BUCKET) {
+        if (memorySizeInBytes >= gp.MAX_MEMORY_PER_BUCKET) {
             return wasAdded;
         }
         // no memory is available
@@ -115,7 +116,7 @@ public class Bucket<Data extends AbstractKVStorable> {
     /** Returns true, of this bucket, contains the given element. */
     public boolean contains(Data element) {
         boolean contains = false;
-        byte[] dst = new byte[prototype.getByteBufferSize()];
+        byte[] dst = new byte[gp.elementSize];
         for (int m = 0; m < memory.length; m++) {
             ByteBuffer bb = ByteBuffer.wrap(memory[m]);
             if (m == memory.length - 1) {
@@ -141,7 +142,7 @@ public class Bucket<Data extends AbstractKVStorable> {
      * @throws InterruptedException
      */
     private void enlargeMemory() throws InterruptedException {
-        byte[] mem = new byte[DynamicMemoryAllocater.INSTANCE.allocateNextChunk()];
+        byte[] mem = new byte[DynamicMemoryAllocater.INSTANCES[gp.ID].allocateNextChunk()];
         byte[][] new_mem = new byte[memory.length + 1][];
         for (int i = 0; i < memory.length; i++) {
             new_mem[i] = memory[i];
@@ -167,9 +168,9 @@ public class Bucket<Data extends AbstractKVStorable> {
         if (index >= elementsInBucket) {
             return null;
         } else {
-            int chunk = index * elementsize / memory[0].length;
-            int offset = index * elementsize % memory[0].length;
-            return ByteBuffer.wrap(memory[chunk], offset, elementsize).asReadOnlyBuffer();
+            int chunk = index * gp.elementSize / memory[0].length;
+            int offset = index * gp.elementSize % memory[0].length;
+            return ByteBuffer.wrap(memory[chunk], offset, gp.elementSize).asReadOnlyBuffer();
         }
     }
 
@@ -183,7 +184,7 @@ public class Bucket<Data extends AbstractKVStorable> {
         sort();
 
         AbstractKVStorable[] data = new AbstractKVStorable[elementsInBucket];
-        byte[] dst = new byte[prototype.getByteBufferSize()];
+        byte[] dst = new byte[gp.elementSize];
         int i = 0;
         for (int m = 0; m < memory.length; m++) {
             ByteBuffer bb = ByteBuffer.wrap(memory[m]);

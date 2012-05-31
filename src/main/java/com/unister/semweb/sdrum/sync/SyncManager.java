@@ -46,9 +46,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     /** The factory to use by the {@link SyncThread}. */
     private ISynchronizerFactory<Data> synchronizerFactory;
 
-    /**
-     * true, if shutdown is initiated. So all buckets will written to HDD.
-     */
+    /** true, if shutdown is initiated. So all buckets will written to HDD. */
     private boolean shutDownInitiated;
 
     /**
@@ -91,6 +89,9 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
      */
     private AtomicLong numberOfElementsUpdated;
 
+    /** A Pointer to the GlobalParameters used by the SDRUM containing this SyncManager */
+    GlobalParameters<Data> gp;
+
     /**
      * Instantiates a new {@link SyncManager} with an already instantiated {@link BucketContainer}. The
      * <code>numberOfBufferThreads</code> will show the number of allowed {@link SyncThread}s used to synchronize the
@@ -103,7 +104,8 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
      * @param {@link ISynchronizerFactory}
      */
     public SyncManager(BucketContainer<Data> bucketContainer, int numberOfBufferThreads, String pathToFiles,
-            ISynchronizerFactory<Data> synchronizerFactory) {
+            ISynchronizerFactory<Data> synchronizerFactory, GlobalParameters<Data> gp) {
+        this.gp = gp;
         this.bucketContainer = bucketContainer;
         HashSet<Integer> tmpSet = new HashSet<Integer>();
         this.actualProcessingBucketIds = Collections.synchronizedSet(tmpSet);
@@ -197,7 +199,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
             // if the bucket is full, or the bucket is longer then max bucket storage time within the BucketContainer,
             // or the shutdown was initiated, then try to synchronize the buckets
             // At this point we prevent starvation of one bucket if it not filled for a long period of time.
-            if (oldBucket.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
+            if (oldBucket.elementsInBucket >= gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
                     //                    DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
                     elapsedTime > maxBucketStorageTime ||
                     shutDownInitiated ||
@@ -218,8 +220,8 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
             if (bucketId != -1) {
                 Bucket<Data> pointer = bucketContainer.buckets[bucketId];
                 boolean threadStarted = false;
-                if (DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
-                        pointer.elementsInBucket >= GlobalParameters.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
+                if (DynamicMemoryAllocater.INSTANCES[gp.ID].getFreeMemory() == 0 ||
+                        pointer.elementsInBucket >= gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
                         forceInitiated) {
                     threadStarted = startNewThread(bucketId);
                 }
@@ -270,7 +272,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
         }
 
         SyncThread<Data> bufferThread = new SyncThread<Data>(this, oldBucket, actualProcessingBucketIds,
-                synchronizerFactory);
+                synchronizerFactory, gp);
         bufferThreads.execute(bufferThread);
         return true;
     }

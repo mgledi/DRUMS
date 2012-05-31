@@ -1,5 +1,6 @@
 package com.unister.semweb.sdrum.bucket;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
@@ -15,12 +16,13 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * 
  * @author m.gleditzsch
  */
+// TODO: share the same memory instead of having all its own memory
 public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
     /** the private Logger */
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @SuppressWarnings("rawtypes")
-    public static DynamicMemoryAllocater INSTANCE;
+    public static DynamicMemoryAllocater[] INSTANCES = new DynamicMemoryAllocater[0];
 
     /** The number of already allocated / used bytes */
     private AtomicLong used_bytes;
@@ -35,19 +37,25 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      * Instantiates a new {@link DynamicMemoryAllocater}. This method is private, cause we want to this class as
      * Singelton.
      * 
-     * @param prototype
+     * @param gp
+     *            a pointer to the GlobalParameters used by this SDRUM
      */
-    private DynamicMemoryAllocater(Data prototype) {
+    private DynamicMemoryAllocater(GlobalParameters<Data> gp) {
         this.used_bytes = new AtomicLong(0);
-        this.mem_chunksize = GlobalParameters.MEMORY_CHUNK -
-                GlobalParameters.MEMORY_CHUNK % prototype.getByteBufferSize();
-        this.max_allowed_bytes = GlobalParameters.BUCKET_MEMORY - GlobalParameters.BUCKET_MEMORY % this.mem_chunksize;
+        this.mem_chunksize = gp.MEMORY_CHUNK - gp.MEMORY_CHUNK % gp.elementSize;
+        this.max_allowed_bytes = gp.BUCKET_MEMORY - gp.BUCKET_MEMORY % this.mem_chunksize;
     }
 
-    /** Instantiates the {@link DynamicMemoryAllocater}, only if there is not already an instance */
-    public static <Data extends AbstractKVStorable> void instantiate(Data prototype) {
-        if (INSTANCE == null) {
-            DynamicMemoryAllocater.INSTANCE = new DynamicMemoryAllocater<Data>(prototype);
+    /**
+     * Instantiates the {@link DynamicMemoryAllocater}, only if there is not already an instance
+     * 
+     * @param gp
+     *            a pointer to the GlobalParameters used by this SDRUM
+     */
+    public static <Data extends AbstractKVStorable> void instantiate(GlobalParameters<Data> gp) {
+        if (INSTANCES.length <= gp.ID) {
+            INSTANCES = Arrays.copyOf(INSTANCES, gp.ID + 1);
+            INSTANCES[gp.ID] = new DynamicMemoryAllocater<Data>(gp);
         }
     }
 

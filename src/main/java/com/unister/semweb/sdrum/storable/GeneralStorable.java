@@ -73,7 +73,7 @@ public class GeneralStorable extends AbstractKVStorable {
         return ByteBuffer.allocate(key.length + value.length).put(key).put(value);
     }
     @Override
-    public GeneralStorable clone() throws CloneNotSupportedException {
+    public GeneralStorable clone() {
         return this.fromByteBuffer(toByteBuffer());
     }
 
@@ -89,7 +89,7 @@ public class GeneralStorable extends AbstractKVStorable {
 
     @Override
     public void update(AbstractKVStorable element) {
-        this.initFromByteBuffer(element.toByteBuffer());
+        element.initFromByteBuffer(this.toByteBuffer());
     }
 
     /**

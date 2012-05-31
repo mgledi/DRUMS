@@ -31,7 +31,7 @@ public class SDrumIterator<Data extends AbstractKVStorable> implements Iterator<
     private int elementSize;
 
     /** a pointer to the actual file */
-    private HeaderIndexFile actualFile;
+    private HeaderIndexFile<Data> actualFile;
 
     /** the temporary readBuffer. The size of a read-Chunk is coded in {@link HeaderIndexFile} */
     private ByteBuffer readBuffer;
@@ -112,7 +112,6 @@ public class SDrumIterator<Data extends AbstractKVStorable> implements Iterator<
             readBuffer.get(curDestBuffer);
             AbstractKVStorable d = prototype.fromByteBuffer(ByteBuffer.wrap(curDestBuffer));
             countElementsRead++;
-            System.out.println("Im Iterator " + prototype.getClass());
             return (Data) d;
         } catch (FileLockException e) {
             // TODO Auto-generated catch block
@@ -148,7 +147,7 @@ public class SDrumIterator<Data extends AbstractKVStorable> implements Iterator<
         // if we open the first file
         if (readBuffer == null) {
             filename = directory + "/" + hashFunction.getFilename(actualBucketId);
-            actualFile = new HeaderIndexFile(filename, 1);
+            actualFile = new HeaderIndexFile<Data>(filename, 1);
             readBuffer = ByteBuffer.allocate(actualFile.getChunkSize());
             readBuffer.clear();
             readBuffer.flip();
@@ -159,7 +158,7 @@ public class SDrumIterator<Data extends AbstractKVStorable> implements Iterator<
                 return false;
             }
             filename = directory + "/" + hashFunction.getFilename(actualBucketId);
-            actualFile = new HeaderIndexFile(filename, 1);
+            actualFile = new HeaderIndexFile<Data>(filename, 1);
             actualFileOffset = 0;
             readBuffer.clear();
             readBuffer.flip();

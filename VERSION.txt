@@ -1,3 +1,11 @@
+Version 0.3.2
+ - Fixed all JUnitTest
+ - removed further parameters
+ - removed config-file
+ - GeneralParameters must know be instantiated by the developer
+ - Now multiple SDRUMs can run in one JVM
+ - prepared common memory allocator for different SDRUMs in one JVM. 
+
 Version 0.3.1
  - RangeHashFunction: the number of buckets was not set correctly while using File-constructor
  

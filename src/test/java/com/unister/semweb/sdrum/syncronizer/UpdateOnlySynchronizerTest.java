@@ -1,13 +1,12 @@
 package com.unister.semweb.sdrum.syncronizer;
 
 import java.io.File;
+import java.util.List;
 
-import junit.framework.Assert;
 
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
 
-import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.TestUtils;
 import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
@@ -20,12 +19,6 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * @author m.gleditzsch, m.unglaub
  */
 public class UpdateOnlySynchronizerTest {
-
-    @Before
-    public void loadParams() {
-        GlobalParameters.initParameters();
-    }
-    
     @Test
     /** This function tests, if update will be stored correctly */
     public void updateTest() throws Exception {
@@ -33,7 +26,7 @@ public class UpdateOnlySynchronizerTest {
         // ################ creating file with initial data
         String dbFileName = "/tmp/test.db";
         new File(dbFileName).delete();
-        DummyKVStorable[] linkDataList = new DummyKVStorable[204000];
+        DummyKVStorable[] linkDataList = new DummyKVStorable[20000];
         for (int i = 0; i < linkDataList.length; i++) {
             linkDataList[i] = DummyKVStorable.getInstance();
             linkDataList[i].setKey(KeyUtils.transformFromLong(i * 1 + 1, linkDataList[i].key.length));
@@ -42,29 +35,32 @@ public class UpdateOnlySynchronizerTest {
         Assert.assertTrue(TestUtils.checkContentFile(dbFileName, linkDataList));
 
         // ################ prepare Update-Array, using only pointers from insert-array
-        DummyKVStorable[] toUpdate = new DummyKVStorable[linkDataList.length];
-        for (int i = 0; i < linkDataList.length; i++) {
-            toUpdate[i] = linkDataList[i];
-        }
+//        DummyKVStorable[] toUpdate = new DummyKVStorable[linkDataList.length];
+//        for (int i = 0; i < linkDataList.length; i++) {
+//            toUpdate[i] = linkDataList[i];
+//        }
 
-        // DummyKVStorable[] toUpdate = new DummyKVStorable[3];
-        // toUpdate[2] = linkDataList[1900];
-        // toUpdate[2].setTimestamp(2300000);
-        // toUpdate[1] = linkDataList[100];
-        // toUpdate[1].setTimestamp(2300000);
-        // toUpdate[0] = linkDataList[9000];
-        // toUpdate[0].setTimestamp(2300000);
-        // toUpdate[3] = linkDataList[11190];
-        // toUpdate[3].setTimestamp(234567);
+         DummyKVStorable[] toUpdate = new DummyKVStorable[4];
+         toUpdate[3] = linkDataList[1900];
+         toUpdate[3].setValue("parentCount",2300000);
+         toUpdate[1] = linkDataList[100];
+         toUpdate[1].setValue("parentCount",1111);
+         toUpdate[0] = linkDataList[9000];
+         toUpdate[0].setValue("parentCount",989845);
+         toUpdate[2] = linkDataList[11190];
+         toUpdate[2].setValue("parentCount",234567);
 
         SortMachine.quickSort(toUpdate);
 
         // ############### perform the update, this is the real test
         UpdateOnlySynchronizer<DummyKVStorable> updateSync = new UpdateOnlySynchronizer<DummyKVStorable>(dbFileName,
-                DummyKVStorable.getInstance());
+                TestUtils.gp);
         updateSync.upsert(toUpdate);
-
+        
+        List<DummyKVStorable> listResult = TestUtils.readFrom(dbFileName, 50000);
+        DummyKVStorable[] result = listResult.toArray(new DummyKVStorable[listResult.size()]);
+        
         // ############### check if the file was written correctly, the file have to be compared to the linkDataList
-        Assert.assertTrue(TestUtils.checkContentFile(dbFileName, linkDataList));
+        Assert.assertArrayEquals(linkDataList, result);
     }
 }

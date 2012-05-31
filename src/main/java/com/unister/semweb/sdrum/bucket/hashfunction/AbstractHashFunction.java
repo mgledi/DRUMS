@@ -1,7 +1,6 @@
 package com.unister.semweb.sdrum.bucket.hashfunction;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 import com.unister.semweb.sdrum.file.FileLockException;
@@ -15,8 +14,7 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * 
  * @author m.gleditzsch
  */
-public abstract class AbstractHashFunction implements Serializable {
-    private static final long serialVersionUID = -5299645747853624533L;
+public abstract class AbstractHashFunction {
 
     public int keySize;
 
@@ -58,7 +56,8 @@ public abstract class AbstractHashFunction implements Serializable {
      * @throws FileLockException
      * @return int the size of the bucket
      */
-    public static int estimateOptimalBucketSize(AbstractHashFunction hashfunction, double threshold, int bucketId)
+    public static <Data extends AbstractKVStorable> int estimateOptimalBucketSize(AbstractHashFunction hashfunction,
+            double threshold, int bucketId)
             throws FileLockException, IOException {
         if (threshold > 1) {
             threshold = 1;
@@ -67,7 +66,7 @@ public abstract class AbstractHashFunction implements Serializable {
         }
 
         String fileName = hashfunction.getFilename(bucketId);
-        HeaderIndexFile file = new HeaderIndexFile(fileName, 100);
+        HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100);
         return (int) (file.getFilledUpFromContentStart() / file.getElementSize());
     }
 
@@ -81,12 +80,13 @@ public abstract class AbstractHashFunction implements Serializable {
      * @throws FileLockException
      * @return int[] the sizes of the buckets
      */
-    public static int[] estimateOptimalBucketSizes(AbstractHashFunction hashfunction, double threshold)
+    public static <Data extends AbstractKVStorable> int[] estimateOptimalBucketSizes(AbstractHashFunction hashfunction,
+            double threshold)
             throws FileLockException, IOException {
         int[] sizes = new int[hashfunction.getNumberOfBuckets()];
         for (int i = 0; i < hashfunction.getNumberOfBuckets(); i++) {
             String fileName = hashfunction.getFilename(i);
-            HeaderIndexFile file = new HeaderIndexFile(fileName, 100);
+            HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100);
             sizes[i] = (int) (file.getFilledUpFromContentStart() / file.getElementSize());
         }
         return sizes;

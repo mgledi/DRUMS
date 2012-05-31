@@ -3,14 +3,13 @@ package com.unister.semweb.sdrum.file;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import com.unister.semweb.sdrum.storable.AbstractKVStorable;
+import com.unister.semweb.sdrum.GlobalParameters;
 
 /**
  * This class represents a file, which contains a bunch of datasets. The file also contains a header with some
  * informations and an {@link IndexForHeaderIndexFile}. This class is for managing and handling equal sized storable
  * elements. So be very careful, if this precondition is not fulfilled.<br>
  * <br>
- * 
  * Header structure:<br/>
  * <br/>
  * <code>
@@ -20,15 +19,12 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * +-----------+--------------+---------------+---------------+-------------+<br/>
  * </code> = 1024 bytes (to have enough space for more values)<br/>
  * <br/>
- * 
  * To use this class correctly, have a look at the following methods: <li>read(long offset, ByteBuffer destBuffer) <li>
  * write(long offset, ByteBuffer sourceBuffer) <li>append(ByteBuffer sourceBuffer) <li>dbfile.getFilledUpToExclHeader()
  * <br>
  * <br>
  * The file enlarges automatically. Deletes (writing empty byte[] to a specific position) are leading to fragmentation.
- * The actual version don't have a fragmentation-handling.
- * 
- * Example code for reading the whole file:
+ * The actual version don't have a fragmentation-handling. Example code for reading the whole file:
  * 
  * <pre>
  *  ...
@@ -45,7 +41,6 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  * </pre>
  * 
  * @author m.gleditzsch
- * 
  */
 public class FragmentedHeaderIndexFile extends HeaderIndexFile {
 
@@ -53,20 +48,21 @@ public class FragmentedHeaderIndexFile extends HeaderIndexFile {
      * This constructor instantiates a new {@link FragmentedHeaderIndexFile} with the given <code>fileName</code> in the
      * given {@link AccessMode}.
      * 
-     * @param <b>String</b> fileName, the filename of the underlying OSfile.
-     * @param <b>AccessMode</b> mode, the mode the file should be accessed. READ_ONLY or READ_WRITE
-     * @param <b>int</b> max_retries_connect, the number of retries to open a channel, if the file is locked
-     * @param TODO
-     * 
+     * @param fileName
+     *            the filename of the underlying OSfile.
+     * @param mode
+     *            the mode the file should be accessed. READ_ONLY or READ_WRITE
+     * @param max_retries_connect
+     *            the number of retries to open a channel, if the file is locked
+     * @param gp
      * @throws FileLockException
      *             if the <code>max_retries_connect</code> is exceeded
      * @throws IOException
      *             if another error with the fileaccess occured
      */
-    public FragmentedHeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, int keySize,
-            int elementSize)
+    public FragmentedHeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, GlobalParameters gp)
             throws FileLockException, IOException {
-        super(fileName, mode, max_retries_connect, keySize, elementSize);
+        super(fileName, mode, max_retries_connect, gp);
     }
 
     @Override

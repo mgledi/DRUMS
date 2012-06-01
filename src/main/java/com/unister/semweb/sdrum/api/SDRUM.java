@@ -180,12 +180,11 @@ public class SDRUM<Data extends AbstractKVStorable> {
 
     /**
      * This method are for efficient update operations. Be careful, ONLY updates are provided. If the given array
-     * contains
-     * elements, not already stored in the SDRUM, they will be not respected.<br>
+     * contains elements, not already stored in the SDRUM, they will be not respected.<br>
      * <br>
-     * This method uses the {@link UpdateOnlySynchronizer}, which by itselfs uses the Data's implemented
-     * update-function to update elements. If you want to merge objects, use <code>insertOrMerge(...)</code> instead.
-     * (this is fairly slower)
+     * This method uses the {@link UpdateOnlySynchronizer}, which by itselfs uses the Data's implemented update-function
+     * to update elements. If you want to merge objects, use <code>insertOrMerge(...)</code> instead. (this is fairly
+     * slower)
      * 
      * @throws IOException
      */
@@ -533,5 +532,10 @@ public class SDRUM<Data extends AbstractKVStorable> {
     /** Returns a pointer to the prototype. This is not a clone. */
     public Data getPrototype() {
         return prototype;
+    }
+
+    /** Returns the {@link GlobalParameters} that are used within the {@link SDRUM} */
+    public GlobalParameters<Data> getGlobalParameters() {
+        return gp;
     }
 }

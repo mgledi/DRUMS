@@ -18,9 +18,9 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     private static Logger log = LoggerFactory.getLogger(GlobalParameters.class);
 
     public static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
-    
+
     public final int ID;
-    
+
     public String PARAM_FILE;
 
     /** the size of one chunk to read */
@@ -60,7 +60,7 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     /** The maximal time in ms a bucket is held in memory without synchronization attempt */
     public long MAX_BUCKET_STORAGE_TIME;
 
-    GlobalParameters(String paramFile, Data prototype) {
+    public GlobalParameters(String paramFile, Data prototype) {
         this.PARAM_FILE = paramFile;
         this.keySize = prototype.key.length;
         this.elementSize = prototype.getByteBufferSize();

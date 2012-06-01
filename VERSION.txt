@@ -1,3 +1,7 @@
+Version 0.3.3 (2012/06/01)
+ - RangeHashFunction: writing of file doesn't write the bucketSize column anymore
+ - UpdateOnlySynchronizer: throwing a IllegalStateException within the constructor if there is problem to open the file, also making some attributes private
+ 
 Version 0.3.2
  - Fixed all JUnitTest
  - removed further parameters

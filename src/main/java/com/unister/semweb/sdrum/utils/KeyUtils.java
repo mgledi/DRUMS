@@ -53,12 +53,11 @@ public class KeyUtils {
         return result;
     }
 
-
     /** Converts a long to a byte-array */
     public static byte[] convert(long key) {
         return transformFromLong(key, 8);
     }
-    
+
     /**
      * Cheks if the elements of the given key up the given length are 0, or the whole array is NULL
      * 
@@ -324,5 +323,18 @@ public class KeyUtils {
             sb.append(prefix + buckets[i] + suffix + "\n");
         }
         return sb.toString();
+    }
+
+    public static void main(String[] args) throws Exception {
+        byte[] minKey = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] maxKey = new byte[] { -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128 };
+        // byte[] maxKey = new byte[] { 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127 };
+        String[] buckets = new String[16];
+        for (int i = 0; i < 16; i++) {
+            buckets[i] = String.valueOf(i);
+        }
+
+        String hashFunction = KeyUtils.generateHashFunction(minKey, maxKey, buckets, ".db", "");
+        System.out.println(hashFunction);
     }
 }

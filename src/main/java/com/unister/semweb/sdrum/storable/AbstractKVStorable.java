@@ -40,8 +40,8 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
     }
 
     /**
-     * Sets the key of this object. Be careful by overwriting the old key. The given array is not copied, only a
-     * pointer will be set.
+     * Sets the key of this object. Be careful by overwriting the old key. The given array is not copied, only a pointer
+     * will be set.
      * 
      * @param key
      */

@@ -243,7 +243,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         for (int i = 0; i < maxRangeValues[0].length; i++) {
             bufferedWriter.append('b').append('\t');
         }
-        bufferedWriter.append("filename").append('\t').append("bucketSize").append("\n");
+        bufferedWriter.append("filename").append('\t').append("\n");
         for (int i = 0; i < maxRangeValues.length; i++) {
             String oneCSVLine = makeOneLine(maxRangeValues[i], filenames[i]);
             bufferedWriter.append(oneCSVLine);

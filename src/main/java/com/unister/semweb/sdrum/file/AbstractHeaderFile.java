@@ -47,7 +47,7 @@ public abstract class AbstractHeaderFile {
     public static final int HEADER_SIZE = 1024;
 
     /** the file to access */
-    public File osFile; //TODO:private
+    public File osFile; // TODO:private
 
     /** the file to access */
     protected RandomAccessFile accessFile;
@@ -159,6 +159,7 @@ public abstract class AbstractHeaderFile {
     /** sets the start of the content to zero */
     public void clear() {
         contentStart = HEADER_SIZE;
+        filledUpTo = contentStart;
     }
 
     /** returns the offset in bytes, to where the file is filled */

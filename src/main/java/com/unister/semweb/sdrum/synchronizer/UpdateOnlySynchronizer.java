@@ -17,8 +17,8 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
- * Takes a list of {@link AbstractKVStorable} and synchronizes them with a file. ONLY update are supported.
- * The core assumption is that the list of {@link AbstractKVStorable} and the entries in the file are sorted ascended.
+ * Takes a list of {@link AbstractKVStorable} and synchronizes them with a file. ONLY update are supported. The core
+ * assumption is that the list of {@link AbstractKVStorable} and the entries in the file are sorted ascended.
  * 
  * @author n.thieme, m.gleditzsch
  */
@@ -36,14 +36,14 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     private IndexForHeaderIndexFile header;
 
     /** a prototype element of type Data */
-    Data prototype;
+    private Data prototype;
 
     /** the ByteBuffer to work on. Is used for reading and writing, could be replaced by a MappedByteBuffer */
-    ByteBuffer workingBuffer;
+    private ByteBuffer workingBuffer;
 
     /** A pointer to the global Parameters */
-    GlobalParameters<Data> gp;
-    
+    private GlobalParameters<Data> gp;
+
     /**
      * This method constructs a {@link Synchronizer}. The name of the file were to write the elements to have to be
      * given.
@@ -59,10 +59,12 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
             /* Another thread can have access to this file in parallel. So we must wait to get exclusive access. */
             dataFile = new HeaderIndexFile<Data>(dataFilename, AccessMode.READ_WRITE, Integer.MAX_VALUE, gp);
             header = dataFile.getIndex(); // Pointer to the Index
-        } catch (FileLockException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (FileLockException ex) {
+            log.error("Could not aquire the log for the file to update: {}", dataFilename, ex);
+            throw new IllegalStateException(ex);
+        } catch (IOException ex) {
+            log.error("Error occurred while initialising UpdateOnlySynchronizer: {}", dataFilename, ex);
+            throw new IllegalStateException(ex);
         }
 
         this.workingBuffer = ByteBuffer.allocate(dataFile.getChunkSize());

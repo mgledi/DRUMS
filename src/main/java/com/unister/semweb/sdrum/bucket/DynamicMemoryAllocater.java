@@ -54,6 +54,7 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      */
     public static <Data extends AbstractKVStorable> void instantiate(GlobalParameters<Data> gp) {
         if (INSTANCES.length <= gp.ID) {
+            // TODO IS THIS REALLY CORRECT???
             INSTANCES = Arrays.copyOf(INSTANCES, gp.ID + 1);
             INSTANCES[gp.ID] = new DynamicMemoryAllocater<Data>(gp);
         }

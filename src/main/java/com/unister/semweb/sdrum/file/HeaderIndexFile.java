@@ -474,7 +474,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     /**
      * This method repairs the index. It runs over all chunks and writes the largest element into the
      * {@link IndexForHeaderIndexFile}.
-     * @throws IOException 
+     * 
+     * @throws IOException
      */
     public void repairIndex() throws IOException {
         byte[] b = new byte[keySize];
@@ -483,7 +484,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         for (int i = 1; i <= maxChunk; i++) {
             offset = i * getChunkSize() - elementSize;
             read(offset, ByteBuffer.wrap(b));
-            getIndex().setLargestKey(i-1, b);
+            getIndex().setLargestKey(i - 1, b);
             if (KeyUtils.compareKey(getIndex().maxKeyPerChunk[i - 1], b) != 0) {
                 logger.info("Index is not consistent to data. Expected {}, but found {}.",
                         Arrays.toString(getIndex().maxKeyPerChunk[i - 1]), Arrays.toString(b));
@@ -495,6 +496,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     public void clear() {
         this.filledUpTo = 0;
         this.contentStart = HEADER_SIZE + MAX_INDEX_SIZE_IN_BYTES;
+        this.filledUpTo = contentStart;
     }
 
     /**

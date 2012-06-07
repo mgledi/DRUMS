@@ -27,7 +27,7 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
      * this variable is instantiated by the {@link SyncManager} and shows which buckets are actually processed. If the
      * process of the actual <code>bucket</code> is done, its id is removed from this set.
      */
-    private Set<Integer> actualProcessingBucketIds;
+    private Set<Bucket<Data>> actualProcessingBuckets;
 
     /** A factory to create new synchronizer. */
     private ISynchronizerFactory<Data> synchronizerFactory;
@@ -52,12 +52,12 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     public SyncThread(
             SyncManager<Data> buffer,
             Bucket<Data> bucket,
-            Set<Integer> actualProcessingBucketIds,
+            Set<Bucket<Data>> actualProcessingBuckets,
             ISynchronizerFactory<Data> synchronizerFactory,
             GlobalParameters<Data> gp) {
         this.gp = gp;
         this.bucket = bucket;
-        this.actualProcessingBucketIds = actualProcessingBucketIds;
+        this.actualProcessingBuckets = actualProcessingBuckets;
         this.synchronizerFactory = synchronizerFactory;
         this.buffer = buffer;
     }
@@ -77,7 +77,9 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
             Synchronizer<Data> synchronizer = synchronizerFactory
                     .createSynchronizer(directoryName + "/" + filename, gp);
             synchronizer.upsert(linkData); // start synchronizing
-            actualProcessingBucketIds.remove(bucket.getBucketId());
+
+            // TODO does this really work???
+            actualProcessingBuckets.remove(bucket);
             log.debug("Try to free memory.");
             DynamicMemoryAllocater.INSTANCES[gp.ID].freeMemory(bucket.freeMemory());
             synchronizer.close();
@@ -87,7 +89,9 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
             buffer.sumUpUpdated(synchronizer.getNumberOfUpdatedEntries());
         } catch (Exception ex) {
             log.error("An error occurred during synchronizing. Synchronizing thread stopped! Some urls were lost", ex);
-            actualProcessingBucketIds.remove(bucket.getBucketId());
+
+            // TODO does this really works?
+            actualProcessingBuckets.remove(bucket);
         }
     }
 }

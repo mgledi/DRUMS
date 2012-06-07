@@ -69,10 +69,15 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      */
     public synchronized int allocateNextChunk() throws InterruptedException {
         // if no memory is available, then check every second if now is memory available
-        while ((used_bytes.longValue() + (long) mem_chunksize) > max_allowed_bytes) {
-            log.info("Can't allocate memory. {} bytes already allocated. {} bytes allowed.", used_bytes.longValue(),
-                    max_allowed_bytes);
-            Thread.sleep(1000);
+        // First try
+        // while ((used_bytes.longValue() + (long) mem_chunksize) > max_allowed_bytes) {
+        // log.info("Can't allocate memory. {} bytes already allocated. {} bytes allowed.", used_bytes.longValue(),
+        // max_allowed_bytes);
+        // Thread.sleep(1000);
+        // }
+
+        if ((used_bytes.longValue() + (long) mem_chunksize) > max_allowed_bytes) {
+            return 0;
         }
         used_bytes.set(used_bytes.longValue() + (long) mem_chunksize);
         return mem_chunksize;

@@ -1,3 +1,6 @@
+Version 0.3.4 (2012/06/07)
+ - SyncManager: contains a Set of the buckets that are currently processed, the old list with the ids of the currently processed buckets are gone
+
 Version 0.3.3 (2012/06/01)
  - RangeHashFunction: writing of file doesn't write the bucketSize column anymore
  - UpdateOnlySynchronizer: throwing a IllegalStateException within the constructor if there is problem to open the file, also making some attributes private

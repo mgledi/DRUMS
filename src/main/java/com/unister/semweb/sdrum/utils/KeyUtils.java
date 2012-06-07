@@ -327,10 +327,12 @@ public class KeyUtils {
 
     public static void main(String[] args) throws Exception {
         byte[] minKey = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        byte[] maxKey = new byte[] { -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128 };
+        byte[] maxKey = new byte[] { (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
+                (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255 };
+        // byte[] maxKey = new byte[] { -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128 };
         // byte[] maxKey = new byte[] { 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127 };
-        String[] buckets = new String[16];
-        for (int i = 0; i < 16; i++) {
+        String[] buckets = new String[1024];
+        for (int i = 0; i < 1024; i++) {
             buckets[i] = String.valueOf(i);
         }
 

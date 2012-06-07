@@ -39,9 +39,9 @@ public class Bucket<Data extends AbstractKVStorable> {
     /** Stores the creation time of this bucket. */
     private long creationTime;
 
-    /** A pointer to the {@link GlobalParameters} used by this {@link SDRUM} */ 
+    /** A pointer to the {@link GlobalParameters} used by this {@link SDRUM} */
     private GlobalParameters<Data> gp;
-    
+
     /**
      * Constructor. Needs to know the id of the {@link Bucket} and the maximum size of the {@link Bucket}.
      * 
@@ -94,11 +94,22 @@ public class Bucket<Data extends AbstractKVStorable> {
         }
         // no memory is available
         try {
-            if (lastChunkIndex == -1) {
-                enlargeMemory();
-            } else if (position_in_chunk == memory[lastChunkIndex].length) {
-                enlargeMemory();
+            if (lastChunkIndex == -1 || position_in_chunk == memory[lastChunkIndex].length) {
+                boolean allocatingSuccessful = enlargeMemory();
+
+                // No more memory was left so we don't add the element and return false.
+                if (!allocatingSuccessful) {
+                    return false;
+                }
             }
+
+            /* Original from Martin */
+            // if (lastChunkIndex == -1) {
+            // enlargeMemory();
+            // } else if (position_in_chunk == memory[lastChunkIndex].length) {
+            // enlargeMemory();
+            // }
+            /* ******************** */
         } catch (InterruptedException e) {
             // TODO: error log
             e.printStackTrace();
@@ -137,20 +148,28 @@ public class Bucket<Data extends AbstractKVStorable> {
     }
 
     /**
-     * enlarges the memory by one chunk
+     * enlarges the memory by one chunk. If this was successful <code>true</code> will be returned, otherwise
+     * <code>false</code>.
      * 
      * @throws InterruptedException
      */
-    private void enlargeMemory() throws InterruptedException {
-        byte[] mem = new byte[DynamicMemoryAllocater.INSTANCES[gp.ID].allocateNextChunk()];
-        byte[][] new_mem = new byte[memory.length + 1][];
-        for (int i = 0; i < memory.length; i++) {
-            new_mem[i] = memory[i];
+    private boolean enlargeMemory() throws InterruptedException {
+        int bytesAllocated = DynamicMemoryAllocater.INSTANCES[gp.ID].allocateNextChunk();
+        if (bytesAllocated > 0) {
+
+            byte[] mem = new byte[bytesAllocated];
+            byte[][] new_mem = new byte[memory.length + 1][];
+            for (int i = 0; i < memory.length; i++) {
+                new_mem[i] = memory[i];
+            }
+            lastChunkIndex++;
+            new_mem[lastChunkIndex] = mem;
+            memory = new_mem;
+            position_in_chunk = 0;
+            return true;
+        } else {
+            return false;
         }
-        lastChunkIndex++;
-        new_mem[lastChunkIndex] = mem;
-        memory = new_mem;
-        position_in_chunk = 0;
     }
 
     private void sort() {

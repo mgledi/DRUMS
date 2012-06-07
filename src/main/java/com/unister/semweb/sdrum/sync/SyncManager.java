@@ -56,7 +56,8 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     private boolean forceInitiated;
 
     /** A set of bucketIds, which are actual in process */
-    private Set<Integer> actualProcessingBucketIds;
+    private Set<Bucket<Data>> actualProcessingBuckets;
+    // private Set<Integer> actualProcessingBucketIds;
 
     /** The {@link ThreadPoolExecutor} handling all {@link SyncThread}s */
     private ThreadPoolExecutor bufferThreads;
@@ -107,8 +108,10 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
             ISynchronizerFactory<Data> synchronizerFactory, GlobalParameters<Data> gp) {
         this.gp = gp;
         this.bucketContainer = bucketContainer;
-        HashSet<Integer> tmpSet = new HashSet<Integer>();
-        this.actualProcessingBucketIds = Collections.synchronizedSet(tmpSet);
+        // HashSet<Integer> tmpSet = new HashSet<Integer>();
+        HashSet<Bucket<Data>> tmpSet = new HashSet<Bucket<Data>>();
+        // this.actualProcessingBucketIds = Collections.synchronizedSet(tmpSet);
+        this.actualProcessingBuckets = Collections.synchronizedSet(tmpSet);
         this.pathToDbFiles = pathToFiles;
         this.maxBucketStorageTime = Long.MAX_VALUE;
         this.synchronizerFactory = synchronizerFactory;
@@ -195,12 +198,20 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
                 continue;
             }
 
+            /* ***** TESTING PURPOSE ****** */
+            if (DynamicMemoryAllocater.INSTANCES[gp.ID].getFreeMemory() == 0) {
+                log.info("No memory free, theoretically I must force synchronization");
+            }
+            /* **************************** */
+
             long elapsedTime = System.currentTimeMillis() - oldBucket.getCreationTime();
             // if the bucket is full, or the bucket is longer then max bucket storage time within the BucketContainer,
             // or the shutdown was initiated, then try to synchronize the buckets
             // At this point we prevent starvation of one bucket if it not filled for a long period of time.
             if (oldBucket.elementsInBucket >= gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
-                    //                    DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
+                    // TODO What do we do if more than one DynamicMemoryAllocator exist???
+                    DynamicMemoryAllocater.INSTANCES[gp.ID].getFreeMemory() == 0 ||
+                    // DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
                     elapsedTime > maxBucketStorageTime ||
                     shutDownInitiated ||
                     forceInitiated) {
@@ -243,7 +254,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
      */
     private boolean startNewThread(int bucketId) {
         // bucket is in process or doesnt exist
-        if (actualProcessingBucketIds.contains(bucketId) || bucketId == -1) {
+        if (isBucketProcessed(bucketId) || bucketId == -1) {
             log.debug(
                     "Can't add BufferThread. Bucket {} does not exist or a bucket with the same id is already in processing.",
                     bucketId);
@@ -258,11 +269,12 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
 
         // BlockingQueue is full
         if (bufferThreads.getQueue().size() == allowedBucketsInBuffer) {
-            log.debug("Can't add BufferThread. Too many threads in queue. {}", actualProcessingBucketIds.toString());
+            log.debug("Can't add BufferThread. Too many threads in queue. {}", actualProcessingBuckets.toString());
             return false;
         }
 
-        actualProcessingBucketIds.add(bucketId);
+        actualProcessingBuckets.add(oldBucket);
+        // actualProcessingBucketIds.add(bucketId);
         // the old Bucket will be replaced by this new bucket
         try {
             Bucket<Data> newBucket = oldBucket.getEmptyBucketWithSameProperties();
@@ -271,10 +283,20 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
             e.printStackTrace();
         }
 
-        SyncThread<Data> bufferThread = new SyncThread<Data>(this, oldBucket, actualProcessingBucketIds,
+        SyncThread<Data> bufferThread = new SyncThread<Data>(this, oldBucket, actualProcessingBuckets,
                 synchronizerFactory, gp);
         bufferThreads.execute(bufferThread);
         return true;
+    }
+
+    /** Gets a bucket id and returns <code>true</code> if the bucket is currently processed, otherwise <code>false</code> */
+    private boolean isBucketProcessed(int bucketId) {
+        for (Bucket<Data> oneBucket : this.actualProcessingBuckets) {
+            if (oneBucket.getBucketId() == bucketId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -354,6 +376,16 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
      */
     public void setMaxBucketStorageTime(long maxBucketStorageTime) {
         this.maxBucketStorageTime = maxBucketStorageTime;
+    }
+
+    /** Returns a set of the buckets that are currently processed. */
+    public Set<Bucket<Data>> getActualProcessingBuckets() {
+        return this.actualProcessingBuckets;
+    }
+
+    /** Returns the {@link BucketContainer}. */
+    public BucketContainer<Data> getBucketContainer() {
+        return bucketContainer;
     }
 
     // #########################################################################################

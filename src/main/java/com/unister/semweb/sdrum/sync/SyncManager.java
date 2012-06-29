@@ -291,9 +291,11 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
 
     /** Gets a bucket id and returns <code>true</code> if the bucket is currently processed, otherwise <code>false</code> */
     private boolean isBucketProcessed(int bucketId) {
-        for (Bucket<Data> oneBucket : this.actualProcessingBuckets) {
-            if (oneBucket.getBucketId() == bucketId) {
-                return true;
+        synchronized (actualProcessingBuckets) {
+            for (Bucket<Data> oneBucket : this.actualProcessingBuckets) {
+                if (oneBucket.getBucketId() == bucketId) {
+                    return true;
+                }
             }
         }
         return false;

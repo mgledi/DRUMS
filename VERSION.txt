@@ -1,3 +1,6 @@
+Version 0.3.5-SNAPSHOT (2012/06/28)
+ - UpdateOnlySynchronizer: extending the log message for error
+
 Version 0.3.4 (2012/06/07)
  - SyncManager: contains a Set of the buckets that are currently processed, the old list with the ids of the currently processed buckets are gone
 

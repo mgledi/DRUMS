@@ -105,10 +105,13 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
                     dataFile.read(actualChunkOffset, workingBuffer);
                 }
 
+                int oldIndexInChunk = indexInChunk;
                 indexInChunk = updateElementInReadBuffer(toUpdate[i], indexInChunk);
                 if (indexInChunk == -1) {
-                    log.warn("Element with key {} was not found and therefore not updated. File: {}, Chunk: {}",
-                            new Object[] { toUpdate[i].key, this.dataFilename, actualChunkIdx });
+                    log.warn(
+                            "Element with key {} was not found and therefore not updated. File: {}, Chunk: {}, Index for searching in buffer: {}, Index after update: {}",
+                            new Object[] { toUpdate[i].key, this.dataFilename, actualChunkIdx, oldIndexInChunk,
+                                    indexInChunk });
                     indexInChunk = 0;
                 }
 

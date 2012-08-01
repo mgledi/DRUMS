@@ -49,13 +49,10 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author m.gleditzsch
  */
-public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHeaderFile {
-    
+public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHeaderFile implements IWritableIndexFile {
+
     /** the size of the index in bytes */
     protected static final long MAX_INDEX_SIZE_IN_BYTES = 512 * 1024; // 512 kb
-
-    /** the size of a chunk to read, affects the maximal size of the file */
-    protected static final int INITIAL_READCHUNKSIZE = 56 * 1024; // 56 kb
 
     /** the byte offset, where the index starts */
     protected static final int INDEX_OFFSET = HEADER_SIZE; // index starts after the header
@@ -93,7 +90,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
 
     /** A pointer to the GlobalParameters used by this SDRUM */
     protected GlobalParameters<Data> gp;
-    
+
     /**
      * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
      * {@link AccessMode}.
@@ -101,7 +98,6 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @param <b>String</b> fileName, the filename of the underlying OSfile.
      * @param <b>AccessMode</b> mode, the mode the file should be accessed. READ_ONLY or READ_WRITE
      * @param <b>int</b> max_retries_connect, the number of retries to open a channel, if the file is locked
-     * 
      * @param TODO
      * @throws FileLockException
      *             if the <code>max_retries_connect</code> is exceeded
@@ -135,7 +131,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @throws IOException
      *             if another error with the fileaccess occured
      */
-    public HeaderIndexFile(String fileName, int max_retries_connect)
+    public HeaderIndexFile(String fileName, int max_retries_connect, GlobalParameters<Data> gp)
             throws FileLockException, IOException {
         this.osFile = new File(fileName);
         this.max_retries_connect = max_retries_connect;
@@ -346,7 +342,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     protected void createFile() throws FileLockException, IOException {
         size = gp.INITIAL_FILE_SIZE;
         filledUpTo = contentStart;
-        chunkSize = INITIAL_READCHUNKSIZE - (INITIAL_READCHUNKSIZE % elementSize);
+        chunkSize = (int) gp.INDEX_CHUNK_SIZE;
         openChannel(false, false);
         setSoftlyClosed(true);
         // have to reset the informations cause in openchannel the empty header was read

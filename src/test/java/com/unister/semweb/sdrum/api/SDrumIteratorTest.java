@@ -22,22 +22,21 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  */
 public class SDrumIteratorTest {
     RangeHashFunction hashFunction;
-    private static final String databaseDirectory = "/tmp/createTable/db";
 
     private SDRUM<DummyKVStorable> table;
     private DummyKVStorable[] generatedData;
 
     @Before
     public void initialise() throws Exception {
+        new File(TestUtils.gp.databaseDirectory).mkdirs();
         long[] ranges = new long[] { 0, 10, 20, 30 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2", "3.db", "4.db" };
-        FileUtils.deleteQuietly(new File(databaseDirectory));
-
+        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
         this.hashFunction = new RangeHashFunction(bRanges, filenames, new File("/tmp/hash.hs"));
 
         // fill with data
-        table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
+        table = SDRUM_API.createTable(hashFunction, TestUtils.gp);
         // remember, the element with key 0 is ignored
         generatedData = TestUtils.createDummyData(1, 50);
         SortMachine.quickSort(generatedData);
@@ -46,9 +45,9 @@ public class SDrumIteratorTest {
     }
 
     @Test
-    public void iteratorTest() throws FileStorageException {
-        SDrumIterator<DummyKVStorable> it = new SDrumIterator<DummyKVStorable>("/tmp/createTable/db", hashFunction,
-                DummyKVStorable.getInstance());
+    public void iteratorTest() throws FileStorageException, InterruptedException {
+        table = SDRUM_API.openTable(hashFunction, SDRUM.AccessMode.READ_ONLY, TestUtils.gp);
+        SDrumIterator<DummyKVStorable> it = table.getIterator();
         ArrayList<DummyKVStorable> elements = new ArrayList<DummyKVStorable>();
         while (it.hasNext()) {
             Object d = it.next();
@@ -56,5 +55,6 @@ public class SDrumIteratorTest {
             // elements should be read in ascending order
         }
         assertEquals(generatedData.length, elements.size());
+        table.close();
     }
 }

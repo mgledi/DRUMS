@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,15 +19,12 @@ import com.unister.semweb.sdrum.TestUtils;
 import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
-import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
-import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /** Tests the SDrum API. */
 public class SDrumTest {
     private static final Logger log = LoggerFactory.getLogger(SDrumTest.class);
-    private static final String databaseDirectory = "/tmp/createTable/db";
     private AbstractHashFunction hashFunction;
 
     @Before
@@ -36,7 +32,7 @@ public class SDrumTest {
         long[] ranges = new long[] { 0, 10, 20, 30 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
-        FileUtils.deleteQuietly(new File(databaseDirectory));
+        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
 
         hashFunction = new RangeHashFunction(bRanges, filenames, new File("/tmp/hash.hs"));
     }
@@ -50,7 +46,7 @@ public class SDrumTest {
     @Test
     public void findElementInReadBufferTest() throws IOException, ClassNotFoundException {
         log.info("Test Binary search. findElementInReadBufferTest()");
-        SDRUM<DummyKVStorable> table = SDRUM_API.createOrOpenTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createOrOpenTable(hashFunction, TestUtils.gp);
         // create data
         DummyKVStorable d1 = DummyKVStorable.getInstance();
         d1.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
@@ -88,10 +84,10 @@ public class SDrumTest {
         log.info("Test simple write to one Bucket. createTableAndInsertTest()");
         // Adding elements to the drum.
         DummyKVStorable[] test = TestUtils.createDummyData(10);
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(test);
         table.close();
-        List<DummyKVStorable> readData = TestUtils.readFrom(databaseDirectory + "/2.db", 10);
+        List<DummyKVStorable> readData = TestUtils.readFrom(TestUtils.gp.databaseDirectory + "/2.db", 10);
         Assert.assertArrayEquals(test, readData.toArray(new DummyKVStorable[readData.size()]));
     }
 
@@ -110,12 +106,12 @@ public class SDrumTest {
 
         DummyKVStorable[] toAdd = new DummyKVStorable[] { bucket2_el1, bucket2_el2, bucket4_el1, bucket4_el2 };
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
 
-        List<DummyKVStorable> db2 = TestUtils.readFrom(databaseDirectory + "/2.db", 1000);
-        List<DummyKVStorable> db4 = TestUtils.readFrom(databaseDirectory + "/4.db", 1000);
+        List<DummyKVStorable> db2 = TestUtils.readFrom(TestUtils.gp.databaseDirectory + "/2.db", 1000);
+        List<DummyKVStorable> db4 = TestUtils.readFrom(TestUtils.gp.databaseDirectory + "/4.db", 1000);
 
         assertEquals(2, db2.size());
         assertEquals(bucket2_el1, db2.get(0));
@@ -135,7 +131,7 @@ public class SDrumTest {
         DummyKVStorable data = TestUtils.createDummyData(KeyUtils.convert(1), 1, 0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { data };
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
         
@@ -157,7 +153,7 @@ public class SDrumTest {
         DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.convert(12), 19,0.29);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
         
@@ -179,7 +175,7 @@ public class SDrumTest {
         DummyKVStorable testElement = TestUtils.createDummyData(KeyUtils.convert(1), 2, 0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { testElement };
         
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
             
@@ -200,7 +196,7 @@ public class SDrumTest {
     public void readTestSeveralElements() throws Exception {
         DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(testdata);
         table.close();
 
@@ -226,7 +222,7 @@ public class SDrumTest {
 
         DummyKVStorable[] completeTestdata = TestUtils.merge(testdata, secondRange, thirdRange);
 
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(completeTestdata);
         table.close();
 
@@ -245,11 +241,11 @@ public class SDrumTest {
         DummyKVStorable date1 = TestUtils.createDummyData(KeyUtils.convert(5), 1, 0.5);
         DummyKVStorable[] completeTestdata = new DummyKVStorable[]{date1};
         
-        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> table = SDRUM_API.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(completeTestdata);
         table.close();
         
-        table = SDRUM_API.createOrOpenTable(databaseDirectory, hashFunction, TestUtils.gp);
+        table = SDRUM_API.createOrOpenTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(completeTestdata);
         table.close();
         List<DummyKVStorable> readSecondBucket = table.read(1, 0, 7);

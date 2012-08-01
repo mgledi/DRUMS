@@ -66,7 +66,7 @@ public abstract class AbstractHashFunction {
         }
 
         String fileName = hashfunction.getFilename(bucketId);
-        HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100);
+        HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100, null);
         return (int) (file.getFilledUpFromContentStart() / file.getElementSize());
     }
 
@@ -86,7 +86,7 @@ public abstract class AbstractHashFunction {
         int[] sizes = new int[hashfunction.getNumberOfBuckets()];
         for (int i = 0; i < hashfunction.getNumberOfBuckets(); i++) {
             String fileName = hashfunction.getFilename(i);
-            HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100);
+            HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100, null);
             sizes[i] = (int) (file.getFilledUpFromContentStart() / file.getElementSize());
         }
         return sizes;

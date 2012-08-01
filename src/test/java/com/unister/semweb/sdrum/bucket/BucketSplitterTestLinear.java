@@ -25,15 +25,14 @@ import com.unister.semweb.sdrum.utils.RangeHashFunctionTestUtils;
  * @author m.gleditzsch, n.thieme
  */
 public class BucketSplitterTestLinear {
-    private static final String sdrumDirectory = "/tmp/bucketSplitting";
-    private static final String databaseDirectory = sdrumDirectory + "/db";
     private static final String hashFunctionFilename = "/tmp/hash.hs";
 
     @Before
     public void initialise() throws IOException {
-        FileUtils.deleteQuietly(new File(sdrumDirectory));
-        new File(sdrumDirectory).mkdirs();
+        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
+        new File(TestUtils.gp.databaseDirectory).mkdirs();
     }
+
 
     /**
      * Generates a bucket with 100 elements and splits this bucket into two ones.
@@ -47,11 +46,11 @@ public class BucketSplitterTestLinear {
                 hashFunctionFilename, TestUtils.gp.keySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
-        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
+        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction,
                 TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 2);
 
-        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, hashFunction,
+        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(hashFunction,
                 AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         sdrumAfterSplitting.setHashFunction(hashFunction);
@@ -84,11 +83,11 @@ public class BucketSplitterTestLinear {
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
-        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
+        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction,
                 TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 4);
 
-        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, hashFunction,
+        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(hashFunction,
                 AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         sdrumAfterSplitting.setHashFunction(hashFunction);
@@ -133,11 +132,11 @@ public class BucketSplitterTestLinear {
 
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, hashFunction);
 
-        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
+        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction,
                 TestUtils.gp);
         splitter.splitAndStoreConfiguration(1, 4);
 
-        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, hashFunction,
+        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(hashFunction,
                 AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         sdrumAfterSplitting.setHashFunction(hashFunction);
@@ -173,7 +172,7 @@ public class BucketSplitterTestLinear {
      */
     private DummyKVStorable[] createAndFillSDRUM(int numberOfData, RangeHashFunction hashFunction) throws Exception {
         DummyKVStorable[] testData = TestUtils.generateTestdata(numberOfData);
-        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(hashFunction, TestUtils.gp);
         sdrum.insertOrMerge(testData);
         sdrum.close();
         return testData;

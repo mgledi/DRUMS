@@ -2,6 +2,7 @@ package com.unister.semweb.sdrum.file;
 
 import java.nio.MappedByteBuffer;
 
+import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
@@ -18,7 +19,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author m.gleditzsch
  */
-public class IndexForHeaderIndexFile {
+public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
 
     /** chunkId -> largest key in this chunk */
     protected byte maxKeyPerChunk[][];

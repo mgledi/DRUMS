@@ -18,9 +18,9 @@ import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
-import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
 import com.unister.semweb.sdrum.utils.KeyUtils;
@@ -225,7 +225,7 @@ public class TestUtils {
             FileLockException {
         // load file
         DummyKVStorable prototype = gp.getPrototype();
-        HeaderIndexFile<DummyKVStorable> dbfile = new HeaderIndexFile<DummyKVStorable>(dbFileName, 1);
+        HeaderIndexFile<DummyKVStorable> dbfile = new HeaderIndexFile<DummyKVStorable>(dbFileName, 1, TestUtils.gp);
         ByteBuffer buffer = ByteBuffer.allocate(prototype.getByteBufferSize());
         long offset = 0;
         int k = 0;

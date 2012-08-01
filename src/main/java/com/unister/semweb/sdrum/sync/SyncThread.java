@@ -88,7 +88,7 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
             buffer.sumUpInserted(synchronizer.getNumberOfInsertedEntries());
             buffer.sumUpUpdated(synchronizer.getNumberOfUpdatedEntries());
         } catch (Exception ex) {
-            log.error("An error occurred during synchronizing. Synchronizing thread stopped! Some data was lost", ex);
+            log.error("An error occurred during synchronizing. Synchronizing thread stopped! Some urls were lost", ex);
 
             // TODO does this really works?
             actualProcessingBuckets.remove(bucket);

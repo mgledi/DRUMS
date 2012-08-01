@@ -13,26 +13,23 @@ import java.util.concurrent.BlockingQueue;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.junit.Before;
 
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.bucket.SortMachine;
 import com.unister.semweb.sdrum.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
-import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
+import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.synchronizer.Synchronizer;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 public class TestUtils {
     public static Random randomGenerator = new Random(System.currentTimeMillis());
-    public static GlobalParameters<DummyKVStorable> gp;
-    
-    public static void init() throws FileLockException, IOException {
-        gp = new GlobalParameters<DummyKVStorable>(DummyKVStorable.getInstance());
-    }
+    public static GlobalParameters<DummyKVStorable> gp =
+            new GlobalParameters<DummyKVStorable>(DummyKVStorable.getInstance());
+
     /**
      * Generates buckets. The size of the buckets, the number of the buckets and the elements that will be generated for
      * one bucket are specified.
@@ -228,7 +225,7 @@ public class TestUtils {
             FileLockException {
         // load file
         DummyKVStorable prototype = gp.getPrototype();
-        HeaderIndexFile<DummyKVStorable> dbfile = new HeaderIndexFile<DummyKVStorable>(dbFileName, 1, gp);
+        HeaderIndexFile<DummyKVStorable> dbfile = new HeaderIndexFile<DummyKVStorable>(dbFileName, 1);
         ByteBuffer buffer = ByteBuffer.allocate(prototype.getByteBufferSize());
         long offset = 0;
         int k = 0;

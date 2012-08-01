@@ -75,7 +75,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
                 cumulativeElementsPerFile[i] = 0;
             } else {
                 lastfile = i;
-                files[i] = new HeaderIndexFile<Data>(filename, 10, sdrum.gp);
+                files[i] = new HeaderIndexFile<Data>(filename, 10);
                 cumulativeElementsPerFile[i] = (int) (files[i].getFilledUpFromContentStart() / elementSize);
             }
             if (i > 0) {
@@ -84,7 +84,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
         }
 
         // elementsPerChunk = files[lastfile].getChunkSize() / elementSize;
-        destBuffer = ByteBuffer.allocate((int)files[lastfile].getChunkSize());
+        destBuffer = ByteBuffer.allocate(files[lastfile].getChunkSize());
         filesAreOpend = true;
     }
 

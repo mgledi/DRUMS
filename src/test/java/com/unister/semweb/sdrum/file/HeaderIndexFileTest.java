@@ -11,13 +11,12 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.unister.semweb.sdrum.TestUtils;
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 
@@ -27,12 +26,14 @@ import com.unister.semweb.sdrum.storable.DummyKVStorable;
  * @author m.gleditzsch
  */
 public class HeaderIndexFileTest {
-    HeaderIndexFile<DummyKVStorable> file;
+    HeaderIndexFile file;
 
+    /** The global Parameters to use */
+    GlobalParameters gp = new GlobalParameters(DummyKVStorable.getInstance());
+    
     /** create static file access */
     @BeforeClass
     public static void deleteInitialFile() throws IOException, FileLockException {
-        TestUtils.init();
         if (new File("test.db").exists()) {
             new File("test.db").delete();
         }
@@ -41,14 +42,12 @@ public class HeaderIndexFileTest {
     /** create static file access */
     @Before
     public void createFile() throws IOException, FileLockException {
-        System.out.println(TestUtils.gp);
-        file = new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 1, TestUtils.gp);
+        file = new HeaderIndexFile("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 1, gp);
     }
 
     /** create static file access */
     @After
     public void closeAndDeleteFile() throws IOException, FileLockException {
-        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
         if (file != null && file.osFile.exists()) {
             file.delete();
         }
@@ -67,7 +66,7 @@ public class HeaderIndexFileTest {
     public void getFreeSpaceTest() throws IOException {
         System.out.println("======== getFreeSpaceTest");
         long freeSpace = file.getFreeSpace();
-        long realSpace = file.size - HeaderIndexFile.HEADER_SIZE;
+        long realSpace = file.size - HeaderIndexFile.HEADER_SIZE - HeaderIndexFile.MAX_INDEX_SIZE_IN_BYTES;
         Assert.assertEquals(freeSpace, realSpace);
     }
 
@@ -79,7 +78,7 @@ public class HeaderIndexFileTest {
         file.headerBuffer.rewind();
         file.headerBuffer.get(oldHeader);
         file.close();
-        
+
         createFile();
         byte[] newHeader = new byte[1024];
         file.headerBuffer.rewind();
@@ -94,7 +93,7 @@ public class HeaderIndexFileTest {
         System.out.println("======== fileWrite");
         byte[] b = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
         file.write(0, ByteBuffer.wrap(b));
-        Assert.assertEquals(file.filledUpTo, HeaderIndexFile.HEADER_SIZE + 16);
+        Assert.assertEquals(file.filledUpTo, HeaderIndexFile.HEADER_SIZE + HeaderIndexFile.MAX_INDEX_SIZE_IN_BYTES + 16);
     }
 
     @Test
@@ -155,16 +154,17 @@ public class HeaderIndexFileTest {
         file.close();
         createFile();
         try {
-            new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, TestUtils.gp);
+            new HeaderIndexFile("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, gp);
             Assert.assertTrue(false);
         } catch (FileLockException e) {
             Assert.assertTrue(true);
         }
         file.close();
 
-        new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, TestUtils.gp);
+        new HeaderIndexFile("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, gp);
         Assert.assertTrue(true);
     }
+
 
     @Test
     public void deleteFile() throws Exception {
@@ -175,7 +175,7 @@ public class HeaderIndexFileTest {
 
     @Test
     public void test() throws Throwable {
-        HeaderIndexFile<DummyKVStorable> hif = new HeaderIndexFile<DummyKVStorable>("/tmp/test.db", AccessMode.READ_WRITE, 1, TestUtils.gp);
+        HeaderIndexFile hif = new HeaderIndexFile("/tmp/test.db", AccessMode.READ_WRITE, 1, gp);
         hif.delete();
 
         File osFile = new File("/tmp/test.db");

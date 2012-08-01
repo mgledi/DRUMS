@@ -21,6 +21,8 @@ public class SDRUM_API {
      * If the given directory doesn't exist, it will be created.<br/>
      * If the given directory already exists an {@link IOException} will be thrown.
      * 
+     * @param databaseDirectory
+     *            the path, where to store the database files
      * @param hashFunction
      *            the hash function, decides where to store/search elements
      * @param gp
@@ -29,16 +31,16 @@ public class SDRUM_API {
      *             is thrown if an error occurs or if the SDRUM already exists
      * @return new {@link SDRUM}-object
      */
-    public static <Data extends AbstractKVStorable> SDRUM<Data> createTable(AbstractHashFunction hashFunction,
-            GlobalParameters<Data> gp) throws IOException {
-        File databaseDirectoryFile = new File(gp.databaseDirectory);
+    public static <Data extends AbstractKVStorable> SDRUM<Data> createTable(
+            String databaseDirectory, AbstractHashFunction hashFunction, GlobalParameters<Data> gp) throws IOException {
+        File databaseDirectoryFile = new File(databaseDirectory);
         if (databaseDirectoryFile.exists()) {
             throw new IOException("The directory already exist. Can't create a SDRUM.");
         }
         // First we create the directory structure.
-        new File(gp.databaseDirectory).mkdirs();
-        log.info("Created directory {}.", gp.databaseDirectory);
-        SDRUM<Data> table = new SDRUM<Data>(hashFunction, AccessMode.READ_WRITE, gp);
+        new File(databaseDirectory).mkdirs();
+        log.info("Created directory {}.",databaseDirectory);
+        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, hashFunction, AccessMode.READ_WRITE, gp);
         return table;
     }
 
@@ -46,6 +48,8 @@ public class SDRUM_API {
      * This method creates a new {@link SDRUM} object. The old {@link SDRUM} will be overwritten. <br/>
      * If the given directory doesn't exist, it will be created.<br/>
      * 
+     * @param databaseDirectory
+     *            the path, where to store the database files
      * @param hashFunction
      *            the hash function, decides where to store/search elements
      * @param gp
@@ -54,17 +58,17 @@ public class SDRUM_API {
      *             if an error occurs while writing the configuration file
      * @return new {@link SDRUM}-object
      */
-    public static <Data extends AbstractKVStorable> SDRUM<Data> forceCreateTable(AbstractHashFunction hashFunction,
-            GlobalParameters<Data> gp)
+    public static <Data extends AbstractKVStorable> SDRUM<Data> forceCreateTable(
+            String databaseDirectory, AbstractHashFunction hashFunction, GlobalParameters<Data> gp)
             throws IOException {
-        File databaseDirectoryFile = new File(gp.databaseDirectory);
+        File databaseDirectoryFile = new File(databaseDirectory);
         if (databaseDirectoryFile.exists()) {
-            deleteDatabaseFilesWithinDirectory(gp.databaseDirectory);
+            deleteDatabaseFilesWithinDirectory(databaseDirectory);
         } else {
             databaseDirectoryFile.mkdir();
         }
 
-        SDRUM<Data> table = new SDRUM<Data>(hashFunction, AccessMode.READ_WRITE, gp);
+        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, hashFunction, AccessMode.READ_WRITE, gp);
         return table;
     }
 
@@ -86,15 +90,17 @@ public class SDRUM_API {
      * Opens an existing table. Only the database configuration file and the access are needed. All other information
      * are loaded from the configuration file.
      * 
+     * @param databaseDirectory
+     *            the folder of the SDRUM to open
      * @param accessMode
      *            the AccessMode, how to access the SDRUM
      * @param gp
      *            pointer to the {@link GlobalParameters} used by the {@link SDRUM} to open
      * @return the table
      */
-    public static <Data extends AbstractKVStorable> SDRUM<Data> openTable(AbstractHashFunction hashFunction,
-            AccessMode accessMode, GlobalParameters<Data> gp) {
-        SDRUM<Data> table = new SDRUM<Data>(hashFunction, accessMode, gp);
+    public static <Data extends AbstractKVStorable> SDRUM<Data> openTable(String databaseDirectory,
+            AbstractHashFunction hashFunction, AccessMode accessMode, GlobalParameters<Data> gp) {
+        SDRUM<Data> table = new SDRUM<Data>(databaseDirectory, hashFunction, accessMode, gp);
         return table;
     }
 
@@ -102,6 +108,8 @@ public class SDRUM_API {
      * Creates or opens the table. If the directory doesn't exists it will be created. If the directory exists only an
      * open will be made.
      * 
+     * @param databaseDirectory
+     *            the path, where to store the database files
      * @param hashFunction
      *            the hash function, decides where to store/search elements
      * @param gp
@@ -110,15 +118,15 @@ public class SDRUM_API {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public static <Data extends AbstractKVStorable> SDRUM<Data> createOrOpenTable(AbstractHashFunction hashFunction,
-            GlobalParameters<Data> gp) throws IOException {
+    public static <Data extends AbstractKVStorable> SDRUM<Data> createOrOpenTable(
+            String databaseDirectory, AbstractHashFunction hashFunction, GlobalParameters<Data> gp) throws IOException {
 
-        File databaseDirectoryFile = new File(gp.databaseDirectory);
+        File databaseDirectoryFile = new File(databaseDirectory);
         SDRUM<Data> sdrum = null;
         if (databaseDirectoryFile.exists()) {
-            sdrum = openTable(hashFunction, AccessMode.READ_WRITE, gp);
+            sdrum = openTable(databaseDirectory, hashFunction, AccessMode.READ_WRITE, gp);
         } else {
-            sdrum = createTable(hashFunction, gp);
+            sdrum = createTable(databaseDirectory, hashFunction, gp);
         }
         sdrum.getSyncManager().setMaxBucketStorageTime(gp.MAX_BUCKET_STORAGE_TIME);
         return sdrum;

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.sdrum.GlobalParameters;
+import com.unister.semweb.sdrum.TestUtils;
 import com.unister.semweb.sdrum.bucket.Bucket;
 import com.unister.semweb.sdrum.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.sdrum.file.FileLockException;
@@ -33,7 +34,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     protected HeaderIndexFile<Data> dataFile;
 
     /** the header of the bucket, something like an index */
-    private IndexForHeaderIndexFile header;
+    private IndexForHeaderIndexFile<Data> header;
 
     /** a prototype element of type Data */
     private Data prototype;
@@ -67,7 +68,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
             throw new IllegalStateException(ex);
         }
 
-        this.workingBuffer = ByteBuffer.allocate(dataFile.getChunkSize());
+        this.workingBuffer = ByteBuffer.allocate((int)dataFile.getChunkSize());
     }
 
     /**

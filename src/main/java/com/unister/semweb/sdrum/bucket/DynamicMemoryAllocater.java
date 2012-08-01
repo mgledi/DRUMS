@@ -19,7 +19,8 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 // TODO: share the same memory instead of having all its own memory
 public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
     /** the private Logger */
-    private Logger log = LoggerFactory.getLogger(this.getClass());
+    @SuppressWarnings("unused")
+    private static Logger log = LoggerFactory.getLogger(DynamicMemoryAllocater.class);
 
     @SuppressWarnings("rawtypes")
     public static DynamicMemoryAllocater[] INSTANCES = new DynamicMemoryAllocater[0];
@@ -54,7 +55,6 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      */
     public static <Data extends AbstractKVStorable> void instantiate(GlobalParameters<Data> gp) {
         if (INSTANCES.length <= gp.ID) {
-            // TODO IS THIS REALLY CORRECT???
             INSTANCES = Arrays.copyOf(INSTANCES, gp.ID + 1);
             INSTANCES[gp.ID] = new DynamicMemoryAllocater<Data>(gp);
         }
@@ -68,14 +68,6 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      * @throws InterruptedException
      */
     public synchronized int allocateNextChunk() throws InterruptedException {
-        // if no memory is available, then check every second if now is memory available
-        // First try
-        // while ((used_bytes.longValue() + (long) mem_chunksize) > max_allowed_bytes) {
-        // log.info("Can't allocate memory. {} bytes already allocated. {} bytes allowed.", used_bytes.longValue(),
-        // max_allowed_bytes);
-        // Thread.sleep(1000);
-        // }
-
         if ((used_bytes.longValue() + (long) mem_chunksize) > max_allowed_bytes) {
             return 0;
         }

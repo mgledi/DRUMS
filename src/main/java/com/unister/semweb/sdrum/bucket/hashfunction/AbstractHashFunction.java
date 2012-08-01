@@ -3,6 +3,7 @@ package com.unister.semweb.sdrum.bucket.hashfunction;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.unister.semweb.sdrum.GlobalParameters;
 import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.file.HeaderIndexFile;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
@@ -57,7 +58,7 @@ public abstract class AbstractHashFunction {
      * @return int the size of the bucket
      */
     public static <Data extends AbstractKVStorable> int estimateOptimalBucketSize(AbstractHashFunction hashfunction,
-            double threshold, int bucketId)
+            double threshold, int bucketId, GlobalParameters<Data> gp)
             throws FileLockException, IOException {
         if (threshold > 1) {
             threshold = 1;
@@ -66,7 +67,7 @@ public abstract class AbstractHashFunction {
         }
 
         String fileName = hashfunction.getFilename(bucketId);
-        HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100);
+        HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100, gp);
         return (int) (file.getFilledUpFromContentStart() / file.getElementSize());
     }
 
@@ -81,12 +82,12 @@ public abstract class AbstractHashFunction {
      * @return int[] the sizes of the buckets
      */
     public static <Data extends AbstractKVStorable> int[] estimateOptimalBucketSizes(AbstractHashFunction hashfunction,
-            double threshold)
+            double threshold, GlobalParameters<Data> gp)
             throws FileLockException, IOException {
         int[] sizes = new int[hashfunction.getNumberOfBuckets()];
         for (int i = 0; i < hashfunction.getNumberOfBuckets(); i++) {
             String fileName = hashfunction.getFilename(i);
-            HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100);
+            HeaderIndexFile<Data> file = new HeaderIndexFile<Data>(fileName, 100, gp);
             sizes[i] = (int) (file.getFilledUpFromContentStart() / file.getElementSize());
         }
         return sizes;

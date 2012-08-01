@@ -22,10 +22,6 @@ import com.unister.semweb.sdrum.storable.AbstractKVStorable;
  */
 // TODO: remember KeyComposition in RangeHashFunction
 public class BucketSplitter<Data extends AbstractKVStorable> {
-
-    /** the directory of the database */
-    protected String databaseDir;
-
     /** the file to split */
     protected HeaderIndexFile<Data> sourceFile;
 
@@ -53,18 +49,17 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
      * @throws IOException
      * @throws FileLockException
      */
-    public BucketSplitter(String databaseDir, RangeHashFunction hashFunction, GlobalParameters<Data> gp) {
+    public BucketSplitter(RangeHashFunction hashFunction, GlobalParameters<Data> gp) {
         this.gp = gp;
         this.hashFunction = hashFunction;
         // this.newHashFunction = hashFunction.copy();
-        this.databaseDir = databaseDir;
     }
 
     public void splitAndStoreConfiguration(int bucketId, int numberOfPartitions) throws IOException, FileLockException {
         this.oldBucketId = bucketId;
         // open the file (READ_ONLY)
         String fileName = hashFunction.getFilename(bucketId);
-        this.sourceFile = new HeaderIndexFile<Data>(databaseDir + "/" + fileName, AccessMode.READ_WRITE, 100, gp);
+        this.sourceFile = new HeaderIndexFile<Data>(gp.databaseDirectory + "/" + fileName, AccessMode.READ_WRITE, 100, gp);
 
         // determine new thresholds
         byte[][] keysToInsert = determineNewLargestElements(numberOfPartitions);
@@ -77,7 +72,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
         hashFunction.replace(bucketId, keysToInsert);
 
         // move elements to files
-        this.moveElements(sourceFile, hashFunction, databaseDir);
+        this.moveElements(sourceFile, hashFunction, gp.databaseDirectory );
         sourceFile.delete();
 
         // store hashfunction

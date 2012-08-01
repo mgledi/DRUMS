@@ -1,39 +1,45 @@
 package com.unister.semweb.sdrum;
 
+import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.management.RuntimeErrorException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.commons.properties.PropertiesFactory;
+import com.unister.semweb.sdrum.file.IndexFile;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
 /**
  * @author m.gleditzsch
  */
 public class GlobalParameters<Data extends AbstractKVStorable> {
-    private static Logger log = LoggerFactory.getLogger(GlobalParameters.class);
+    private static Logger logger = LoggerFactory.getLogger(GlobalParameters.class);
 
     public static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
 
+    public String INDEX_FILE_NAME = "sdrum.idx";
+    
+    public String databaseDirectory;
+    
     public final int ID;
 
     public String PARAM_FILE;
 
-    /** the size of one chunk to read */
     public long BUCKET_MEMORY;
 
-    /** the size of one chunk to read */
     public long MAX_MEMORY_PER_BUCKET;
 
-    /** the size of one chunk to read */
     public int MEMORY_CHUNK;
 
-    /** the size of one chunk to read */
-    public long CHUNKSIZE;
+    public long SYNC_CHUNK_SIZE;
+
+    public long INDEX_CHUNK_SIZE;
 
     /** The number of threads used for synchronizing */
     public int NUMBER_OF_SYNCHRONIZER_THREADS = 1;
@@ -60,6 +66,8 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     /** The maximal time in ms a bucket is held in memory without synchronization attempt */
     public long MAX_BUCKET_STORAGE_TIME;
 
+    public IndexFile<Data> index;
+
     public GlobalParameters(String paramFile, Data prototype) {
         this.PARAM_FILE = paramFile;
         this.keySize = prototype.key.length;
@@ -67,12 +75,37 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
         this.prototype = prototype;
         this.ID = GlobalParameters.INSTANCE_COUNT.getAndIncrement();
         initParameters();
+        this.openIndex();
     }
 
     public GlobalParameters(Data prototype) {
         this("sdrum.cfg", prototype);
     }
 
+    public IndexFile<Data> getIndex() {
+        if(index == null || index.isSoftlyClosed()) {
+            openIndex();
+        }
+        if(index == null) {
+            logger.error("Index still not available");
+            throw new RuntimeException("Index not available");
+        }
+        
+        return index;
+    }
+    
+    public void openIndex() {
+        try {
+            File dir = new File(this.databaseDirectory);
+            if(!dir.exists()) {
+                dir.mkdirs();
+            }
+            index = new IndexFile<Data>(this);
+        } catch (Exception e) {
+            logger.error("Index could not be opened. {}. Using opened index", e.getMessage());
+        } 
+    }
+    
     /**
      * Returns a clone of the prototype. If you need to access the prototype several times, you should create a pointer
      * on your own instance.
@@ -86,11 +119,13 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
 
     public void initParameters() {
         Properties props = PropertiesFactory.getProperties(PARAM_FILE);
-
+        databaseDirectory = props.getProperty("DATABASE_DIRECTORY");
         BUCKET_MEMORY = parseSize(props.getProperty("BUCKET_MEMORY", "1G"));
-        MEMORY_CHUNK = (int) parseSize(props.getProperty("MEMORY_CHUNK", "1K"));
+        MEMORY_CHUNK = (int) parseSize(props.getProperty("MEMORY_CHUNK", "10K"));
         MAX_MEMORY_PER_BUCKET = parseSize(props.getProperty("MAX_MEMORY_PER_BUCKET", "100M"));
-        CHUNKSIZE = (int) parseSize(props.getProperty("SYNC_CHUNKSIZE", "100M"));
+        SYNC_CHUNK_SIZE = parseSize(props.getProperty("SYNC_CHUNK_SIZE", "2M"));
+        INDEX_CHUNK_SIZE = parseSize(props.getProperty("INDEX_CHUNK_SIZE", "32K"));
+        INDEX_CHUNK_SIZE = INDEX_CHUNK_SIZE - INDEX_CHUNK_SIZE%prototype.getByteBufferSize(); // estimate exact index size
         NUMBER_OF_SYNCHRONIZER_THREADS = Integer.valueOf(props.getProperty("NUMBER_OF_SYNCHRONIZER_THREADS", "1"));
         MAX_BUCKET_STORAGE_TIME = Long.valueOf(props.getProperty("MAX_BUCKET_STORAGE_TIME", "84000000"));
 
@@ -100,14 +135,16 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     }
 
     public void configToString() {
-        log.info("----- MEMEORY USAGE -----");
-        log.info("BUCKET_MEMORY = {}", BUCKET_MEMORY);
-        log.info("MEMORY_CHUNK = {}", MEMORY_CHUNK);
-        log.info("MAX_MEMORY_PER_BUCKET = {}", MAX_MEMORY_PER_BUCKET);
-        log.info("CHUNKSIZE = {}", CHUNKSIZE);
-        log.info("----- HeaderIndexFile -----");
-        log.info("INITIAL_FILE_SIZE = {}", INITIAL_FILE_SIZE);
-        log.info("INITIAL_INCREMENT_SIZE = {}", INITIAL_INCREMENT_SIZE);
+        logger.info("----- MEMEORY USAGE -----");
+        logger.info("BUCKET_MEMORY = {}", BUCKET_MEMORY);
+        logger.info("MEMORY_CHUNK = {}", MEMORY_CHUNK);
+        logger.info("MAX_MEMORY_PER_BUCKET = {}", MAX_MEMORY_PER_BUCKET);
+        logger.info("CHUNKSIZE = {}", SYNC_CHUNK_SIZE);
+        
+        logger.info("----- HeaderIndexFile -----");
+        logger.info("INITIAL_FILE_SIZE = {}", INITIAL_FILE_SIZE);
+        logger.info("INITIAL_INCREMENT_SIZE = {}", INITIAL_INCREMENT_SIZE);
+        logger.info("CHUNK_SIZE = {}", INDEX_CHUNK_SIZE);
     }
 
     static Pattern p_mem = Pattern.compile("(\\d+)(K|M|G)");

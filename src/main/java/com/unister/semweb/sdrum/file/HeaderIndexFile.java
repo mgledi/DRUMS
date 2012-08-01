@@ -49,16 +49,10 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author m.gleditzsch
  */
-public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHeaderFile {
-    
-    /** the size of the index in bytes */
-    protected static final long MAX_INDEX_SIZE_IN_BYTES = 512 * 1024; // 512 kb
-
-    /** the size of a chunk to read, affects the maximal size of the file */
-    protected static final int INITIAL_READCHUNKSIZE = 56 * 1024; // 56 kb
-
-    /** the byte offset, where the index starts */
-    protected static final int INDEX_OFFSET = HEADER_SIZE; // index starts after the header
+public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHeaderFile implements IWritableIndexFile {
+    /** in bytes */
+    protected long indexFileOffset;
+    protected long checkSum;
 
     /** the time to wait for retry the access, if the file was locked */
     protected static final int RETRY_CONNECT_WAITTIME = 250;
@@ -66,43 +60,29 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     /** if true, the file enlarges automatically if <code>size</code> is reached */
     protected static final boolean AUTO_ENLARGE = true;
 
-    /** the size of a stored element in bytes */
-    protected int elementSize;// part of the header
-    protected int keySize;
-
     /** shows if the file was closed correctly */
     private byte closedSoftly = 0; // PART OF HEADER (1 bytes)
-
-    /** in bytes */
-    protected int chunkSize;
 
     /** a constant size, by which the file will be resized in byte */
     protected int incrementSize;
 
-    /** a mappedByteBuffer to the index-region. So changes can be made directly */
-    protected MappedByteBuffer indexBuffer;
-
-    /** the number of elements, which can be stored in the index */
-    protected int indexSize;
-
-    /** the size of the index in bytes */
-    protected long indexSizeInBytes;
-
     /** A pseudo-index (not each element is indexed, but the chunks where they belong to */
-    protected IndexForHeaderIndexFile index;
+    protected IndexForHeaderIndexFile<Data> index;
 
     /** A pointer to the GlobalParameters used by this SDRUM */
     protected GlobalParameters<Data> gp;
-    
+
     /**
      * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
      * {@link AccessMode}.
      * 
-     * @param <b>String</b> fileName, the filename of the underlying OSfile.
-     * @param <b>AccessMode</b> mode, the mode the file should be accessed. READ_ONLY or READ_WRITE
-     * @param <b>int</b> max_retries_connect, the number of retries to open a channel, if the file is locked
-     * 
-     * @param TODO
+     * @param fileName
+     *            the filename of the underlying OSfile.
+     * @param mode
+     *            the mode the file should be accessed. READ_ONLY or READ_WRITE
+     * @param max_retries_connect
+     *            the number of retries to open a channel, if the file is locked
+     * @param gp
      * @throws FileLockException
      *             if the <code>max_retries_connect</code> is exceeded
      * @throws IOException
@@ -113,8 +93,6 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
             IOException {
         this.gp = gp;
         this.incrementSize = gp.INITIAL_INCREMENT_SIZE;
-        this.elementSize = gp.elementSize;
-        this.keySize = gp.keySize;
         this.osFile = new File(fileName);
         this.mode = mode;
         this.max_retries_connect = max_retries_connect;
@@ -128,15 +106,20 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
      * {@link AccessMode}. This is a weak constructor and therefore you can only have read-access.
      * 
-     * @param <b>String</b> fileName, the filename of the underlying OSfile.
-     * @param <b>int</b> max_retries_connect, the number of retries to open a channel, if the file is locked
+     * @param fileName
+     *            the filename of the underlying OSfile.
+     * @param max_retries_connect
+     *            the number of retries to open a channel, if the file is locked
+     * @param gp
      * @throws FileLockException
      *             if the <code>max_retries_connect</code> is exceeded
      * @throws IOException
      *             if another error with the fileaccess occured
      */
-    public HeaderIndexFile(String fileName, int max_retries_connect)
+    public HeaderIndexFile(String fileName, int max_retries_connect, GlobalParameters<Data> gp)
             throws FileLockException, IOException {
+
+        this.gp = gp;
         this.osFile = new File(fileName);
         this.max_retries_connect = max_retries_connect;
         this.init();
@@ -146,7 +129,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     }
 
     protected void init() throws FileLockException, IOException {
-        this.contentStart = HEADER_SIZE + MAX_INDEX_SIZE_IN_BYTES;
+        this.contentStart = HEADER_SIZE;
         if (!osFile.exists()) {
             logger.debug("File {} not found. Initialise new File.", osFile.getAbsolutePath());
             this.createFile();
@@ -154,13 +137,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
             logger.debug("File {} exists. Try to open it.", osFile.getAbsolutePath());
             openChannel();
         }
+        index = gp.getIndex().getIndexByFileOffset(this);
         this.contentEnd = size;
-
-        if (chunkSize % elementSize != 0) {
-            logger.warn(
-                    "The readChunkSize ({}) is not a multiple of elementsize ({}). This might lead to a wrong index",
-                    chunkSize, elementSize);
-        }
     }
 
     /**
@@ -209,6 +187,11 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
             filledUpTo = offset + sourceBuffer.limit();
         }
         channel.write(sourceBuffer, offset);
+
+        // calculate new checksum
+        checkSum += sourceBuffer.hashCode();
+        index.checkSum = checkSum; // remember checksum also in index for consistency check
+
         writeHeader();
     }
 
@@ -294,43 +277,15 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         read(offset, buffer);
     }
 
-    /** this function calculates all relevant informations for the index */
-    public void calcIndexInformations() {
-        indexSize = (int) Math.floor(MAX_INDEX_SIZE_IN_BYTES / keySize);
-        indexSizeInBytes = indexSize * keySize;
-    }
-
     /**
      * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Optionally reads the header. and
      * the index
      * 
      * @param boolean - should the header be read
-     * @param boolean - should the index be read
-     * @throws IOException
-     */
-    protected void openChannel(boolean readHeader, boolean readIndex) throws FileLockException, IOException {
-        super.openChannel(readHeader);
-        calcIndexInformations();
-        if (mode == AccessMode.READ_ONLY) {
-            indexBuffer = channel.map(FileChannel.MapMode.READ_ONLY, INDEX_OFFSET, indexSizeInBytes);
-        } else {
-            indexBuffer = channel.map(FileChannel.MapMode.READ_WRITE, INDEX_OFFSET, indexSizeInBytes);
-        }
-
-        if (readIndex) {
-            readIndex();
-        }
-    }
-
-    /**
-     * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Optionally reads the header. Reads
-     * the index. This may overwrite previous set parameters.
-     * 
-     * @param boolean - should the header be read
      * @throws IOException
      */
     protected void openChannel(boolean readHeader) throws FileLockException, IOException {
-        openChannel(false, true);
+        super.openChannel(readHeader);
     }
 
     /**
@@ -340,19 +295,18 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @throws IOException
      */
     public void openChannel() throws FileLockException, IOException {
-        openChannel(true, true);
+        openChannel(true);
     }
 
     protected void createFile() throws FileLockException, IOException {
         size = gp.INITIAL_FILE_SIZE;
         filledUpTo = contentStart;
-        chunkSize = INITIAL_READCHUNKSIZE - (INITIAL_READCHUNKSIZE % elementSize);
-        openChannel(false, false);
+        openChannel(false);
         setSoftlyClosed(true);
         // have to reset the informations cause in openchannel the empty header was read
         accessFile.setLength(gp.INITIAL_FILE_SIZE);
+        indexFileOffset = gp.index.addNewIndex();
         writeHeader();
-        readIndex(); // index should be empty
     }
 
     public void close() {
@@ -360,40 +314,28 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         if (this.index != null) {
             index = null;
         }
-        if (indexBuffer != null) {
-            indexBuffer.force();
-            indexBuffer = null;
-        }
     }
 
     public long getFreeSpace() {
         return size - filledUpTo;
     }
 
-    /** reads and instantiates the index from the <code>indexBuffer</code> */
-    public void readIndex() {
-        indexBuffer.rewind();
-        index = new IndexForHeaderIndexFile(indexSize, keySize, chunkSize, indexBuffer);
-    }
-
     protected void readHeader() {
         headerBuffer.rewind();
         size = headerBuffer.getLong();
         filledUpTo = headerBuffer.getLong();
+        indexFileOffset = headerBuffer.getLong();
+        checkSum = headerBuffer.getLong();
         closedSoftly = headerBuffer.get();
-        chunkSize = headerBuffer.getInt();
-        elementSize = headerBuffer.getInt();
-        keySize = headerBuffer.getInt();
     }
 
     protected void writeHeader() {
         headerBuffer.rewind();
         headerBuffer.putLong(size);
         headerBuffer.putLong(filledUpTo);
+        headerBuffer.putLong(indexFileOffset);
+        headerBuffer.putLong(checkSum);
         headerBuffer.put(closedSoftly);
-        headerBuffer.putInt(chunkSize);
-        headerBuffer.putInt(elementSize);
-        headerBuffer.putInt(keySize);
     }
 
     public void enlargeFile() throws IOException {
@@ -401,23 +343,20 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         logger.info("Enlarge filesize of {} to {}", osFile, size);
         contentEnd = size;
         accessFile.setLength(size);
-
-        // TODO check buffer size
-        // if there are more chunks than the index can contain
-        if ((size - contentStart) / chunkSize > indexSize) {
-            logger.error("File-Enlargement not possible. The index becomes too large.");
-            throw new IOException("File-Enlargement not possible. The index becomes too large.");
-        }
-        calcIndexInformations();
     }
 
     /**
-     * returns the instantiated index
+     * Returns a pointer to the instantiated index.
      * 
      * @return {@link IndexForHeaderIndexFile}
      */
-    public IndexForHeaderIndexFile getIndex() {
+    public IndexForHeaderIndexFile<Data> getIndex() {
         return index;
+    }
+
+    /** Returns the file position, where to find the {@link IndexForHeaderIndexFile} for this {@link HeaderIndexFile}. */
+    public long getIndexOffsetInIndexFile() {
+        return indexFileOffset;
     }
 
     /**
@@ -427,13 +366,13 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @throws IOException
      */
     public boolean isConsistent() throws IOException {
-        byte[] b = new byte[elementSize];
+        byte[] b = new byte[gp.elementSize];
         long offset = 0;
         byte[] oldKey = null;
         int i = 0;
         while (offset < this.getFilledUpFromContentStart()) {
             this.read(offset, ByteBuffer.wrap(b));
-            byte[] key = Arrays.copyOfRange(b, 0, keySize);
+            byte[] key = Arrays.copyOfRange(b, 0, gp.keySize);
             if (oldKey != null) {
                 if (KeyUtils.compareKey(key, oldKey) != 1) {
                     logger.error("File is not consistent at record {}. {} not larger than {}",
@@ -441,8 +380,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
                     return false;
                 }
             }
-            oldKey = Arrays.copyOf(key, keySize);
-            offset += elementSize;
+            oldKey = Arrays.copyOf(key, gp.keySize);
+            offset += gp.elementSize;
             i++;
         }
         return true;
@@ -455,12 +394,12 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @throws IOException
      */
     public boolean isConsitentWithIndex() throws IOException {
-        byte[] b = new byte[keySize];
+        byte[] b = new byte[gp.keySize];
         long offset = 0;
         int maxChunk = getChunkIndex(getFilledUpFromContentStart());
         boolean isConsistent = true;
         for (int i = 1; i <= maxChunk; i++) {
-            offset = i * getChunkSize() - elementSize;
+            offset = i * getChunkSize() - gp.elementSize;
             read(offset, ByteBuffer.wrap(b));
             if (KeyUtils.compareKey(getIndex().maxKeyPerChunk[i - 1], b) != 0) {
                 logger.error("Index is not consistent to data. Expected {}, but found {}.",
@@ -478,11 +417,11 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @throws IOException
      */
     public void repairIndex() throws IOException {
-        byte[] b = new byte[keySize];
+        byte[] b = new byte[gp.keySize];
         long offset = 0;
         int maxChunk = getChunkIndex(getFilledUpFromContentStart());
         for (int i = 1; i <= maxChunk; i++) {
-            offset = i * getChunkSize() - elementSize;
+            offset = i * getChunkSize() - gp.elementSize;
             read(offset, ByteBuffer.wrap(b));
             getIndex().setLargestKey(i - 1, b);
             if (KeyUtils.compareKey(getIndex().maxKeyPerChunk[i - 1], b) != 0) {
@@ -495,7 +434,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     /** sets the start of filledUpTo to zero */
     public void clear() {
         this.filledUpTo = 0;
-        this.contentStart = HEADER_SIZE + MAX_INDEX_SIZE_IN_BYTES;
+        this.contentStart = HEADER_SIZE;
         this.filledUpTo = contentStart;
     }
 
@@ -506,17 +445,17 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @return
      */
     public int getChunkIndex(long offset) {
-        return (int) offset / this.chunkSize;
+        return (int) (offset / gp.INDEX_CHUNK_SIZE);
+    }
+
+    /** returns the size in bytes of the chunk to read */
+    public long getChunkSize() {
+        return gp.INDEX_CHUNK_SIZE;
     }
 
     /** returns the size of one element. We assume that all elements are equal sized */
     public int getElementSize() {
-        return elementSize;
-    }
-
-    /** returns the size in bytes of the chunk to read */
-    public int getChunkSize() {
-        return chunkSize;
+        return gp.elementSize;
     }
 
     /** true, if the file was closed softly */

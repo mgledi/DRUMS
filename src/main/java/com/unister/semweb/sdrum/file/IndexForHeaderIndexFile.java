@@ -2,6 +2,8 @@ package com.unister.semweb.sdrum.file;
 
 import java.nio.MappedByteBuffer;
 
+import com.unister.semweb.sdrum.GlobalParameters;
+import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 
 /**
@@ -18,13 +20,15 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
  * 
  * @author m.gleditzsch
  */
-public class IndexForHeaderIndexFile {
+public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
+    
+    private static final int INDEXBUFFER_WRITE_OFFSET = 128;
+    /** the size of the index in bytes */
+    protected static final long INDEX_SIZE = 512 * 1024; // 512 kb
 
     /** chunkId -> largest key in this chunk */
+    // TODO: remove this cause of Memory efficiency. Double information with indexBuffer
     protected byte maxKeyPerChunk[][];
-
-    /** the size of one chunk */
-    protected int chunkSize;
 
     /** the number of chunks, represented by this index */
     protected int numberOfChunks;
@@ -35,21 +39,23 @@ public class IndexForHeaderIndexFile {
     /** reflects the largest initialized chunkIndex */
     private int filledUpTo;
 
-    private int keySize;
+    protected long checkSum;
+
+    /** A pointer to the GlobalParameters used by this SDRUM */
+    protected GlobalParameters<Data> gp;
 
     /**
      * This constructor instantiates a new {@link IndexForHeaderIndexFile}. You need to give the number of the indexed
      * chunks, the chunksize and the {@link MappedByteBuffer}, where the index should be written to.
      * 
-     * @param <b>int numberOfChunks</b> the expected or maximal number of chunks
-     * @param <b>int chunkSize</b>, the size of one chunk
-     * @param <b>MappedByteBuffer indexBuffer</b>, the buffer were to write the indexinformations
+     * @param keySize
+     *            the size of one chunk
+     * @param indexBuffer
+     *            the buffer were to write the indexinformations
      */
-    public IndexForHeaderIndexFile(final int numberOfChunks, final int keySize, final int chunkSize,
-            final MappedByteBuffer indexBuffer) {
-        this.keySize = keySize;
-        this.numberOfChunks = numberOfChunks;
-        this.chunkSize = chunkSize;
+    public IndexForHeaderIndexFile(GlobalParameters<Data> gp, final MappedByteBuffer indexBuffer) {
+        this.gp = gp;
+        this.numberOfChunks = (int) ((INDEX_SIZE - INDEXBUFFER_WRITE_OFFSET) / gp.keySize); // reserve 128 for additional indexinformations
         this.indexBuffer = indexBuffer;
         this.maxKeyPerChunk = new byte[numberOfChunks][]; // init lookuparray
         this.filledUpTo = 0; // init the actual indexed chunks
@@ -61,8 +67,11 @@ public class IndexForHeaderIndexFile {
      */
     protected void fillIndexFromByteBuffer() {
         indexBuffer.rewind();
+        checkSum = indexBuffer.getLong();
+        
+        indexBuffer.position(INDEXBUFFER_WRITE_OFFSET);
         for (int i = 0; i < numberOfChunks; i++) {
-            maxKeyPerChunk[i] = new byte[keySize];
+            maxKeyPerChunk[i] = new byte[gp.keySize];
             indexBuffer.get(maxKeyPerChunk[i]);
             if (KeyUtils.isNull(maxKeyPerChunk[i]) && i > 0) {
                 filledUpTo = i - 1;
@@ -78,7 +87,7 @@ public class IndexForHeaderIndexFile {
      * @return long, the byte-offset of the chunk
      */
     public long getStartOffsetOfChunk(int chunkIndex) {
-        return chunkIndex * chunkSize;
+        return chunkIndex * gp.INDEX_CHUNK_SIZE;
     }
 
     /**
@@ -174,7 +183,8 @@ public class IndexForHeaderIndexFile {
     public void setLargestKey(int chunkIdx, byte[] largestKeyInChunk) {
         maxKeyPerChunk[chunkIdx] = largestKeyInChunk;
         filledUpTo = Math.max(filledUpTo, chunkIdx);
-        indexBuffer.position(chunkIdx * keySize);
+        indexBuffer.position(INDEXBUFFER_WRITE_OFFSET + chunkIdx * gp.keySize);
         indexBuffer.put(largestKeyInChunk);
+//        System.out.println(this);
     }
 }

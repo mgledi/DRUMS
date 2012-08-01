@@ -94,33 +94,36 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     GlobalParameters<Data> gp;
 
     /**
-     * Instantiates a new {@link SyncManager} with an already instantiated {@link BucketContainer}. The
-     * <code>numberOfBufferThreads</code> will show the number of allowed {@link SyncThread}s used to synchronize the
-     * {@link AbstractKVStorable}s from the {@link Bucket}s in {@link BucketContainer} to the HDD.
+     * Instantiates a new {@link SyncManager} with an already instantiated {@link BucketContainer}. The defined number
+     * of Threads in {@link GlobalParameters} will show the number of allowed {@link SyncThread}s used to synchronize
+     * the {@link AbstractKVStorable}s from the {@link Bucket}s in {@link BucketContainer} to the HDD.
      * 
-     * @param {@link BucketContainer} bucketContainer
-     * @param int numberOfBufferThreads
-     * @param String
-     *            pathToFiles
-     * @param {@link ISynchronizerFactory}
+     * @param bucketContainer
+     * @param synchronizerFactory
+     * @param gp
      */
-    public SyncManager(BucketContainer<Data> bucketContainer, int numberOfBufferThreads, String pathToFiles,
-            ISynchronizerFactory<Data> synchronizerFactory, GlobalParameters<Data> gp) {
+    public SyncManager(
+            BucketContainer<Data> bucketContainer,
+            ISynchronizerFactory<Data> synchronizerFactory,
+            GlobalParameters<Data> gp) {
         this.gp = gp;
         this.bucketContainer = bucketContainer;
         // HashSet<Integer> tmpSet = new HashSet<Integer>();
         HashSet<Bucket<Data>> tmpSet = new HashSet<Bucket<Data>>();
         // this.actualProcessingBucketIds = Collections.synchronizedSet(tmpSet);
         this.actualProcessingBuckets = Collections.synchronizedSet(tmpSet);
-        this.pathToDbFiles = pathToFiles;
+        this.pathToDbFiles = gp.databaseDirectory;
         this.maxBucketStorageTime = Long.MAX_VALUE;
         this.synchronizerFactory = synchronizerFactory;
-        this.allowedBucketsInBuffer = numberOfBufferThreads * 4;
+        this.allowedBucketsInBuffer = gp.NUMBER_OF_SYNCHRONIZER_THREADS * 4;
         this.numberOfBuckets = bucketContainer.getNumberOfBuckets();
 
         // instantiating queue and ThreadPoolExecutor for parallel synchronizing
         BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(allowedBucketsInBuffer);
-        bufferThreads = new ThreadPoolExecutor(numberOfBufferThreads, numberOfBufferThreads, Integer.MAX_VALUE,
+        bufferThreads = new ThreadPoolExecutor(
+                gp.NUMBER_OF_SYNCHRONIZER_THREADS,
+                gp.NUMBER_OF_SYNCHRONIZER_THREADS,
+                Integer.MAX_VALUE,
                 TimeUnit.DAYS, queue);
         this.setName("SyncManager:FileStorage");
 

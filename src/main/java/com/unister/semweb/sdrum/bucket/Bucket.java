@@ -96,20 +96,11 @@ public class Bucket<Data extends AbstractKVStorable> {
         try {
             if (lastChunkIndex == -1 || position_in_chunk == memory[lastChunkIndex].length) {
                 boolean allocatingSuccessful = enlargeMemory();
-
-                // No more memory was left so we don't add the element and return false.
+                // No more memory was left so we don't add the element and return false. BLOCKING-State
                 if (!allocatingSuccessful) {
                     return false;
                 }
             }
-
-            /* Original from Martin */
-            // if (lastChunkIndex == -1) {
-            // enlargeMemory();
-            // } else if (position_in_chunk == memory[lastChunkIndex].length) {
-            // enlargeMemory();
-            // }
-            /* ******************** */
         } catch (InterruptedException e) {
             // TODO: error log
             e.printStackTrace();

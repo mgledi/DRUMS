@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import com.unister.semweb.sdrum.api.SDRUM;
 import com.unister.semweb.sdrum.api.SDRUM.AccessMode;
 import com.unister.semweb.sdrum.api.SDRUM_API;
 import com.unister.semweb.sdrum.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.sdrum.file.FileLockException;
 import com.unister.semweb.sdrum.storable.DummyKVStorable;
 import com.unister.semweb.sdrum.utils.KeyUtils;
 import com.unister.semweb.sdrum.utils.RangeHashFunctionTestUtils;
@@ -25,14 +27,17 @@ import com.unister.semweb.sdrum.utils.RangeHashFunctionTestUtils;
  * @author n.thieme
  */
 public class BucketSplitterTestNonLinear {
-    private static final String sdrumDirectory = "/tmp/bucketSplitting";
-    private static final String databaseDirectory = sdrumDirectory + "/db";
     private static final String hashFunctionFilename = "/tmp/hash.hs";
 
     @Before
-    public void initialise() throws IOException {
-        FileUtils.deleteQuietly(new File(sdrumDirectory));
-        new File(sdrumDirectory).mkdirs();
+    public void initialise() throws IOException, FileLockException {
+        TestUtils.init();
+        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
+    }
+
+    @After
+    public void close() {
+        TestUtils.gp.index.close();
     }
 
     /**
@@ -53,11 +58,11 @@ public class BucketSplitterTestNonLinear {
         DummyKVStorable[] testData = createAndFillSDRUM(10, 10, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter =
-                new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction, TestUtils.gp);
+                new BucketSplitter<DummyKVStorable>(hashFunction, TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 2);
 
         SDRUM<DummyKVStorable> sdrumAfterSplitting =
-                SDRUM_API.openTable(databaseDirectory, hashFunction, AccessMode.READ_ONLY, TestUtils.gp);
+                SDRUM_API.openTable(hashFunction, AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         sdrumAfterSplitting.setHashFunction(hashFunction);
 
@@ -89,11 +94,10 @@ public class BucketSplitterTestNonLinear {
                 hashFunctionFilename, TestUtils.gp.keySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, 100, hashFunction);
 
-        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
-                TestUtils.gp);
+        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction, TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 2);
 
-        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, hashFunction,
+        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(hashFunction,
                 AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         sdrumAfterSplitting.setHashFunction(hashFunction);
@@ -109,7 +113,7 @@ public class BucketSplitterTestNonLinear {
         Assert.assertArrayEquals(Arrays.copyOfRange(testData, 2500, 5000),
                 secondBucketElements.toArray(new DummyKVStorable[firstBucketElements.size()]));
 
-        byte[][] expectedRanges = KeyUtils.transformToByteArray(new long[]{249901, 500000 });
+        byte[][] expectedRanges = KeyUtils.transformToByteArray(new long[] { 249901, 500000 });
         Assert.assertArrayEquals(expectedRanges, hashFunction.getRanges());
     }
 
@@ -126,11 +130,10 @@ public class BucketSplitterTestNonLinear {
                 hashFunctionFilename, TestUtils.gp.keySize);
         DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, 100, hashFunction);
 
-        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(databaseDirectory, hashFunction,
-                TestUtils.gp);
+        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction, TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 4);
 
-        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(databaseDirectory, hashFunction,
+        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(hashFunction,
                 AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         sdrumAfterSplitting.setHashFunction(hashFunction);
@@ -154,8 +157,7 @@ public class BucketSplitterTestNonLinear {
         Assert.assertArrayEquals(Arrays.copyOfRange(testData, 3750, 5000),
                 fourthBucketElements.toArray(new DummyKVStorable[fourthBucketElements.size()]));
 
-
-        byte[][] expectedRanges = KeyUtils.transformToByteArray(new long[]{124901, 249901, 374901, 500000});                
+        byte[][] expectedRanges = KeyUtils.transformToByteArray(new long[] { 124901, 249901, 374901, 500000 });
         Assert.assertArrayEquals(expectedRanges, hashFunction.getRanges());
     }
 
@@ -172,7 +174,7 @@ public class BucketSplitterTestNonLinear {
     private DummyKVStorable[] createAndFillSDRUM(int numberOfData, int width, RangeHashFunction hashFunction)
             throws Exception {
         DummyKVStorable[] testData = TestUtils.generateTestdata(numberOfData, width);
-        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(databaseDirectory, hashFunction, TestUtils.gp);
+        SDRUM<DummyKVStorable> sdrum = SDRUM_API.createOrOpenTable(hashFunction, TestUtils.gp);
         sdrum.insertOrMerge(testData);
         sdrum.close();
         return testData;

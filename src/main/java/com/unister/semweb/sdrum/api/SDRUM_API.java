@@ -77,6 +77,7 @@ public class SDRUM_API {
     private static void deleteDatabaseFilesWithinDirectory(String databaseDirectory) {
         File databaseDirectoryFile = new File(databaseDirectory);
         Collection<File> toDelete = FileUtils.listFiles(databaseDirectoryFile, new String[] { "*.db" }, false);
+        // TODO: dont forget to delete the config file
         for (File oneFile : toDelete) {
             oneFile.delete();
         }

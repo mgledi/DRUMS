@@ -148,7 +148,7 @@ public class SDrumIterator<Data extends AbstractKVStorable> implements Iterator<
             actualFile = new HeaderIndexFile<Data>(filename, 1, gp);
             readBuffer = ByteBuffer.allocate((int)actualFile.getChunkSize());
             readBuffer.clear();
-            readBuffer.flip();
+            readBuffer.limit(0);
         } else if (readBuffer.remaining() == 0 && actualFileOffset >= actualFile.getFilledUpFromContentStart()) {
             actualFile.close();
             actualBucketId++;
@@ -159,7 +159,7 @@ public class SDrumIterator<Data extends AbstractKVStorable> implements Iterator<
             actualFile = new HeaderIndexFile<Data>(filename, 1, gp);
             actualFileOffset = 0;
             readBuffer.clear();
-            readBuffer.flip();
+            readBuffer.limit(0);
         }
         return true;
     }

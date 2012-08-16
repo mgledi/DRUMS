@@ -42,7 +42,7 @@ import com.unister.semweb.sdrum.utils.KeyUtils;
 public class SDRUM<Data extends AbstractKVStorable> {
     private static final Logger logger = LoggerFactory.getLogger(SDRUM_API.class);
 
-    /** the possible AccessModes for SDRUM */
+    /** the accessmode for SDRUM */
     public enum AccessMode {
         READ_ONLY, READ_WRITE;
     }
@@ -50,7 +50,7 @@ public class SDRUM<Data extends AbstractKVStorable> {
     /** the number of retries if a file is locked by another process */
     private static final int HEADER_FILE_LOCK_RETRY = 100;
 
-    /** the hashfunction, decides where to search for an element, or where to store it */
+    /** the hashfunction, decides where to search for element, or where to store it */
     private AbstractHashFunction hashFunction;
 
     /** an array, containing all used buckets */

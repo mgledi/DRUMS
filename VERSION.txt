@@ -41,6 +41,12 @@ Version 0.2.20-SNAPSHOT
  - implemented checks for Consitency in HeaderIndexFile and IndexForHeaderIndexFile
  - implemented a index-repair method for HeaderIndexFile
 
+Version 0.2.21 (2012/07/27)
+ - KeyUtils: Adding header to rangeHashFunctionFile
+
+Version 0.2.20:
+ - KeyUtils: Some utility methods were added.
+
 Version 0.2.19:
  - ConfigurationFile: Making sure that the configuration file is written with "flush". 
 

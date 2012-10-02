@@ -10,6 +10,7 @@ import com.unister.semweb.sdrum.GlobalParameters;
  * informations and an {@link IndexForHeaderIndexFile}. This class is for managing and handling equal sized storable
  * elements. So be very careful, if this precondition is not fulfilled.<br>
  * <br>
+ * 
  * Header structure:<br/>
  * <br/>
  * <code>
@@ -19,12 +20,15 @@ import com.unister.semweb.sdrum.GlobalParameters;
  * +-----------+--------------+---------------+---------------+-------------+<br/>
  * </code> = 1024 bytes (to have enough space for more values)<br/>
  * <br/>
+ * 
  * To use this class correctly, have a look at the following methods: <li>read(long offset, ByteBuffer destBuffer) <li>
  * write(long offset, ByteBuffer sourceBuffer) <li>append(ByteBuffer sourceBuffer) <li>dbfile.getFilledUpToExclHeader()
  * <br>
  * <br>
  * The file enlarges automatically. Deletes (writing empty byte[] to a specific position) are leading to fragmentation.
- * The actual version don't have a fragmentation-handling. Example code for reading the whole file:
+ * The actual version don't have a fragmentation-handling.
+ * 
+ * Example code for reading the whole file:
  * 
  * <pre>
  *  ...
@@ -41,6 +45,7 @@ import com.unister.semweb.sdrum.GlobalParameters;
  * </pre>
  * 
  * @author m.gleditzsch
+ * 
  */
 public class FragmentedHeaderIndexFile extends HeaderIndexFile {
 

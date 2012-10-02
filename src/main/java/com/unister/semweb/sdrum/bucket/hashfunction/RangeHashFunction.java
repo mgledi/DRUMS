@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -314,49 +315,77 @@ public class RangeHashFunction extends AbstractHashFunction {
 
     /**
      * Returns the bucket ids for the given byte prefix. Example: Suppose you have the following ranges: 1 0 0 0 - 1 1 0
-     * 0 1 1 0 1 - 1 1 1 1 2 0 0 0 - 2 1 1 1 The prefix is 1 then the method will return the bucket ids of first two
-     * ranges. If the <code>prefix</code> has more elements than the keys within the hash function an
-     * {@link IllegalArgumentException} is thrown.
+     * 0 1 1 0 1 - 1 1 1 1 2 0 0 0 - 2 1 1 1
      * 
-     * TODO: THIS METHODS IS NOT COMPLETE AND CAUSES AN INAPPROPIATE RESULT. IF ALL RANGES HAVE THE SAME PREFIX THE
-     * METHOD DOESN'T RETURNS ALL RANGES IF THE GIVEN prefix IS EQUAL TO THE PREFIX OF ALL RANGES. INSTEAD IT RETURNS
-     * ONLY ONE BUCKET ID NOT ALL.
+     * The prefix is 1 then the method will return the bucket ids of first two ranges.
+     * 
+     * If the <code>prefix</code> has more elements than the keys within the hash function an
+     * {@link IllegalArgumentException} is thrown.
      * 
      * @param prefix
      * @return
      */
     public int[] getBucketIdsFor(byte[] prefix) throws IllegalArgumentException {
-        // We take one range to get the length of the keys.
-        byte[] oneMaxRange = maxRangeValues[0];
+        List<Integer> intermediateResult = new ArrayList<Integer>();
 
-        // If the prefix array has more bytes than the keys then we return the bucket id for the prefix.
-        if (prefix.length > oneMaxRange.length) {
-            throw new IllegalArgumentException(
-                    "The prefix has more bytes as the keys within this hash function. Prefix size: " + prefix.length);
+        int keySize = maxRangeValues[0].length;
+
+        byte[] begin = Arrays.copyOf(prefix, keySize);
+        byte[] end = Arrays.copyOf(prefix, keySize);
+        Arrays.fill(end, prefix.length, keySize, (byte) 255);
+
+        byte[] leftKey = new byte[keySize];
+        byte[] rightKey = new byte[keySize];
+
+        for (int i = 0; i < maxRangeValues.length; i++) {
+            rightKey = maxRangeValues[i];
+
+            int compareLeftBegin = KeyUtils.compareKey(leftKey, begin);
+            int compareBeginRight = KeyUtils.compareKey(begin, rightKey);
+
+            int compareLeftEnd = KeyUtils.compareKey(leftKey, end);
+            int compareEndRight = KeyUtils.compareKey(end, rightKey);
+
+            int compareBeginLeft = KeyUtils.compareKey(begin, leftKey);
+
+            if ((compareLeftBegin <= 0 && compareBeginRight < 0) || (compareLeftEnd <= 0 && compareEndRight < 0)
+                    || (compareBeginLeft <= 0 && compareLeftEnd < 0)) {
+                /* Before we determine the bucket id of the left key we add 1 to the key. */
+                byte[] incrementedLeftKey = increment(leftKey);
+                intermediateResult.add(getBucketId(incrementedLeftKey));
+            }
+            leftKey = rightKey;
         }
 
-        // Here determine the smallest and the highest value of the beginning with the prefix.
-        byte[] smallestValue = Arrays.copyOf(prefix, oneMaxRange.length);
-        byte[] greatestValue = Arrays.copyOf(prefix, oneMaxRange.length);
-        Arrays.fill(greatestValue, prefix.length, oneMaxRange.length, (byte) 255);
+        /* This handles the last range if the prefix lies within the last range. */
+        byte[] lastRangeValue = maxRangeValues[maxRangeValues.length - 1];
+        int compareLastBegin = KeyUtils.compareKey(lastRangeValue, begin);
+        int compareLastEnd = KeyUtils.compareKey(lastRangeValue, begin);
 
-        // We get the bucket id for the smallest and greatest value.
-        int smallestBucketId = getBucketId(smallestValue);
-        int greatestBucketId = getBucketId(greatestValue);
-
-        // We calculate modulo in the next step. If the greatest bucket id is less than the smallest bucket id (this is
-        // the case if we look at the last and first element of the ranges) then we add the number of ranges. Modulo the
-        // number of ranges is 0. the addition annihilates.
-        if (greatestBucketId < smallestBucketId) {
-            greatestBucketId = greatestBucketId + maxRangeValues.length;
+        if (compareLastBegin <= 0 || compareLastEnd <= 0) {
+            intermediateResult.add(maxRangeValues.length);
         }
 
-        int numberOfResult = greatestBucketId - smallestBucketId + 1;
-        int[] result = new int[numberOfResult];
-        for (int i = smallestBucketId; i <= greatestBucketId; i++) {
-            result[i - smallestBucketId] = i % maxRangeValues.length;
+        int[] result = new int[intermediateResult.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = intermediateResult.get(i);
         }
         return result;
+    }
+
+    /** Increment the given value by one. */
+    private byte[] increment(byte[] toIncrement) {
+        byte[] increment = new byte[toIncrement.length];
+        increment[increment.length - 1] = 1;
+
+        try {
+            byte[] incrementedResult = KeyUtils.sumUnsigned(toIncrement, increment);
+            return incrementedResult;
+
+        } catch (Exception ex) {
+            log.error("Could not increment number: {}", Arrays.toString(toIncrement), ex);
+        }
+        return toIncrement;
     }
 
     /**

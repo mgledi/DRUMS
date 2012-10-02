@@ -2,7 +2,6 @@ package com.unister.semweb.sdrum.bucket;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -34,9 +33,9 @@ public class BucketSplitterTestNonLinear {
     }
 
     /**
-     * Generates 10 test element with a width of 10 (keys are 1, 11, 21, 31, 41, 51, 61, 71, 81 and 91).
-     * The elements are stored with the SDRUM. The bucket is split into two halves. So there will be two buckets with
-     * the following elements:
+     * Generates 10 test element with a width of 10 (keys are 1, 11, 21, 31, 41, 51, 61, 71, 81 and 91). The elements
+     * are stored with the SDRUM. The bucket is split into two halves. So there will be two buckets with the following
+     * elements:
      * <ul>
      * <li>First bucket: 1, 11, 21, 31, 41</li>
      * <li>Second bucket: 51, 61, 71, 81, 91</li>
@@ -65,13 +64,57 @@ public class BucketSplitterTestNonLinear {
         Assert.assertEquals(5, firstBucketElements.size());
         Assert.assertEquals(5, secondBucketElements.size());
 
-        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 0, 5),
-                firstBucketElements.toArray(new DummyKVStorable[firstBucketElements.size()]));
-        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 5, 10),
-                secondBucketElements.toArray(new DummyKVStorable[firstBucketElements.size()]));
+        for (int i = 0; i < firstBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i], firstBucketElements.get(i));
+        }
 
-        byte[][] expectedRanges = new byte[][] { KeyUtils.convert(41), KeyUtils.convert(10000) };
-        Assert.assertArrayEquals(expectedRanges, hashFunction.getRanges());
+        for (int i = 0; i < secondBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i + 5], secondBucketElements.get(i));
+        }
+
+        byte[][] expectedRanges = new byte[][] { KeyUtils.transformFromLong(41, TestUtils.gp.keySize),
+                KeyUtils.transformFromLong(10000, TestUtils.gp.keySize) };
+        Assert.assertTrue(examineHashFunction(hashFunction, expectedRanges));
+    }
+
+    /**
+     * Creates 10 test data elements with a width of 100. Then the test data are written to the sdrum and the bucket is
+     * split into two halves.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void oneBucket2Split10Elements100Width() throws Exception {
+        int numberOfElements = 10;
+        RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 10000, hashFunctionFilename,
+                TestUtils.gp.keySize);
+        DummyKVStorable[] testData = createAndFillSDRUM(numberOfElements, 100, hashFunction);
+
+        BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction, TestUtils.gp);
+        splitter.splitAndStoreConfiguration(0, 2);
+
+        SDRUM<DummyKVStorable> sdrumAfterSplitting = SDRUM_API.openTable(hashFunction, AccessMode.READ_ONLY,
+                TestUtils.gp);
+        // We must set the hash function because the hash function is loaded from the curious configuration file.
+        sdrumAfterSplitting.setHashFunction(hashFunction);
+
+        List<DummyKVStorable> firstBucketElements = sdrumAfterSplitting.read(0, 0, 100);
+        List<DummyKVStorable> secondBucketElements = sdrumAfterSplitting.read(1, 0, 100);
+
+        Assert.assertEquals(5, firstBucketElements.size());
+        Assert.assertEquals(5, secondBucketElements.size());
+
+        for (int i = 0; i < firstBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i], firstBucketElements.get(i));
+        }
+
+        for (int i = 0; i < secondBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i + 5], secondBucketElements.get(i));
+        }
+
+        byte[][] expectedRanges = new byte[][] { KeyUtils.transformFromLong(401, TestUtils.gp.keySize),
+                KeyUtils.transformFromLong(10000, TestUtils.gp.keySize) };
+        Assert.assertTrue(examineHashFunction(hashFunction, expectedRanges));
     }
 
     /**
@@ -102,13 +145,17 @@ public class BucketSplitterTestNonLinear {
         Assert.assertEquals(2500, firstBucketElements.size());
         Assert.assertEquals(2500, secondBucketElements.size());
 
-        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 0, 2500),
-                firstBucketElements.toArray(new DummyKVStorable[firstBucketElements.size()]));
-        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 2500, 5000),
-                secondBucketElements.toArray(new DummyKVStorable[firstBucketElements.size()]));
+        for (int i = 0; i < firstBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i], firstBucketElements.get(i));
+        }
 
-        byte[][] expectedRanges = KeyUtils.transformToByteArray(new long[]{249901, 500000 });
-        Assert.assertArrayEquals(expectedRanges, hashFunction.getRanges());
+        for (int i = 0; i < secondBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i + 2500], secondBucketElements.get(i));
+        }
+
+        byte[][] expectedRanges = new byte[][] { KeyUtils.transformFromLong(249901, TestUtils.gp.keySize),
+                KeyUtils.transformFromLong(500000, TestUtils.gp.keySize) };
+        Assert.assertTrue(examineHashFunction(hashFunction, expectedRanges));
     }
 
     /**
@@ -143,18 +190,27 @@ public class BucketSplitterTestNonLinear {
         Assert.assertEquals(1250, thirdBucketElements.size());
         Assert.assertEquals(1250, fourthBucketElements.size());
 
-        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 0, 1250),
-                firstBucketElements.toArray(new DummyKVStorable[firstBucketElements.size()]));
-        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 1250, 2500),
-                secondBucketElements.toArray(new DummyKVStorable[secondBucketElements.size()]));
-        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 2500, 3750),
-                thirdBucketElements.toArray(new DummyKVStorable[thirdBucketElements.size()]));
-        Assert.assertArrayEquals(Arrays.copyOfRange(testData, 3750, 5000),
-                fourthBucketElements.toArray(new DummyKVStorable[fourthBucketElements.size()]));
+        for (int i = 0; i < firstBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i], firstBucketElements.get(i));
+        }
 
+        for (int i = 0; i < secondBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i + 1250], secondBucketElements.get(i));
+        }
 
-        byte[][] expectedRanges = KeyUtils.transformToByteArray(new long[]{124901, 249901, 374901, 500000});                
-        Assert.assertArrayEquals(expectedRanges, hashFunction.getRanges());
+        for (int i = 0; i < thirdBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i + 2500], thirdBucketElements.get(i));
+        }
+
+        for (int i = 0; i < fourthBucketElements.size(); i++) {
+            Assert.assertEquals(testData[i + 3750], fourthBucketElements.get(i));
+        }
+
+        byte[][] expectedRanges = new byte[][] { KeyUtils.transformFromLong(124901, TestUtils.gp.keySize),
+                KeyUtils.transformFromLong(249901, TestUtils.gp.keySize),
+                KeyUtils.transformFromLong(374901, TestUtils.gp.keySize),
+                KeyUtils.transformFromLong(500000, TestUtils.gp.keySize) };
+        Assert.assertTrue(examineHashFunction(hashFunction, expectedRanges));
     }
 
     /**
@@ -175,4 +231,28 @@ public class BucketSplitterTestNonLinear {
         sdrum.close();
         return testData;
     }
+
+    /**
+     * Takes the {@link RangeHashFunction} and an array of keys. The method compares the ranges of the hash function
+     * with the expected keys. If they are the same <code>true</code> will be returned, otherwise <code>false</code>.
+     * 
+     * @param hashFunction
+     * @param expectedBorders
+     * @return
+     */
+    private boolean examineHashFunction(RangeHashFunction hashFunction, byte[][] expectedBorders) {
+        byte[][] originalRanges = hashFunction.getRanges();
+        if (originalRanges.length != expectedBorders.length) {
+            return false;
+        }
+
+        for (int i = 0; i < originalRanges.length; i++) {
+            int compareValue = KeyUtils.compareKey(originalRanges[i], expectedBorders[i]);
+            if (compareValue != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

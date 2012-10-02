@@ -1,7 +1,5 @@
 package com.unister.semweb.sdrum.hashfunction;
 
-import java.io.File;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -13,6 +11,7 @@ import com.unister.semweb.sdrum.utils.RangeHashFunctionTestUtils;
  * Tests the <code>replace</code> method of the {@link RangeHashFunction}.
  * 
  * @author n.thieme
+ * 
  */
 public class RangeHashFunctionReplace {
     private static final String rangeHashFunctionFilename = "/tmp/rangeHashFunctionTest.txt";

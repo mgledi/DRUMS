@@ -65,6 +65,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
 
     /** the size of a stored element in bytes */
     protected int elementSize;// part of the header
+
     protected int keySize;
 
     /** shows if the file was closed correctly */

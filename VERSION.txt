@@ -1,3 +1,6 @@
+Version 0.3.6-SNAPSHOT (2012/08/17)
+ - Merging the actual sdrum with this version that have a dynamic memory management
+ 
 Version 0.3.5-SNAPSHOT (2012/06/28)
  - UpdateOnlySynchronizer: extending the log message for error
 
@@ -27,6 +30,12 @@ Version 0.2.24-SNAPSHOT
  
 Version 0.2.23-SNAPSHOT
  - Changing the name of the configuration from "config.cfg" to "sdrum.cfg"
+ 
+ Version 0.2.22 (2012/09/11)
+ - RangeHashFunction: Correcting the method getBucketIdsFor
+ 
+ Version 0.2.21 (2012/07/27)
+ - KeyUtils: Adding header to rangeHashFunctionFile
  
 Version 0.2.21-SNAPSHOT
  - Implemented a SDRUM Reader. This supports single selects and range selects.

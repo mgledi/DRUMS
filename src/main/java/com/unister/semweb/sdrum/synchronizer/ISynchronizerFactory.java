@@ -26,6 +26,6 @@ public interface ISynchronizerFactory<Data extends AbstractKVStorable> {
      * @throws IOException
      *             if some FileHandling fail
      */
-    Synchronizer<Data> createSynchronizer(String databaseFilename, GlobalParameters<Data> gp);
+    Synchronizer<Data> createSynchronizer(String databaseFilename, GlobalParameters<Data> gp) throws IOException;
 
 }

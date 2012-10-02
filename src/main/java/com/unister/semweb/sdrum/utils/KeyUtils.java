@@ -1,5 +1,6 @@
 package com.unister.semweb.sdrum.utils;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -98,6 +99,7 @@ public class KeyUtils {
      * 
      * @param key1
      * @param key2
+     * 
      * @return -1 if key1 < key2<br>
      *         0 if key1 == key2<br>
      *         1 if key1 > key2
@@ -115,6 +117,7 @@ public class KeyUtils {
      * @param key1
      * @param key2
      * @param length
+     * 
      * @return -1 if key1 < key2<br>
      *         0 if key1 == key2<br>
      *         1 if key1 > key2
@@ -153,7 +156,7 @@ public class KeyUtils {
     }
 
     /**
-     * We have two byte arrays and we want to know whether <code>compare</code> starts <code>toBegin</code>. If so
+     * We have two byte arrays and we want to know whether <code>compare</code> starts with <code>toBegin</code>. If so
      * <code>true</code> will be returned. If <code>toBegin</code> has more bytes then <code>compare</code> it will
      * return <code>false</code>.
      * 
@@ -284,6 +287,12 @@ public class KeyUtils {
             iRange[max.length - 1]++;
             range[max.length - 1] = (byte) iRange[max.length - 1];
         }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < max.length; i++) {
+            sb.append("b\t");
+        }
+
+        sb.append("filename\n");
 
         byte[] val = min;
         for (int i = 0; i < numberOfRanges; ++i) {
@@ -325,14 +334,145 @@ public class KeyUtils {
         return sb.toString();
     }
 
+    /**
+     * Generates a range hash function with the given minimal and maximum value. Also the names of the buckets are
+     * given, and the suffix and prefix of the buckets name.
+     */
+    public static String generateHashFunctionString(byte[] min, byte[] max, String[] buckets, String suffix,
+            int bucketSize, String prefix) throws Exception {
+        byte[][] ranges = generateHashRanges(min, max, buckets.length);
+        StringBuilder sb = new StringBuilder();
+
+        for (int bucketCounter = 0; bucketCounter < buckets.length; bucketCounter++) {
+            byte[] oneRange = ranges[bucketCounter];
+            for (int i = 0; i < oneRange.length; i++) {
+                int k = oneRange[i] & 0xff;
+                sb.append(k + "\t");
+            }
+            sb.append(prefix + buckets[bucketCounter] + suffix + "\t" + bucketSize + "\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Gets a minimum and maximum value. It generates borders for ranges. Suppose your minium is 0 and the maximum value
+     * is 1024, also you need 4 buckets, then the borders will be:
+     * <p/>
+     * <ul>
+     * <li>256</li>
+     * <li>512</li>
+     * <li>768</li>
+     * <li>1024</li>
+     * </ul>
+     */
+    public static byte[][] generateHashRanges(byte[] min, byte[] max, int numberOfBuckets) throws Exception {
+        if (compareKey(min, max) > 0) {
+            throw new Exception("The given min is not larger than the max. Buckets could not be determined");
+        }
+
+        byte[] diff = subtractUnsigned(max, min);
+        int[] iDiff = toUnsignedInt(diff);
+
+        int[] iRange = new int[max.length];
+        byte[] range = new byte[iDiff.length];
+        int tmprest = 0;
+        for (int i = 0; i < iDiff.length; i++) {
+            iRange[i] += iDiff[i] / numberOfBuckets;
+            tmprest = (iDiff[i] % numberOfBuckets) * 255;
+            if (i < iDiff.length - 1) {
+                iDiff[i + 1] += tmprest;
+            }
+            range[i] = (byte) iRange[i];
+        }
+        if (tmprest > 0) {
+            iRange[max.length - 1]++;
+            range[max.length - 1] = (byte) iRange[max.length - 1];
+        }
+
+        byte[][] result = new byte[numberOfBuckets][min.length];
+        byte[] val = min;
+        for (int i = 0; i < numberOfBuckets; ++i) {
+            val = sumUnsigned(val, range);
+            if (compareKey(val, max) > 0) {
+                val = max;
+            }
+            result[i] = val;
+        }
+        return result;
+    }
+
+    public static void generateHashFunctionBigInteger(long min, long max, int buckets, int bucketSize, String suffix,
+            String prefix) {
+        int numberOfBytes = 15;
+
+        BigInteger bigMin = BigInteger.valueOf(min);
+        BigInteger bigMax = BigInteger.valueOf(max);
+        BigInteger bigBuckets = BigInteger.valueOf(buckets);
+
+        BigInteger bigMaxMinDifference = bigMax.subtract(bigMin);
+        BigInteger bigRange = bigMaxMinDifference.divide(bigBuckets);
+
+        BigInteger bigVal = bigMin;
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < numberOfBytes; i++) {
+            sb.append("b\t");
+        }
+
+        sb.append("filename\t");
+        sb.append("bucketsize\n");
+        for (int i = 0; i < buckets; ++i) {
+            bigVal = bigVal.add(bigRange);
+            if (bigVal.compareTo(bigMax) == 0 || bigVal.compareTo(bigMax) == 1) {
+                bigVal = bigMax;
+            }
+
+            byte[] bval = ByteBuffer.allocate(12).put(bigVal.toByteArray()).array();
+
+            for (int j = 0; j < bval.length; j++) {
+                int k = bval[j] & 0xff;
+                sb.append(k + "\t");
+            }
+            sb.append(prefix + i + suffix + "\t" + bucketSize + "\n");
+        }
+
+        // BigDecimal bigMin = new BigDecimal(min);
+        // BigDecimal bigMax = new BigDecimal(max);
+        // BigDecimal bigBuckets = new BigDecimal(buckets);
+        //
+        // BigDecimal bigMaxMinDifference = bigMax.subtract(bigMin);
+        // BigDecimal bigRange = bigMaxMinDifference.divide(bigBuckets, RoundingMode.CEILING);
+        //
+        // BigDecimal bigVal = new BigDecimal(bigMin.toBigInteger());
+        //
+        // StringBuilder sb = new StringBuilder();
+        // for (int i = 0; i < buckets; ++i) {
+        // bigVal = bigVal.add(bigRange);
+        // if (bigVal.compareTo(bigMax) == 0 || bigVal.compareTo(bigMax) == 1) {
+        // bigVal = new BigDecimal(bigMax.toBigInteger());
+        // }
+        //
+        // byte[] bval = ByteBuffer.allocate(8).putLong(bigVal.longValue()).array();
+        //
+        // for (int j = 0; j < bval.length; j++) {
+        // int k = bval[j] & 0xff;
+        // sb.append(k + "\t");
+        // }
+        // sb.append(prefix + i + suffix + "\t" + bucketSize + "\n");
+        // }
+
+        System.out.println(sb.toString());
+    }
+
     public static void main(String[] args) throws Exception {
+        int numberOfBuckets = 2;
         byte[] minKey = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] maxKey = new byte[] { (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
                 (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255 };
         // byte[] maxKey = new byte[] { -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128 };
         // byte[] maxKey = new byte[] { 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127 };
-        String[] buckets = new String[1024];
-        for (int i = 0; i < 1024; i++) {
+        String[] buckets = new String[numberOfBuckets];
+        for (int i = 0; i < numberOfBuckets; i++) {
             buckets[i] = String.valueOf(i);
         }
 

@@ -165,6 +165,27 @@ public class HeaderIndexFileTest {
         Assert.assertTrue(true);
     }
 
+    @Test
+    public void indexTest() throws IOException, FileLockException {
+        System.out.println("======== indexTest");
+        file.delete();
+        
+        createFile();
+        file.close();
+
+        file.openChannel();
+        byte[] dst = new byte[file.elementSize];
+        long oldOffset = 0;
+        for(long i=0; i < 100000; i ++) {
+            ByteBuffer b = ByteBuffer.wrap(dst);
+            b.putLong(i);
+            file.append(b);
+            int idx = file.getChunkIndex(oldOffset);
+//            file.index.setLargestKey(idx, i);
+            oldOffset += dst.length;
+        }
+        file.close();
+    }
 
     @Test
     public void deleteFile() throws Exception {

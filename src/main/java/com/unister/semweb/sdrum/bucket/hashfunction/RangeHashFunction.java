@@ -360,10 +360,11 @@ public class RangeHashFunction extends AbstractHashFunction {
         /* This handles the last range if the prefix lies within the last range. */
         byte[] lastRangeValue = maxRangeValues[maxRangeValues.length - 1];
         int compareLastBegin = KeyUtils.compareKey(lastRangeValue, begin);
-        int compareLastEnd = KeyUtils.compareKey(lastRangeValue, begin);
+        int compareLastEnd = KeyUtils.compareKey(lastRangeValue, end);
 
         if (compareLastBegin <= 0 || compareLastEnd <= 0) {
-            intermediateResult.add(maxRangeValues.length);
+            intermediateResult.add(0);
+            // intermediateResult.add(maxRangeValues.length);
         }
 
         int[] result = new int[intermediateResult.size()];

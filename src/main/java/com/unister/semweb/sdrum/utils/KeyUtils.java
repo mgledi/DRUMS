@@ -466,9 +466,10 @@ public class KeyUtils {
 
     public static void main(String[] args) throws Exception {
         int numberOfBuckets = 2;
-        byte[] minKey = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] minKey = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] maxKey = new byte[] { (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
-                (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255 };
+                (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
+                (byte) 255 };
         // byte[] maxKey = new byte[] { -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128 };
         // byte[] maxKey = new byte[] { 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127, 127 };
         String[] buckets = new String[numberOfBuckets];

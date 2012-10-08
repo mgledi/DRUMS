@@ -30,6 +30,7 @@ public class RangeHashFunctionBucketidsPrefix {
         int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
         Assert.assertEquals(1, bucketIds.length);
         Assert.assertEquals(0, bucketIds[0]);
+        Assert.assertEquals("bucket0.db", hashFunction.getFilename(bucketIds[0]));
 
     }
 
@@ -48,10 +49,11 @@ public class RangeHashFunctionBucketidsPrefix {
         int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
         Assert.assertEquals(1, bucketIds.length);
         Assert.assertEquals(1, bucketIds[0]);
+        Assert.assertEquals("bucket1.db", hashFunction.getFilename(bucketIds[0]));
     }
 
     /**
-     * We search for all bucket ids that confirm to the given prefix. In this test two bucket ids will be returned.
+     * We search for all bucket ids that confirm to the given prefix. In this test one bucket id will be returned.
      */
     @Test
     public void twoBuckets() {
@@ -65,6 +67,7 @@ public class RangeHashFunctionBucketidsPrefix {
         int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
         Assert.assertEquals(1, bucketIds.length);
         Assert.assertEquals(1, bucketIds[0]);
+        Assert.assertEquals("bucket1.db", hashFunction.getFilename(bucketIds[0]));
     }
 
     /**
@@ -85,6 +88,10 @@ public class RangeHashFunctionBucketidsPrefix {
         Assert.assertEquals(2, bucketIds[0]);
         Assert.assertEquals(3, bucketIds[1]);
         Assert.assertEquals(4, bucketIds[2]);
+
+        Assert.assertEquals("bucket2.db", hashFunction.getFilename(bucketIds[0]));
+        Assert.assertEquals("bucket3.db", hashFunction.getFilename(bucketIds[1]));
+        Assert.assertEquals("bucket4.db", hashFunction.getFilename(bucketIds[2]));
     }
 
     /**
@@ -104,6 +111,7 @@ public class RangeHashFunctionBucketidsPrefix {
         int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
         Assert.assertEquals(1, bucketIds.length);
         Assert.assertEquals(5, bucketIds[0]);
+        Assert.assertEquals("bucket5.db", hashFunction.getFilename(bucketIds[0]));
     }
 
     /**
@@ -121,7 +129,37 @@ public class RangeHashFunctionBucketidsPrefix {
         byte[] prefix = { 0, 0, 4 };
         int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
         Assert.assertEquals(1, bucketIds.length);
-        Assert.assertEquals(6, bucketIds[0]);
+        Assert.assertEquals(0, bucketIds[0]);
+        Assert.assertEquals("bucket0.db", hashFunction.getFilename(bucketIds[0]));
+    }
+
+    @Test
+    public void inLastRange() {
+        byte[][] rangeValues = new byte[][] { { 0, 0, 1, 0 }, { 0, 0, 1, 5 }, { 0, 0, 2, 1 }, { 0, 0, 2, 2 },
+                { 0, 0, 3, 0 }, { 0, 0, 4, 0 } };
+        String[] generatedFilenames = generateFilenames(rangeValues.length);
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, new File(
+                HASHFUNCTION_FILENAME));
+
+        byte[] prefix = { 0, 0, 5, 0 };
+        int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
+        Assert.assertEquals(1, bucketIds.length);
+        Assert.assertEquals(0, bucketIds[0]);
+        Assert.assertEquals("bucket0.db", hashFunction.getFilename(bucketIds[0]));
+    }
+
+    @Test
+    public void oneOverallRange() {
+        byte[][] rangeValues = new byte[][] { { (byte) -1, (byte) -1, (byte) -1, (byte) -1 } };
+
+        String[] generatedFilenames = generateFilenames(rangeValues.length);
+        RangeHashFunction hashFunction = new RangeHashFunction(rangeValues, generatedFilenames, new File(
+                HASHFUNCTION_FILENAME));
+
+        byte[] prefix = { -84, -60, -28 };
+        int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
+        Assert.assertEquals(1, bucketIds.length);
+        Assert.assertEquals(0, bucketIds[0]);
     }
 
     /**

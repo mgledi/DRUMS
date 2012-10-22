@@ -314,10 +314,14 @@ public class RangeHashFunction extends AbstractHashFunction {
     }
 
     /**
-     * Returns the bucket ids for the given byte prefix. Example: Suppose you have the following ranges: 1 0 0 0 - 1 1 0
-     * 0 1 1 0 1 - 1 1 1 1 2 0 0 0 - 2 1 1 1
+     * Returns the bucket ids for the given byte prefix. Example: Suppose you have the following ranges:
+     * <ul>
+     * <li>1 0 0 0 - 1 1 0 0</li>
+     * <li>1 1 0 1 - 1 1 1 1</li>
+     * <li>2 0 0 0 - 2 1 1 1</li>
+     * </ul>
      * 
-     * The prefix is 1 then the method will return the bucket ids of first two ranges.
+     * The prefix is 1 then the method will return the bucket ids of the first two ranges.
      * 
      * If the <code>prefix</code> has more elements than the keys within the hash function an
      * {@link IllegalArgumentException} is thrown.
@@ -348,7 +352,7 @@ public class RangeHashFunction extends AbstractHashFunction {
 
             int compareBeginLeft = KeyUtils.compareKey(begin, leftKey);
 
-            if ((compareLeftBegin <= 0 && compareBeginRight < 0) || (compareLeftEnd <= 0 && compareEndRight < 0)
+            if ((compareLeftBegin < 0 && compareBeginRight <= 0) || (compareLeftEnd < 0 && compareEndRight <= 0)
                     || (compareBeginLeft <= 0 && compareLeftEnd < 0)) {
                 /* Before we determine the bucket id of the left key we add 1 to the key. */
                 byte[] incrementedLeftKey = increment(leftKey);
@@ -362,9 +366,11 @@ public class RangeHashFunction extends AbstractHashFunction {
         int compareLastBegin = KeyUtils.compareKey(lastRangeValue, begin);
         int compareLastEnd = KeyUtils.compareKey(lastRangeValue, end);
 
-        if (compareLastBegin <= 0 || compareLastEnd <= 0) {
+        byte[] nullHash = new byte[keySize];
+
+        if (compareLastBegin < 0 || compareLastEnd < 0 || Arrays.equals(begin, nullHash)
+                || Arrays.equals(end, nullHash)) {
             intermediateResult.add(0);
-            // intermediateResult.add(maxRangeValues.length);
         }
 
         int[] result = new int[intermediateResult.size()];

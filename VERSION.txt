@@ -1,3 +1,6 @@
+Version 0.3.7 (2012/10/22)
+ - RangeHashFunction: getBuucketIdsFor() was updated so that it handles the border correctly.
+
 Version 0.3.6-SNAPSHOT (2012/08/17)
  - Merging the actual sdrum with this version that have a dynamic memory management
  

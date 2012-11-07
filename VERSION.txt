@@ -1,3 +1,9 @@
+Version 0.3.9 (2012/11/07)
+ - HeaderIndexFile: the second constructor didn't take the globalParameters correctly. 
+ 
+Version 0.3.8 (2012/11/05)
+ - GlobalParameters: The property MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC will be processed.
+ 
 Version 0.3.7 (2012/10/22)
  - RangeHashFunction: getBuucketIdsFor() was updated so that it handles the border correctly.
 

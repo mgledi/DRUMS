@@ -4,7 +4,7 @@
 
 	<groupId>com.unister.semweb</groupId>
 	<artifactId>sdrum</artifactId>
-	<version>0.3.7</version>
+	<version>0.3.9</version>
 	<packaging>jar</packaging>
 
 	<name>sorted disk repository with update management</name>

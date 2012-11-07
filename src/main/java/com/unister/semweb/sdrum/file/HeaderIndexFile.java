@@ -136,6 +136,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
             throws FileLockException, IOException {
         this.osFile = new File(fileName);
         this.max_retries_connect = max_retries_connect;
+        this.gp = gp;
         this.init();
         if (closedSoftly == 0) {
             logger.warn("File {} was not closed correctly and might be corrupted", osFile.getName());

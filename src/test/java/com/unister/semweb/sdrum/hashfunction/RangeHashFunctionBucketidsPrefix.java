@@ -65,9 +65,11 @@ public class RangeHashFunctionBucketidsPrefix {
 
         byte[] prefix = { 0, 0, 1 };
         int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
-        Assert.assertEquals(1, bucketIds.length);
-        Assert.assertEquals(1, bucketIds[0]);
-        Assert.assertEquals("bucket1.db", hashFunction.getFilename(bucketIds[0]));
+        Assert.assertEquals(2, bucketIds.length);
+        Assert.assertEquals(0, bucketIds[0]);
+        Assert.assertEquals(1, bucketIds[1]);
+        Assert.assertEquals("bucket0.db", hashFunction.getFilename(bucketIds[0]));
+        Assert.assertEquals("bucket1.db", hashFunction.getFilename(bucketIds[1]));
     }
 
     /**
@@ -109,9 +111,11 @@ public class RangeHashFunctionBucketidsPrefix {
 
         byte[] prefix = { 0, 0, 3 };
         int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
-        Assert.assertEquals(1, bucketIds.length);
-        Assert.assertEquals(5, bucketIds[0]);
-        Assert.assertEquals("bucket5.db", hashFunction.getFilename(bucketIds[0]));
+        Assert.assertEquals(2, bucketIds.length);
+        Assert.assertEquals(4, bucketIds[0]);
+        Assert.assertEquals(5, bucketIds[1]);
+        Assert.assertEquals("bucket4.db", hashFunction.getFilename(bucketIds[0]));
+        Assert.assertEquals("bucket5.db", hashFunction.getFilename(bucketIds[1]));
     }
 
     /**
@@ -128,9 +132,11 @@ public class RangeHashFunctionBucketidsPrefix {
 
         byte[] prefix = { 0, 0, 4 };
         int[] bucketIds = hashFunction.getBucketIdsFor(prefix);
-        Assert.assertEquals(1, bucketIds.length);
-        Assert.assertEquals(0, bucketIds[0]);
-        Assert.assertEquals("bucket0.db", hashFunction.getFilename(bucketIds[0]));
+        Assert.assertEquals(2, bucketIds.length);
+        Assert.assertEquals(5, bucketIds[0]);
+        Assert.assertEquals(0, bucketIds[1]);
+        Assert.assertEquals("bucket5.db", hashFunction.getFilename(bucketIds[0]));
+        Assert.assertEquals("bucket0.db", hashFunction.getFilename(bucketIds[1]));
     }
 
     @Test

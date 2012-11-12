@@ -1,5 +1,8 @@
 package com.unister.semweb.sdrum;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -8,7 +11,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.commons.properties.PropertiesFactory;
 import com.unister.semweb.sdrum.storable.AbstractKVStorable;
 
 /**
@@ -85,7 +87,16 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     }
 
     public void initParameters() {
-        Properties props = PropertiesFactory.getProperties(PARAM_FILE);
+        InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(PARAM_FILE);
+        Properties props = new Properties();
+        try {
+            props.load(fileStream);
+            if (fileStream == null) {
+                fileStream = new FileInputStream(PARAM_FILE);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
         databaseDirectory = props.getProperty("DATABASE_DIRECTORY");
         BUCKET_MEMORY = parseSize(props.getProperty("BUCKET_MEMORY", "1G"));
         MEMORY_CHUNK = (int) parseSize(props.getProperty("MEMORY_CHUNK", "10K"));

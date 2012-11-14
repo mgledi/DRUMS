@@ -1,3 +1,6 @@
+Version 0.3.13 (2012/11/14)
+ - pom.xml: the pom.xml embedded the common parent pom.
+
 Version 0.3.12 (2012/11/12)
  - Clean up of pom.xml, deleting unnecessary dependencies
  - making the test cases Maven ready

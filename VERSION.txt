@@ -1,3 +1,7 @@
+Version 0.3.14 (2012/11/16)
+ - AbstractHeaderFile, FragmentedHeaderIndexFile, HeaderIndexFile, IWriteableIndexFile: read method delivers the 
+   number of byte that were read
+
 Version 0.3.13 (2012/11/14)
  - pom.xml: the pom.xml embedded the common parent pom.
 

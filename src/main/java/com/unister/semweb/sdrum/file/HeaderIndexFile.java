@@ -259,7 +259,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @throws IOException
      */
     @Override
-    public void read(long offset, ByteBuffer destBuffer) throws IOException {
+    public int read(long offset, ByteBuffer destBuffer) throws IOException {
         offset += contentStart;
         destBuffer.clear();
         int length = destBuffer.capacity();
@@ -274,7 +274,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
             destBuffer.limit((int) (filledUpTo - offset));
         }
         offset = checkRegions(offset, destBuffer.limit());
-        channel.read(destBuffer, offset);
+        int readBytes = channel.read(destBuffer, offset);
+        return readBytes;
     }
 
     /**
@@ -287,9 +288,9 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @throws IOException
      */
     @Override
-    public void read(long offset, byte[] destBuffer) throws IOException {
+    public int read(long offset, byte[] destBuffer) throws IOException {
         ByteBuffer buffer = ByteBuffer.wrap(destBuffer);
-        read(offset, buffer);
+        return read(offset, buffer);
     }
 
     /** this function calculates all relevant informations for the index */

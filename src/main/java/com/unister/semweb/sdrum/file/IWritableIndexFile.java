@@ -53,7 +53,7 @@ public interface IWritableIndexFile {
      *            destBuffer
      * @throws IOException
      */
-    public abstract void read(long offset, ByteBuffer destBuffer) throws IOException;
+    public abstract int read(long offset, ByteBuffer destBuffer) throws IOException;
 
     /**
      * Reads x bytes from the file to the given ByteBuffer, where x is the minimum of the capacity of the buffer and the
@@ -64,5 +64,5 @@ public interface IWritableIndexFile {
      *            destBuffer
      * @throws IOException
      */
-    public abstract void read(long offset, byte[] destBuffer) throws IOException;
+    public abstract int read(long offset, byte[] destBuffer) throws IOException;
 }

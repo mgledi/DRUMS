@@ -77,9 +77,9 @@ public class FragmentedHeaderIndexFile extends HeaderIndexFile {
     }
 
     @Override
-    public void read(long offset, ByteBuffer destBuffer) throws IOException {
+    public int read(long offset, ByteBuffer destBuffer) throws IOException {
         // TODO nicht über chunk-grenze lesen
-        super.read(offset, destBuffer);
+        return super.read(offset, destBuffer);
     }
 
     @Override

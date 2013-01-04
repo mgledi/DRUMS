@@ -38,7 +38,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
     int[] cumulativeElementsPerFile;
 
     /** a prototype of Data */
-    private AbstractKVStorable prototype;
+    private Data prototype;
 
     private int numberOfBuckets;
     private int elementSize;
@@ -46,9 +46,8 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
     /** temporarily used destination buffer */
     private ByteBuffer destBuffer;
 
-    
     protected boolean isClosed = true;
-    
+
     protected SDRUM_Reader(SDRUM<Data> sdrum) throws FileLockException, IOException {
         this.sdrum = sdrum;
         this.numberOfBuckets = sdrum.getHashFunction().getNumberOfBuckets();
@@ -70,7 +69,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
         int lastfile = 0;
         String path = sdrum.getDatabaseDirectory();
         for (int i = 0; i < numberOfBuckets; i++) {
-            String filename = path + sdrum.getHashFunction().getFilename(i);
+            String filename = path + "/" + sdrum.getHashFunction().getFilename(i);
             if (!new File(filename).exists()) {
                 cumulativeElementsPerFile[i] = 0;
             } else {
@@ -84,15 +83,14 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
         }
 
         // elementsPerChunk = files[lastfile].getChunkSize() / elementSize;
-        destBuffer = ByteBuffer.allocate((int)files[lastfile].getChunkSize());
+        destBuffer = ByteBuffer.allocate((int) files[lastfile].getChunkSize());
         filesAreOpend = true;
     }
 
     /**
-     * Returns all elements between lowerKey and upperKey
-     * this function is still BUGGY
+     * Returns all elements between lowerKey and upperKey this function is still BUGGY
      */
-    public List<AbstractKVStorable> getRange(byte[] lowerKey, byte[] upperKey) throws IOException {
+    public List<Data> getRange(byte[] lowerKey, byte[] upperKey) throws IOException {
         if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
@@ -104,7 +102,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
         long filesize, startOffset, endOffset;
         byte[] tmpB = new byte[elementSize];
 
-        ArrayList<AbstractKVStorable> elements = new ArrayList<AbstractKVStorable>();
+        ArrayList<Data> elements = new ArrayList<Data>();
         // run over all files
         for (int i = lowerBucket; i <= upperBucket; i++) {
             HeaderIndexFile<Data> aktFile = files[i];
@@ -127,7 +125,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
                 destBuffer.flip();
                 while (destBuffer.remaining() > elementSize) {
                     destBuffer.get(tmpB); // get the element
-                    AbstractKVStorable record = prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
+                    Data record = (Data) prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
                     if (KeyUtils.compareKey(record.key, lowerKey) >= 0 &&
                             KeyUtils.compareKey(record.key, upperKey) <= 0) {
                         elements.add(record);
@@ -149,7 +147,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
      * @return
      * @throws IOException
      */
-    public AbstractKVStorable getPreviousElement(byte[] key) throws IOException {
+    public Data getPreviousElement(byte[] key) throws IOException {
         if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
@@ -163,7 +161,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
      * @return
      * @throws IOException
      */
-    public AbstractKVStorable getNextElement(byte[] key) throws IOException {
+    public Data getNextElement(byte[] key) throws IOException {
         if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
@@ -178,7 +176,7 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
      * @throws FileStorageException
      * @throws IOException
      */
-    public List<AbstractKVStorable> get(long... keys) throws FileStorageException, IOException {
+    public List<Data> get(long... keys) throws FileStorageException, IOException {
         return this.get(KeyUtils.transformToByteArray(keys));
     }
 
@@ -190,15 +188,16 @@ public class SDRUM_Reader<Data extends AbstractKVStorable> {
      * @throws FileStorageException
      * @throws IOException
      */
-    public List<AbstractKVStorable> get(byte[]... keys) throws FileStorageException, IOException {
+    public List<Data> get(byte[]... keys) throws FileStorageException, IOException {
         if (!filesAreOpend) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
-        List<AbstractKVStorable> result = new ArrayList<AbstractKVStorable>();
+        List<Data> result = new ArrayList<Data>();
         IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = sdrum.getBucketKeyMapping(keys);
         for (IntObjectCursor<ArrayList<byte[]>> entry : bucketKeyMapping) {
             ArrayList<byte[]> keyList = entry.value;
-            result.addAll(sdrum.searchForData(files[entry.key], keyList.toArray(new byte[keyList.size()][])));
+            List<Data> readData = sdrum.searchForData(files[entry.key], keyList.toArray(new byte[keyList.size()][]));
+            result.addAll(readData);
         }
         return result;
     }

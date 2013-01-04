@@ -339,7 +339,7 @@ public class KeyUtils {
      * given, and the suffix and prefix of the buckets name.
      */
     public static String generateHashFunctionString(byte[] min, byte[] max, String[] buckets, String suffix,
-            int bucketSize, String prefix) throws Exception {
+            String prefix) throws Exception {
         byte[][] ranges = generateHashRanges(min, max, buckets.length);
         StringBuilder sb = new StringBuilder();
 
@@ -349,7 +349,7 @@ public class KeyUtils {
                 int k = oneRange[i] & 0xff;
                 sb.append(k + "\t");
             }
-            sb.append(prefix + buckets[bucketCounter] + suffix + "\t" + bucketSize + "\n");
+            sb.append(prefix + buckets[bucketCounter] + suffix + "\n");
         }
         return sb.toString();
     }

@@ -1,3 +1,7 @@
+Version 0.3.16 (2013/01/04)
+ - SDRUM_Reader: adapting the generic name
+ - RangeHashFunction: removing the bucket size column when generating hash function
+ 
 Version 0.3.15 (2012/11/16)
  - AbstractHeaderFile, FragmentedHeaderIndexFile, HeaderIndexFile, IWriteableIndexFile: read method delivers the 
    number of byte that were read

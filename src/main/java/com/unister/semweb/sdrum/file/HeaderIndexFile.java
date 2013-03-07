@@ -196,7 +196,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
                 if (offset + sourceBuffer.limit() > contentEnd + incrementSize) {
                     incrementSize = (int) (offset + sourceBuffer.limit() - contentEnd + incrementSize);
                 }
-                this.enlargeFile();
+                this.enlargeFile(offset + sourceBuffer.limit());
             } else {
                 throw new IOException("Filesize exceeded (" + size
                         + ") and automatic enlargement is disabled. You have to enlarge file manually.");
@@ -395,9 +395,10 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         headerBuffer.putInt(keySize);
     }
 
-    public void enlargeFile() throws IOException {
+    @Override
+    public void enlargeFile(long atLeastTargetSize) throws IOException {
         size += incrementSize;
-        logger.info("Enlarge filesize of {} to {}", osFile, size);
+        logger.debug("Enlarge filesize of {} to {}", osFile, size);
         contentEnd = size;
         accessFile.setLength(size);
 

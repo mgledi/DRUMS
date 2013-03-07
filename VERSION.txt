@@ -1,3 +1,13 @@
+Version 0.3.17 (2013/03/07)
+ - AbstractHeaderFile: method enlarge has a new parameter that defines the new size of the file at least
+ - IWritableIndexFile: see above
+ - HeaderIndexFile: was updated to the new parameter, the parameter will not influence anything because
+                    if the data that will be written to the file is greater then the increment the size of
+                    the increment will be adapted.
+ - New test case was written for the enlargement problem
+ - MathUtils: a new class that will contain method for mathematical functions
+ - TestStorable: dummy storable for testing
+ 
 Version 0.3.16 (2013/01/04)
  - SDRUM_Reader: adapting the generic name
  - RangeHashFunction: removing the bucket size column when generating hash function

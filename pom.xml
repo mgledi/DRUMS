@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>sdrum</artifactId>
-	<version>0.3.16</version>
+	<version>0.3.17</version>
 	<packaging>jar</packaging>
 
 	<name>sorted disk repository with update management</name>

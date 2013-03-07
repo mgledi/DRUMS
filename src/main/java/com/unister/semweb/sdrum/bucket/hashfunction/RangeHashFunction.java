@@ -110,6 +110,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         this.hashFunctionFile = file;
         FileReader configFile = new FileReader(file);
         List<String> readData = IOUtils.readLines(configFile);
+        configFile.close();
 
         maxRangeValues = new byte[readData.size() - 1][];
         filenames = new String[readData.size() - 1];

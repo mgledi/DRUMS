@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 
 public interface IWritableIndexFile {
 
-    /** enlarges the file by the local <code>incrementSize</code> */
-    public abstract void enlargeFile() throws IOException;
+    /** enlarges the file by the local <code>incrementSize</code> at least to the given size. */
+    public abstract void enlargeFile(long atLeastTargetSize) throws IOException;
 
     /**
      * writes the bytes from the given ByteBuffer to the file beginning at offset.

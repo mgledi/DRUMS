@@ -85,8 +85,8 @@ public abstract class AbstractHeaderFile {
     /** writes all relevant informations to the header */
     protected abstract void writeHeader();
 
-    /** enlarges the file by the local <code>incrementSize</code> */
-    public abstract void enlargeFile() throws IOException;
+    /** enlarges the file by the local <code>incrementSize</code> but at least to the given <code>size</code>. */
+    public abstract void enlargeFile(long minimumTargetSize) throws IOException;
 
     /**
      * writes the bytes from the given ByteBuffer to the file beginning at offset.

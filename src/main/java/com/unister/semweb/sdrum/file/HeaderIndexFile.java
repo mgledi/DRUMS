@@ -397,6 +397,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
 
     @Override
     public void enlargeFile(long atLeastTargetSize) throws IOException {
+        // long numberOfEnlargmentSegments = MathUtils.divideLongsWithCeiling(atLeastTargetSize, incrementSize);
+        // size += (numberOfEnlargmentSegments * incrementSize);
         size += incrementSize;
         logger.debug("Enlarge filesize of {} to {}", osFile, size);
         contentEnd = size;

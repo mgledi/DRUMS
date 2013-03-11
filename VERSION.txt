@@ -1,3 +1,7 @@
+Version 0.3.19 (2013/03/11)
+ - HeaderIndexFile: some commented lines were added for enlargement problem (these are not activated)
+ - EnlargementFileTest: one test case was added, also the test structure was fixed.
+ 
 Version 0.3.18 (2013/03/08)
  - New version because of forgotten MathUtils checkin to SVN
 

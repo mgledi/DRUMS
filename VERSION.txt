@@ -1,3 +1,6 @@
+Version 0.3.20 (2013/03/13)
+ - HeaderIndexFile: enlargeFile()-method was adapted in such way that the enlargement size will depend on the content to be inserted
+
 Version 0.3.19 (2013/03/11)
  - HeaderIndexFile: some commented lines were added for enlargement problem (these are not activated)
  - EnlargementFileTest: one test case was added, also the test structure was fixed.

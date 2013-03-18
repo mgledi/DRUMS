@@ -1,3 +1,6 @@
+Version 0.3.21 (2013/03/18)
+ - HeaderIndexFile: repairIndex().method was corrected. Also test cases for this method were written.
+ 
 Version 0.3.20 (2013/03/13)
  - HeaderIndexFile: enlargeFile()-method was adapted in such way that the enlargement size will depend on the content to be inserted
 

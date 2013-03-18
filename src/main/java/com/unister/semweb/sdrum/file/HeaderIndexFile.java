@@ -106,8 +106,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      *             if another error with the fileaccess occured
      */
     public HeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, GlobalParameters<Data> gp)
-            throws FileLockException,
-            IOException {
+            throws FileLockException, IOException {
         this.gp = gp;
         this.incrementSize = gp.INITIAL_INCREMENT_SIZE;
         this.elementSize = gp.elementSize;
@@ -439,8 +438,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
             byte[] key = Arrays.copyOfRange(b, 0, keySize);
             if (oldKey != null) {
                 if (KeyUtils.compareKey(key, oldKey) != 1) {
-                    logger.error("File is not consistent at record {}. {} not larger than {}",
-                            new Object[] { i, KeyUtils.transform(key), KeyUtils.transform(oldKey) });
+                    logger.error("File is not consistent at record {}. {} not larger than {}", new Object[] { i,
+                            KeyUtils.transform(key), KeyUtils.transform(oldKey) });
                     return false;
                 }
             }
@@ -480,18 +479,32 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * 
      * @throws IOException
      */
+    // public void repairIndex() throws IOException {
+    // byte[] b = new byte[keySize];
+    // long offset = 0;
+    // int maxChunk = getChunkIndex(getFilledUpFromContentStart());
+    // for (int i = 1; i <= maxChunk; i++) {
+    // offset = i * getChunkSize() - elementSize;
+    // read(offset, ByteBuffer.wrap(b));
+    // getIndex().setLargestKey(i - 1, b);
+    // if (KeyUtils.compareKey(getIndex().maxKeyPerChunk[i - 1], b) != 0) {
+    // logger.info("Index is not consistent to data. Expected {}, but found {}.",
+    // Arrays.toString(getIndex().maxKeyPerChunk[i - 1]), Arrays.toString(b));
+    // }
+    // }
+    // }
+
     public void repairIndex() throws IOException {
-        byte[] b = new byte[keySize];
-        long offset = 0;
+        byte[] currentLargestKey = new byte[keySize];
         int maxChunk = getChunkIndex(getFilledUpFromContentStart());
-        for (int i = 1; i <= maxChunk; i++) {
-            offset = i * getChunkSize() - elementSize;
-            read(offset, ByteBuffer.wrap(b));
-            getIndex().setLargestKey(i - 1, b);
-            if (KeyUtils.compareKey(getIndex().maxKeyPerChunk[i - 1], b) != 0) {
-                logger.info("Index is not consistent to data. Expected {}, but found {}.",
-                        Arrays.toString(getIndex().maxKeyPerChunk[i - 1]), Arrays.toString(b));
+        for (int currentChunkId = 0; currentChunkId <= maxChunk; currentChunkId++) {
+            long currentOffset = (currentChunkId + 1) * getChunkSize() - elementSize;
+            if (currentOffset < getFilledUpFromContentStart()) {
+                read(currentOffset, currentLargestKey);
+            } else {
+                read(getFilledUpFromContentStart() - elementSize, currentLargestKey);
             }
+            getIndex().setLargestKey(currentChunkId, currentLargestKey);
         }
     }
 

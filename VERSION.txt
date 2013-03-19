@@ -1,3 +1,6 @@
+Version 0.3.22 (2013/03/19)
+ - SearchForTest: new test was written to check the "select" method of the SDRUM class.
+ 
 Version 0.3.21 (2013/03/18)
  - HeaderIndexFile: repairIndex().method was corrected. Also test cases for this method were written.
  

@@ -81,17 +81,13 @@ public class SDRUM<Data extends AbstractKVStorable> {
      * @param prototype
      * @param accessMode
      */
-    protected SDRUM(
-            AbstractHashFunction hashFunction,
-            AccessMode accessMode,
-            GlobalParameters<Data> gp) {
+    protected SDRUM(AbstractHashFunction hashFunction, AccessMode accessMode, GlobalParameters<Data> gp) {
         this.prototype = gp.getPrototype();
         this.hashFunction = hashFunction;
         this.gp = gp;
         DynamicMemoryAllocater.instantiate(gp);
-        gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC =
-                (int) ((gp.BUCKET_MEMORY - gp.BUCKET_MEMORY % gp.MEMORY_CHUNK)
-                        / hashFunction.getNumberOfBuckets() / prototype.getByteBufferSize() / 2);
+        gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = (int) ((gp.BUCKET_MEMORY - gp.BUCKET_MEMORY % gp.MEMORY_CHUNK)
+                / hashFunction.getNumberOfBuckets() / prototype.getByteBufferSize() / 2);
         logger.info("Setted MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC to {}", gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC);
         if (accessMode == AccessMode.READ_WRITE) {
             buckets = new Bucket[hashFunction.getNumberOfBuckets()];
@@ -104,8 +100,7 @@ public class SDRUM<Data extends AbstractKVStorable> {
                         tmpFile = new HeaderIndexFile<Data>(tmpFileName, HeaderIndexFile.AccessMode.READ_WRITE, 1, gp);
                         tmpFile.close();
                     } catch (FileLockException e) {
-                        logger.error("Can't create file {}, because file is locked by another process.",
-                                tmpFileName);
+                        logger.error("Can't create file {}, because file is locked by another process.", tmpFileName);
                     } catch (IOException e) {
                         logger.error("Can't create file {}. {}", tmpFileName, e);
                     }
@@ -113,10 +108,7 @@ public class SDRUM<Data extends AbstractKVStorable> {
             }
             bucketContainer = new BucketContainer<Data>(buckets, hashFunction);
             synchronizerFactory = new SynchronizerFactory<Data>();
-            syncManager = new SyncManager<Data>(
-                    bucketContainer,
-                    synchronizerFactory,
-                    gp);
+            syncManager = new SyncManager<Data>(bucketContainer, synchronizerFactory, gp);
             syncManager.start();
         }
     }
@@ -191,8 +183,8 @@ public class SDRUM<Data extends AbstractKVStorable> {
         }
 
         for (IntObjectCursor<ArrayList<Data>> entry : bucketDataMapping) {
-            UpdateOnlySynchronizer<Data> synchronizer = new UpdateOnlySynchronizer<Data>(
-                    gp.databaseDirectory + "/" + hashFunction.getFilename(entry.key), gp);
+            UpdateOnlySynchronizer<Data> synchronizer = new UpdateOnlySynchronizer<Data>(gp.databaseDirectory + "/"
+                    + hashFunction.getFilename(entry.key), gp);
             @SuppressWarnings("unchecked")
             Data[] toUpdate = (Data[]) entry.value.toArray(new AbstractKVStorable[entry.value.size()]);
             SortMachine.quickSort(toUpdate);
@@ -330,7 +322,7 @@ public class SDRUM<Data extends AbstractKVStorable> {
         int actualChunkIdx = 0, lastChunkIdx = -1;
         long actualChunkOffset = 0, oldChunkOffset = -1;
         int indexInChunk = 0;
-        ByteBuffer workingBuffer = ByteBuffer.allocate((int)indexFile.getChunkSize());
+        ByteBuffer workingBuffer = ByteBuffer.allocate((int) indexFile.getChunkSize());
         byte[] tmpB = new byte[gp.elementSize]; // stores temporarily the bytestream of an object
         for (byte[] key : keys) {
             // get actual chunkIndex
@@ -378,8 +370,8 @@ public class SDRUM<Data extends AbstractKVStorable> {
     public long size() throws FileLockException, IOException {
         long size = 0L;
         for (int bucketId = 0; bucketId < hashFunction.getNumberOfBuckets(); bucketId++) {
-            HeaderIndexFile<Data> headerIndexFile = new HeaderIndexFile<Data>(
-                    gp.databaseDirectory + "/" + hashFunction.getFilename(bucketId), HEADER_FILE_LOCK_RETRY, gp);
+            HeaderIndexFile<Data> headerIndexFile = new HeaderIndexFile<Data>(gp.databaseDirectory + "/"
+                    + hashFunction.getFilename(bucketId), HEADER_FILE_LOCK_RETRY, gp);
             size += headerIndexFile.getFilledUpFromContentStart() / gp.elementSize;
             headerIndexFile.close();
         }
@@ -468,9 +460,9 @@ public class SDRUM<Data extends AbstractKVStorable> {
             reader_instance.closeFiles();
         }
         reader_instance = null;
-        
+
         // you can only close a syncmanager, when sdrum was opened for READ_WRITE
-        if(syncManager != null) {
+        if (syncManager != null) {
             syncManager.shutdown();
             syncManager.join();
         }

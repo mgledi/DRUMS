@@ -1,3 +1,6 @@
+Version 0.3.23 (2013/03/27)
+ - RangeHashFunctionTestUtils: adding new method that spreads the range equally.
+ 
 Version 0.3.22 (2013/03/19)
  - SearchForTest: new test was written to check the "select" method of the SDRUM class.
  

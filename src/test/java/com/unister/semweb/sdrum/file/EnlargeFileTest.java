@@ -91,7 +91,6 @@ public class EnlargeFileTest {
 
         List<TestStorable> readData = readFile(overallFilePositions, globalParameters);
         Assert.assertTrue(overallTestdata.equals(readData));
-
     }
 
     /**

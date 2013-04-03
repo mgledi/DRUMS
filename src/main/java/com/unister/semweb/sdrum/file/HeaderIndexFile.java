@@ -188,14 +188,16 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     public void write(long offset, ByteBuffer sourceBuffer) throws IOException {
         offset += contentStart;
         sourceBuffer.position(0);
-        if (offset + sourceBuffer.limit() > contentEnd) {
+
+        long newFilePosition = offset + sourceBuffer.limit();
+        if (newFilePosition > contentEnd) {
             logger.debug("Filesize exceeded (contendEnd: {},size: {})", contentEnd, size);
             if (AUTO_ENLARGE) {
                 // if the incrementSize is not large enough
                 // if (offset + sourceBuffer.limit() > contentEnd + incrementSize) {
                 // incrementSize = (int) (offset + sourceBuffer.limit() - contentEnd + incrementSize);
                 // }
-                this.enlargeFile(offset + sourceBuffer.limit());
+                this.enlargeFile(newFilePosition - contentEnd);
             } else {
                 throw new IOException("Filesize exceeded (" + size
                         + ") and automatic enlargement is disabled. You have to enlarge file manually.");

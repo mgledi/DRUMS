@@ -1,3 +1,6 @@
+Version 0.3.24 (2013/04/03)
+ - HeaderIndexFile: Bug fix within the enlarge method. The method increased to file to much.
+ 
 Version 0.3.23 (2013/03/27)
  - RangeHashFunctionTestUtils: adding new method that spreads the range equally.
  

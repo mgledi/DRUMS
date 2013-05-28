@@ -135,7 +135,7 @@ public class RangeHashFunction extends AbstractHashFunction {
             for (int k = 0; k < keyComposition.length; k++) {
                 long tmp = Long.parseLong(Aline[k]);
                 for (int b = 0; b < keyComposition[k]; b++) {
-                    maxRangeValues[i][byteOffset] = (byte) tmp;
+                    maxRangeValues[i][keyComposition[k] - 1 - byteOffset] = (byte) tmp;
                     tmp = tmp >> 8;
                     byteOffset++;
                 }

@@ -131,13 +131,17 @@ public class RangeHashFunction extends AbstractHashFunction {
             String[] Aline = readData.get(i + 1).split("\t");
             // TODO: format exception
             maxRangeValues[i] = new byte[keySize];
-            int byteOffset = 0;
+            // we need an offset for the current part of the key
+            int keyPartOffset = -1;
             for (int k = 0; k < keyComposition.length; k++) {
                 long tmp = Long.parseLong(Aline[k]);
+                // set the offset on the last byte of the current part of the key
+                keyPartOffset += keyComposition[k];
+                // start from the lowest bits of the read long value and use them for the last byte (= lowest byte) of
+                // the current part of the key. Than take the next bits and the second lowest byte
                 for (int b = 0; b < keyComposition[k]; b++) {
-                    maxRangeValues[i][keyComposition[k] - 1 - byteOffset] = (byte) tmp;
+                    maxRangeValues[i][keyPartOffset - b] = (byte) tmp;
                     tmp = tmp >> 8;
-                    byteOffset++;
                 }
             }
             filenames[i] = Aline[keyComposition.length];

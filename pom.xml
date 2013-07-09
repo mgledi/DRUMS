@@ -2,17 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>com.unister.semweb</groupId>
-		<artifactId>semweb-parent</artifactId>
-		<version>0.2.0</version>
-	</parent>
-
-	<artifactId>sdrum</artifactId>
+	<groupId>com.unister.semweb</groupId>
+	<artifactId>drums</artifactId>
 	<version>0.3.25</version>
 	<packaging>jar</packaging>
 
-	<name>sorted disk repository with update management</name>
+	<name>disk repository with update management and select option</name>
 	<url>http://maven.apache.org</url>
 
 	<dependencies>
@@ -20,22 +15,31 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
 		</dependency>
 
 		<!-- handling lists and maps with primitive data-types -->
 		<dependency>
 			<groupId>com.carrotsearch</groupId>
 			<artifactId>hppc</artifactId>
+			<version>0.5.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 			<version>1.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
 		</dependency>
 	</dependencies>
 
@@ -52,6 +56,16 @@
 						<version>2.12</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
 			</plugin>
 
 			<plugin>

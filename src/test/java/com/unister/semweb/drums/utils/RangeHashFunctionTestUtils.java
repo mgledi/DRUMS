@@ -30,7 +30,7 @@ public class RangeHashFunctionTestUtils {
             filenames[i] = i + ".db";
         }
 
-        RangeHashFunction result = new RangeHashFunction(ranges, filenames, new File(filename));
+        RangeHashFunction result = new RangeHashFunction(ranges, filenames, filename);
         return result;
     }
 
@@ -57,7 +57,7 @@ public class RangeHashFunctionTestUtils {
             filenames[i] = i + ".db";
         }
 
-        RangeHashFunction result = new RangeHashFunction(ranges, filenames, new File(filename));
+        RangeHashFunction result = new RangeHashFunction(ranges, filenames, filename);
         return result;
     }
 }

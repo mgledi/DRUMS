@@ -72,7 +72,7 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     }
 
     public GlobalParameters(Data prototype) {
-        this("drums.cfg", prototype);
+        this("drums.properties", prototype);
     }
 
     /**

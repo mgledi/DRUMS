@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class RangeHashFunction extends AbstractHashFunction {
     private static final Logger log = LoggerFactory.getLogger(RangeHashFunction.class);
 
     /** the file where the hashfunction is stored human-readable */
-    private File hashFunctionFile;
+    private String hashFunctionFile;
 
     /** the key composition. E.g. 2 4 2 8 or char int char long */
     private int keyComposition[];
@@ -49,8 +50,8 @@ public class RangeHashFunction extends AbstractHashFunction {
      * @param file
      *            the file where to store the hashfunction
      */
-    public RangeHashFunction(int ranges, int keySize, File file /* TODO: prototype */) {
-        this.hashFunctionFile = file;
+    public RangeHashFunction(int ranges, int keySize, String filename /* TODO: prototype */) {
+        this.hashFunctionFile = filename;
         this.buckets = ranges;
         byte[] max = new byte[keySize];
         Arrays.fill(max, (byte) -1);
@@ -78,11 +79,11 @@ public class RangeHashFunction extends AbstractHashFunction {
      *            the maximum keys for all buckets
      * @param filenames
      *            the filenames for all buckets
-     * @param file
-     *            the file where to store the hashfunction
+     * @param hashFunctionFilename
+     *            the file name of the range hash function
      */
-    public RangeHashFunction(byte[][] rangeValues, String[] filenames, File file /* TODO: prototype */) {
-        this.hashFunctionFile = file;
+    public RangeHashFunction(byte[][] rangeValues, String[] filenames, String hashFunctionFilename /* TODO: prototype */) {
+        this.hashFunctionFile = hashFunctionFilename;
         this.buckets = rangeValues.length;
         this.maxRangeValues = rangeValues;
         this.filenames = filenames;
@@ -98,19 +99,27 @@ public class RangeHashFunction extends AbstractHashFunction {
         sortMachine.quickSort();
         generateBucketIds();
     }
-
+    
     /**
      * This method instantiates a new {@link RangeHashFunction} by the given {@link File}. The File contains some long
      * values, which describe the maximal allowed values for the buckets. The minimal value will be the direct successor
      * of the previous maximal value. Remember: the array will be handled circular.
-     * 
-     * @param long[] rangeValues
      */
     public RangeHashFunction(File file) throws IOException {
-        this.hashFunctionFile = file;
-        FileReader configFile = new FileReader(file);
-        List<String> readData = IOUtils.readLines(configFile);
-        configFile.close();
+        FileReader fileReader = new FileReader(file);
+        initialise(fileReader);
+        IOUtils.closeQuietly(fileReader);
+        this.hashFunctionFile = file.getAbsolutePath();
+    }
+    
+    /** Creates the RangeHashFunction with the content of the given {@link Reader}. */
+    public RangeHashFunction(Reader reader) throws IOException {
+        initialise(reader);
+    }
+
+    /** Initialises the RangeHashFunction with the content of the {@link Reader}.*/
+    private void initialise(Reader reader) throws IOException {
+        List<String> readData = IOUtils.readLines(reader);
 
         maxRangeValues = new byte[readData.size() - 1][];
         filenames = new String[readData.size() - 1];
@@ -157,7 +166,7 @@ public class RangeHashFunction extends AbstractHashFunction {
      * 
      * @return File
      */
-    public File getHashFunctionFile() {
+    public String getHashFunctionFile() {
         return this.hashFunctionFile;
     }
 

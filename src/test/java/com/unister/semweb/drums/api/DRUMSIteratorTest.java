@@ -37,7 +37,7 @@ public class DRUMSIteratorTest {
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2", "3.db", "4.db" };
         FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
-        this.hashFunction = new RangeHashFunction(bRanges, filenames, new File("/tmp/hash.hs"));
+        this.hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");
 
         // fill with data
         table = DRUMS_API.createTable(hashFunction, TestUtils.gp);

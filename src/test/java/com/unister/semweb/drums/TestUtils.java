@@ -65,8 +65,7 @@ public class TestUtils {
      */
     public static List<Bucket<DummyKVStorable>> generateBucketList(int bucketSize, int numberOfBuckets,
             int numberOfDataPerBucket) {
-        AbstractHashFunction hashFunction = new RangeHashFunction(numberOfBuckets, gp.keySize,
-                new File(""));
+        AbstractHashFunction hashFunction = new RangeHashFunction(numberOfBuckets, gp.keySize,"");
         List<Bucket<DummyKVStorable>> result = new ArrayList<Bucket<DummyKVStorable>>();
         for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
             Bucket<DummyKVStorable> newBucket = new Bucket<DummyKVStorable>(i, TestUtils.gp);

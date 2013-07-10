@@ -36,7 +36,7 @@ public class DRUMSTest {
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
         FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
 
-        hashFunction = new RangeHashFunction(bRanges, filenames, new File("/tmp/hash.hs"));
+        hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");
     }
 
     /**

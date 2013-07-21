@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket;
 
 import java.io.IOException;
@@ -32,10 +30,13 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * This class manages the splitting of a bucket. It would be possible to implement all functionality of this class in a
  * static context. But for reasons of inheritance, the implementation is done in the classic way. The splitting should
  * be done by the following steps<br>
- * <li>determine new maxRangeValues <br> <li>adapt HashFunction or generate a new one <br> <li>generate files and move
- * elements according to the old and new HashFunction <br> <li>store the HashFunction
  * 
- * @author m.gleditzsch
+ * <li>determine new maxRangeValues <br> 
+ * <li>adapt HashFunction or generate a new one <br> 
+ * <li>generate files and move elements according to the old and new HashFunction <br> 
+ * <li>store the HashFunction
+ * 
+ * @author Martin Gleditzsch
  */
 // TODO: remember KeyComposition in RangeHashFunction
 public class BucketSplitter<Data extends AbstractKVStorable> {
@@ -44,9 +45,6 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
 
     /** the old HashFunction */
     protected RangeHashFunction hashFunction;
-
-    /** the new HashFunction */
-    // protected RangeHashFunction newHashFunction;
 
     /** An arraylist containing the new bucketIds */
     protected IntArrayList newBucketIds;
@@ -76,7 +74,8 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
         this.oldBucketId = bucketId;
         // open the file (READ_ONLY)
         String fileName = hashFunction.getFilename(bucketId);
-        this.sourceFile = new HeaderIndexFile<Data>(gp.databaseDirectory + "/" + fileName, AccessMode.READ_WRITE, 100, gp);
+        this.sourceFile = new HeaderIndexFile<Data>(gp.databaseDirectory + "/" + fileName, AccessMode.READ_WRITE, 100,
+                gp);
 
         // determine new thresholds
         byte[][] keysToInsert = determineNewLargestElements(numberOfPartitions);
@@ -89,7 +88,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
         hashFunction.replace(bucketId, keysToInsert);
 
         // move elements to files
-        this.moveElements(sourceFile, hashFunction, gp.databaseDirectory );
+        this.moveElements(sourceFile, hashFunction, gp.databaseDirectory);
         sourceFile.delete();
 
         // store hashfunction

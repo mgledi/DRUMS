@@ -37,7 +37,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * Takes a list of {@link AbstractKVStorable} and synchronizes them with a file. ONLY update are supported. The core
  * assumption is that the list of {@link AbstractKVStorable} and the entries in the file are sorted ascended.
  * 
- * @author n.thieme, m.gleditzsch
+ * @author Nils Thieme, Martin Gleditzsch
  */
 public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     /** */
@@ -168,7 +168,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
                 workingBuffer.position(indexInChunk);
                 byte[] b = new byte[gp.elementSize];
                 workingBuffer.get(b);
-                Data toUpdate = (Data) prototype.fromByteBuffer(ByteBuffer.wrap(b));
+                Data toUpdate = prototype.fromByteBuffer(ByteBuffer.wrap(b));
                 // update the old element and writ it
                 toUpdate.update(data);
                 workingBuffer.position(indexInChunk);

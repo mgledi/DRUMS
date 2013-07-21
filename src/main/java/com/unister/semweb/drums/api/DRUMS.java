@@ -54,7 +54,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * Use the following code to open an old DRUMS<br>
  * <br>
  * 
- * @author n.thieme, m.gleditzsch
+ * @author Nils Thieme, Martin Gleditzsch
  */
 public class DRUMS<Data extends AbstractKVStorable> {
     private static final Logger logger = LoggerFactory.getLogger(DRUMS_API.class);
@@ -292,7 +292,8 @@ public class DRUMS<Data extends AbstractKVStorable> {
         byte[] dataArray = new byte[gp.elementSize];
         while (dataBuffer.position() < dataBuffer.limit()) {
             dataBuffer.get(dataArray);
-            result.add((Data) prototype.fromByteBuffer(ByteBuffer.wrap(dataArray)));
+            Data copy = prototype.fromByteBuffer(ByteBuffer.wrap(dataArray));
+            result.add(copy);
         }
         indexFile.close();
         return result;
@@ -366,7 +367,8 @@ public class DRUMS<Data extends AbstractKVStorable> {
             // read element from workingBuffer
             workingBuffer.position(indexInChunk);
             workingBuffer.get(tmpB);
-            result.add((Data) prototype.fromByteBuffer(ByteBuffer.wrap(tmpB)));
+            Data copy = prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
+            result.add(copy);
             if (indexInChunk == -1) {
                 logger.warn("Element with key {} was not found and therefore not updated", key);
                 indexInChunk = 0;
@@ -397,7 +399,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
 
     /**
      * Searches for the given key in workingBuffer, beginning at the given index. Remember: The records in the
-     * workingbuffer have to be ordered ascending.
+     * <code>workingbuffer</code> have to be ordered ascending.
      * 
      * @param workingBuffer
      *            the ByteBuffer to work on
@@ -458,7 +460,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * @throws FileLockException
      */
     public DRUMS_Reader<Data> getReader() throws FileLockException, IOException {
-        if (reader_instance != null && reader_instance.isClosed) {
+        if (reader_instance != null && !reader_instance.filesAreOpened) {
             reader_instance.openFiles();
         } else {
             reader_instance = new DRUMS_Reader<Data>(this);

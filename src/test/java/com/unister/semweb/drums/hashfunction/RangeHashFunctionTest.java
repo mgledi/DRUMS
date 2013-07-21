@@ -21,8 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
-import junit.framework.Assert;
 
+
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -35,7 +36,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * Tests the the distribution of the {@link RangeHashFunction}, meaning that the key is mapped to the right bucket id.
  * 
- * @author n.thieme
+ * @author Nils Thieme
  * 
  */
 public class RangeHashFunctionTest {

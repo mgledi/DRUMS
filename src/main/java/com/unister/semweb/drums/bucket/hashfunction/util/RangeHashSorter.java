@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket.hashfunction.util;
 
 import java.io.Serializable;
@@ -22,22 +20,11 @@ import java.io.Serializable;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
- * Code is copied from com.unister.semweb.superfast.storage.bucket.SortMachine to adapt it for the hash function.
- * <p/>
- * This sort machine takes two arrays with the same number of elements. These arrays correspond to each other, meaning
- * that the value of the ith element of the first array corresponds of the ith element of the second and third array. So
- * all three arrays represents a set of triples.
- * <p/>
- * The sort machine sorts these triples by the <code>ranges</code>.
- * <p/>
- * The usage is as follows:
- * <ul>
- * <li>create a sort machine with the three corresponding arrays</li>
- * <li>call the <code>quicksort</code> method</li>
- * <li>get all arrays by the corresponding getter methods</li>
- * </ul>
+ * This class is able to perform an associative sort. It takes two arrays with the same number of elements. These arrays
+ * correspond to each other, meaning that the value of the ith element of the first array corresponds of the ith element
+ * of the second array. 
  * 
- * @author n.thieme, m.gleditzsch
+ * @author Nils Thieme, Martin Gleditzsch
  */
 public class RangeHashSorter implements Serializable {
     /**

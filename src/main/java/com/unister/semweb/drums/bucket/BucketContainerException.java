@@ -21,7 +21,7 @@ package com.unister.semweb.drums.bucket;
  * This exception is thrown, if the a {@link Bucket} is tried to access, which doesn't exist or an element could not be
  * added eitherway.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  * 
  */
 public class BucketContainerException extends Exception {

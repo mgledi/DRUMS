@@ -17,7 +17,6 @@
  */
 package com.unister.semweb.drums.utils;
 
-import java.io.File;
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -27,7 +26,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * Utility class for handling {@link RangeHashFunction} easier.
  * 
- * @author n.thieme
+ * @author Nils Thieme
  */
 public class RangeHashFunctionTestUtils {
     /**

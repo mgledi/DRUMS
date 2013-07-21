@@ -32,7 +32,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * Testing the UpdateOnlySynchronizer
  * 
- * @author m.gleditzsch, m.unglaub
+ * @author Martin Gleditzsch, m.unglaub
  */
 public class UpdateOnlySynchronizerTest {
 

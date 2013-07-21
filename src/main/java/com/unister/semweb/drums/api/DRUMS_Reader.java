@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.api;
 
 import java.io.File;
@@ -23,8 +21,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.carrotsearch.hppc.IntObjectOpenHashMap;
 import com.carrotsearch.hppc.cursors.IntObjectCursor;
@@ -35,15 +31,14 @@ import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
  * This class represents an efficient direct access reader. It holds all files opened for reading. Only use this Reader,
- * when there are no write-operations during reading. The files will be locked.
+ * when there are no write-operations during reading. All files will be locked. Be careful: Opening all files may cost a
+ * lot of memory, because all indices are loaded.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class DRUMS_Reader<Data extends AbstractKVStorable> {
-    static Logger logger = LoggerFactory.getLogger(DRUMS_Reader.class);
-
-    /** Marks if files are open. Is set to avoid null-pointer exceptions */
-    private boolean filesAreOpend = false;
+    /** Marks if files are opened. Is set to avoid null-pointer exceptions */
+    protected boolean filesAreOpened = false;
 
     /** An array containing all used files. All files are opened when instantiating for performance reasons. */
     private HeaderIndexFile<Data>[] files;
@@ -52,7 +47,7 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
     private DRUMS<Data> drums;
 
     /** An array which knows for each file in <code>files</code> the number of elements. (performance) */
-    int[] cumulativeElementsPerFile;
+    protected int[] cumulativeElementsPerFile;
 
     /** a prototype of Data */
     private Data prototype;
@@ -63,8 +58,14 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
     /** temporarily used destination buffer */
     private ByteBuffer destBuffer;
 
-    protected boolean isClosed = true;
-
+    /**
+     * Instantiates a new Reader for the given DRUMS. Be careful: All data files are opened and all indices are loaded
+     * into memory.
+     * 
+     * @param drums
+     * @throws FileLockException
+     * @throws IOException
+     */
     protected DRUMS_Reader(DRUMS<Data> drums) throws FileLockException, IOException {
         this.drums = drums;
         this.numberOfBuckets = drums.getHashFunction().getNumberOfBuckets();
@@ -80,6 +81,7 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
      * @throws FileLockException
      * @throws IOException
      */
+    @SuppressWarnings("unchecked")
     public void openFiles() throws FileLockException, IOException {
         files = new HeaderIndexFile[numberOfBuckets];
         cumulativeElementsPerFile = new int[numberOfBuckets];
@@ -99,16 +101,15 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
             }
         }
 
-        // elementsPerChunk = files[lastfile].getChunkSize() / elementSize;
         destBuffer = ByteBuffer.allocate((int) files[lastfile].getChunkSize());
-        filesAreOpend = true;
+        filesAreOpened = true;
     }
 
     /**
      * Returns all elements between lowerKey and upperKey this function is still BUGGY
      */
     public List<Data> getRange(byte[] lowerKey, byte[] upperKey) throws IOException {
-        if (!filesAreOpend) {
+        if (!filesAreOpened) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
         // estimate bounds
@@ -142,6 +143,7 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
                 destBuffer.flip();
                 while (destBuffer.remaining() > elementSize) {
                     destBuffer.get(tmpB); // get the element
+                    @SuppressWarnings("unchecked")
                     Data record = (Data) prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
                     if (KeyUtils.compareKey(record.key, lowerKey) >= 0 &&
                             KeyUtils.compareKey(record.key, upperKey) <= 0) {
@@ -165,7 +167,7 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
      * @throws IOException
      */
     public Data getPreviousElement(byte[] key) throws IOException {
-        if (!filesAreOpend) {
+        if (!filesAreOpened) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
         return null;
@@ -179,7 +181,7 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
      * @throws IOException
      */
     public Data getNextElement(byte[] key) throws IOException {
-        if (!filesAreOpend) {
+        if (!filesAreOpened) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
         return null;
@@ -206,7 +208,7 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
      * @throws IOException
      */
     public List<Data> get(byte[]... keys) throws FileStorageException, IOException {
-        if (!filesAreOpend) {
+        if (!filesAreOpened) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
         List<Data> result = new ArrayList<Data>();
@@ -221,7 +223,7 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
 
     /** Closes all files */
     public void closeFiles() {
-        filesAreOpend = false;
+        filesAreOpened = false;
         for (HeaderIndexFile<Data> file : files) {
             if (file != null) {
                 file.close();

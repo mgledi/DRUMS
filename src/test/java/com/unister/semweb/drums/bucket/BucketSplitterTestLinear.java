@@ -40,7 +40,7 @@ import com.unister.semweb.drums.utils.RangeHashFunctionTestUtils;
  * This class is for testing the BucketSplitter The tests creates one database file and tries to split this file. Also
  * the test data are linear meaning that there is no gap between the keys within the data.
  * 
- * @author m.gleditzsch, n.thieme
+ * @author Martin Gleditzsch, Nils Thieme
  */
 public class BucketSplitterTestLinear {
     private static final String hashFunctionFilename = "/tmp/hash.hs";

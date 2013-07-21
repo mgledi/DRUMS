@@ -41,7 +41,7 @@ import com.unister.semweb.drums.storable.TestStorable;
  * <li>size <= contentSize + headerSize + incrementSize</li>
  * </ul>
  * 
- * @author n.thieme
+ * @author Nils Thieme
  * 
  */
 public class SpecificEnlargmentTest {

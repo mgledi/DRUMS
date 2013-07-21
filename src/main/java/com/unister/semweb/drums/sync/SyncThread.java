@@ -32,7 +32,7 @@ import com.unister.semweb.drums.synchronizer.Synchronizer;
 /**
  * An instance of a {@link SyncThread}. Synchronizes a {@link Bucket} with the file system.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(SyncThread.class);
@@ -85,7 +85,7 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     public void run() {
         AbstractKVStorable[] linkData = bucket.getBackend(); // get all LinkData
 
-        long startTime = System.currentTimeMillis(); // remember the, time when synchronizing is started (for logging)
+        long startTime = System.nanoTime(); // remember the, time when synchronizing is started (for logging)
 
         log.debug("Start to synchronize {} objects.", linkData.length);
         try {
@@ -95,20 +95,26 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
                     .createSynchronizer(directoryName + "/" + filename, gp);
             synchronizer.upsert(linkData); // start synchronizing
 
-            // TODO does this really work???
             actualProcessingBuckets.remove(bucket);
-            log.debug("Try to free memory.");
-            DynamicMemoryAllocater.INSTANCES[gp.ID].freeMemory(bucket.freeMemory());
+            freeMemory(bucket);
             synchronizer.close();
-            log.debug("Synchronized {} objects in {} ms.", linkData.length, (System.currentTimeMillis() - startTime));
+            log.debug("Synchronized {} objects in {} ms.", linkData.length, ((System.nanoTime() - startTime)/1e6));
             /* update messages */
             buffer.sumUpInserted(synchronizer.getNumberOfInsertedEntries());
             buffer.sumUpUpdated(synchronizer.getNumberOfUpdatedEntries());
         } catch (Exception ex) {
             log.error("An error occurred during synchronizing. Synchronizing thread stopped! Some data was lost", ex);
-
-            // TODO does this really works?
+            freeMemory(bucket);
             actualProcessingBuckets.remove(bucket);
+            
         }
+    }
+    
+    private void freeMemory(Bucket<Data> bucket) {
+        log.debug("Try to free memory from bucket {}.",bucket.getBucketId());
+        long mem = bucket.freeMemory();
+        DynamicMemoryAllocater.INSTANCES[gp.ID].freeMemory(mem);
+        log.debug("{} bytes are available now.",mem);
+        
     }
 }

@@ -17,7 +17,6 @@
  */
 package com.unister.semweb.drums.hashfunction;
 
-import java.io.File;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,12 +26,11 @@ import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 /**
  * Tests the method <code>getBucketIds()</code> from the {@link RangeHashFunction}.
  * 
- * @author n.thieme
+ * @author Nils Thieme
  * 
  */
 public class RangeHashFunctionBucketidsPrefix {
     private static final String HASHFUNCTION_FILENAME = "/tmp/prefixGetRangeHashFunction.txt";
-    private static final int BUCKET_SIZE = 100;
 
     /** There are several range and the prefix lies in the first range. */
     @Test

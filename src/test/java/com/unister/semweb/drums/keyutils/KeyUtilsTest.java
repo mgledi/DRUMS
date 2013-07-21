@@ -28,7 +28,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * This method tests the {@link KeyUtils}. Those static methods are often used in DRUMS
  * 
- * @author m.gleditzsch, n.thieme
+ * @author Martin Gleditzsch, Nils Thieme
  */
 public class KeyUtilsTest {
     @Test

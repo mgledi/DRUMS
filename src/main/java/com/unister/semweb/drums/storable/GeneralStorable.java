@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * Remember: If you want to be as effective as possible, you have to implement your own storable extending the
  * {@link AbstractKVStorable}.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class GeneralStorable extends AbstractKVStorable {
     static Logger logger = LoggerFactory.getLogger(GeneralStorable.class);
@@ -94,10 +94,6 @@ public class GeneralStorable extends AbstractKVStorable {
         return this.fromByteBuffer(toByteBuffer());
     }
 
-    @Override
-    public int getByteBufferSize() {
-        return structure.keySize + structure.valueSize;
-    }
 
     @Override
     public AbstractKVStorable merge(AbstractKVStorable element) {

@@ -27,7 +27,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * The interface for different {@link ISynchronizerFactory}s. Instantiates {@link Synchronizer}s, which synchronize a
  * {@link Bucket} in some way.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public interface ISynchronizerFactory<Data extends AbstractKVStorable> {
     /**

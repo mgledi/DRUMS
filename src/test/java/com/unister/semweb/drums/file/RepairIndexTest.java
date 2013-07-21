@@ -33,7 +33,7 @@ import com.unister.semweb.drums.storable.TestStorable;
 /**
  * Tests for the <code>repairIndex()</code> method of the {@link HeaderIndexFile}.
  * 
- * @author n.thieme
+ * @author Nils Thieme
  * 
  */
 public class RepairIndexTest {

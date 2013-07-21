@@ -1,70 +1,33 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.file;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
- * This class represents a file, which contains a bunch of datasets. The file also contains a header with some
- * informations and an {@link IndexForHeaderIndexFile}. This class is for managing and handling equal sized storable
- * elements. So be very careful, if this precondition is not fulfilled.<br>
- * <br>
+ * This class is not for use yet.
  * 
- * Header structure:<br/>
- * <br/>
- * <code>
- * +-----------+--------------+---------------+---------------+-------------+<br/>
- * | FILE SIZE | FILLED UP TO | Closed Softly | ReadChunkSize | ElementSize |<br/>
- * | 8 bytes . | 8 bytes .... | 1 bytes ..... | 4 bytes ..... | 4 bytes ... |<br/>
- * +-----------+--------------+---------------+---------------+-------------+<br/>
- * </code> = 1024 bytes (to have enough space for more values)<br/>
- * <br/>
- * 
- * To use this class correctly, have a look at the following methods: <li>read(long offset, ByteBuffer destBuffer) <li>
- * write(long offset, ByteBuffer sourceBuffer) <li>append(ByteBuffer sourceBuffer) <li>dbfile.getFilledUpToExclHeader()
- * <br>
- * <br>
- * The file enlarges automatically. Deletes (writing empty byte[] to a specific position) are leading to fragmentation.
- * The actual version don't have a fragmentation-handling.
- * 
- * Example code for reading the whole file:
- * 
- * <pre>
- *  ...
- *  DBFile dbfile = new DBFile(filename, mode, retries);
- *  ByteBuffer readBuffer = ByteBuffer.allocate(blockSize);
- *  long offset = 0;
- *  while(offset < dbfile.getFilledUpFromContentStart()) {
- *      read(offset, readBuffer);
- *      // do something with the readBuffer
- *      ...
- *      offset += readBuffer.limit();
- *  }
- *  ...
- * </pre>
- * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  * 
  */
-public class FragmentedHeaderIndexFile extends HeaderIndexFile {
+public class FragmentedHeaderIndexFile<Data extends AbstractKVStorable> extends HeaderIndexFile<Data> {
 
     /**
      * This constructor instantiates a new {@link FragmentedHeaderIndexFile} with the given <code>fileName</code> in the
@@ -82,20 +45,19 @@ public class FragmentedHeaderIndexFile extends HeaderIndexFile {
      * @throws IOException
      *             if another error with the fileaccess occured
      */
-    public FragmentedHeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, GlobalParameters gp)
+    public FragmentedHeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect,
+            GlobalParameters<Data> gp)
             throws FileLockException, IOException {
         super(fileName, mode, max_retries_connect, gp);
     }
 
     @Override
     public void write(long offset, ByteBuffer sourceBuffer) throws IOException {
-        // TODO nicht über chunk-grenze schreiben
         super.write(offset, sourceBuffer);
     }
 
     @Override
     public int read(long offset, ByteBuffer destBuffer) throws IOException {
-        // TODO nicht über chunk-grenze lesen
         return super.read(offset, destBuffer);
     }
 
@@ -107,6 +69,7 @@ public class FragmentedHeaderIndexFile extends HeaderIndexFile {
 
     // TODO: adapt read, only full chunks can be read and be written
 
+    @SuppressWarnings("unused")
     protected void fragementate() {
         if (chunkSize % elementSize != 0) {
             throw new RuntimeException();

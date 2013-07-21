@@ -23,7 +23,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * This class is a container for some static functions to sort special Arrays containing {@link AbstractKVStorable}s.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class SortMachine {
 

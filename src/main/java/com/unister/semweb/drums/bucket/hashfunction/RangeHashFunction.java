@@ -39,7 +39,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * This hashFunction maps an element dependent on its range-bucket. It checks if given key falls in a specific range.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class RangeHashFunction extends AbstractHashFunction {
     private static final Logger log = LoggerFactory.getLogger(RangeHashFunction.class);

@@ -26,29 +26,26 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
 
-import junit.framework.Assert;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.unister.semweb.drums.GlobalParameters;
-import com.unister.semweb.drums.file.FileLockException;
-import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.storable.DummyKVStorable;
 
 /**
  * tests the Handling with the DB-File
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class HeaderIndexFileTest {
-    HeaderIndexFile file;
+    HeaderIndexFile<DummyKVStorable> file;
 
     /** The global Parameters to use */
-    GlobalParameters gp = new GlobalParameters(DummyKVStorable.getInstance());
+    GlobalParameters<DummyKVStorable> gp = new GlobalParameters<DummyKVStorable>(DummyKVStorable.getInstance());
     
     /** create static file access */
     @BeforeClass
@@ -61,7 +58,7 @@ public class HeaderIndexFileTest {
     /** create static file access */
     @Before
     public void createFile() throws IOException, FileLockException {
-        file = new HeaderIndexFile("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 1, gp);
+        file = new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 1, gp);
     }
 
     /** create static file access */
@@ -173,14 +170,14 @@ public class HeaderIndexFileTest {
         file.close();
         createFile();
         try {
-            new HeaderIndexFile("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, gp);
+            new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, gp);
             Assert.assertTrue(false);
         } catch (FileLockException e) {
             Assert.assertTrue(true);
         }
         file.close();
 
-        new HeaderIndexFile("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, gp);
+        new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 2, gp);
         Assert.assertTrue(true);
     }
 
@@ -215,7 +212,7 @@ public class HeaderIndexFileTest {
 
     @Test
     public void test() throws Throwable {
-        HeaderIndexFile hif = new HeaderIndexFile("/tmp/test.db", AccessMode.READ_WRITE, 1, gp);
+        HeaderIndexFile<DummyKVStorable> hif = new HeaderIndexFile<DummyKVStorable>("/tmp/test.db", AccessMode.READ_WRITE, 1, gp);
         hif.delete();
 
         File osFile = new File("/tmp/test.db");

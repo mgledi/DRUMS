@@ -27,7 +27,7 @@ import com.unister.semweb.drums.utils.RangeHashFunctionTestUtils;
 /**
  * Tests the <code>replace</code> method of the {@link RangeHashFunction}.
  * 
- * @author n.thieme
+ * @author Nils Thieme
  * 
  */
 public class RangeHashFunctionReplace {

@@ -34,7 +34,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * 
  * </code>
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
 

@@ -30,8 +30,13 @@ import com.unister.semweb.drums.api.DRUMS.AccessMode;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
+/**
+ * 
+ * @author Martin Gleditzsch
+ *
+ */
 public class DRUMS_API {
-    private static final Logger log = LoggerFactory.getLogger(DRUMS.class);
+    private static final Logger logger = LoggerFactory.getLogger(DRUMS_API.class);
 
     /**
      * This method creates a new DRUMS object.<br/>
@@ -50,11 +55,11 @@ public class DRUMS_API {
             GlobalParameters<Data> gp) throws IOException {
         File databaseDirectoryFile = new File(gp.databaseDirectory);
         if (databaseDirectoryFile.exists()) {
-            throw new IOException("The directory already exist. Can't create a DRUMS.");
+            throw new IOException("The directory " + databaseDirectoryFile + " already exist. Can't create a DRUMS.");
         }
         // First we create the directory structure.
         new File(gp.databaseDirectory).mkdirs();
-        log.info("Created directory {}.", gp.databaseDirectory);
+        logger.info("Created directory {}.", gp.databaseDirectory);
         DRUMS<Data> table = new DRUMS<Data>(hashFunction, AccessMode.READ_WRITE, gp);
         return table;
     }

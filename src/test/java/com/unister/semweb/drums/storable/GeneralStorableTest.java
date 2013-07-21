@@ -32,7 +32,7 @@ import com.unister.semweb.drums.storable.GeneralStructure.Basic_Field_Types;
  * This method tests the {@link GeneralStorable}. It mainly tests setter and getter methods, because those of the
  * {@link GeneralStorable} contain logical expressions.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class GeneralStorableTest {
 

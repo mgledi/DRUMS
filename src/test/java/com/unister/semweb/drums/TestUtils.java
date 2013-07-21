@@ -17,7 +17,6 @@
  */
 package com.unister.semweb.drums;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -31,14 +30,13 @@ import java.util.concurrent.BlockingQueue;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 
-import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.bucket.SortMachine;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
-import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.storable.DummyKVStorable;
 import com.unister.semweb.drums.synchronizer.Synchronizer;
 import com.unister.semweb.drums.utils.KeyUtils;

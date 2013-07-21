@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket;
 
 import java.util.Arrays;
@@ -27,16 +25,16 @@ import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
- * This class manages the dynamic memory distribution for the Buckets. It should be used as Singelton. In Java it is
- * easily possible to allocate and free memory directly. Therefore we just remember which bucket got how many bytes to
- * use.
+ * This class manages the dynamic distribution of memory for the Buckets. It should be used as Singelton. This class
+ * doesn't really allocate memory. It just allows to manage virtual memory. An object which wants to be controlled
+ * easily asks for memory. This object also must give a report, when it doesn't need this memory anymore.
  * 
- * @author m.gleditzsch
+ * 
+ * @author Martin Gleditzsch
  */
 // TODO: share the same memory instead of having all its own memory
 public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
-    /** the private Logger */
-    private Logger log = LoggerFactory.getLogger(this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(DynamicMemoryAllocater.class);
 
     @SuppressWarnings("rawtypes")
     public static DynamicMemoryAllocater[] INSTANCES = new DynamicMemoryAllocater[0];
@@ -71,7 +69,6 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      */
     public static <Data extends AbstractKVStorable> void instantiate(GlobalParameters<Data> gp) {
         if (INSTANCES.length <= gp.ID) {
-            // TODO IS THIS REALLY CORRECT???
             INSTANCES = Arrays.copyOf(INSTANCES, gp.ID + 1);
             INSTANCES[gp.ID] = new DynamicMemoryAllocater<Data>(gp);
         }
@@ -84,16 +81,9 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      * @return int
      * @throws InterruptedException
      */
-    public synchronized int allocateNextChunk() throws InterruptedException {
-        // if no memory is available, then check every second if now is memory available
-        // First try
-        // while ((used_bytes.longValue() + (long) mem_chunksize) > max_allowed_bytes) {
-        // log.info("Can't allocate memory. {} bytes already allocated. {} bytes allowed.", used_bytes.longValue(),
-        // max_allowed_bytes);
-        // Thread.sleep(1000);
-        // }
-
+    public synchronized int allocateNextChunk() {
         if ((used_bytes.longValue() + (long) mem_chunksize) > max_allowed_bytes) {
+            logger.info("No memory left");
             return 0;
         }
         used_bytes.set(used_bytes.longValue() + (long) mem_chunksize);

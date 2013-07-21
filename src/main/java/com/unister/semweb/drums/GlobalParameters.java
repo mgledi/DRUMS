@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums;
 
 import java.io.FileInputStream;
@@ -31,21 +29,26 @@ import org.slf4j.LoggerFactory;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
- * @author m.gleditzsch
+ * This class represents a bunch of parameters, which are used global.
+ * 
+ * @author Martin Gleditzsch
  */
 public class GlobalParameters<Data extends AbstractKVStorable> {
+    /**
+     * My private Logger.
+     */
     private static Logger logger = LoggerFactory.getLogger(GlobalParameters.class);
-
+    /** A global count of all instances */
     public static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
-
+    /** The database directory. In this directory all records are stored. */
     public String databaseDirectory;
-
-    public final int ID;
-
+    /** The name of the underlying parameter file. */
     public String PARAM_FILE;
-
+    /** a idendification number of this parameter set. This needed if more than one DRUMS is instantiated in one JVM */
+    public final int ID;
+    /** The amount of bytes all buckets are allowed to use */
     public long BUCKET_MEMORY;
-
+    /** The maximal size of a bucket in bytes */
     public long MAX_MEMORY_PER_BUCKET;
 
     public int MEMORY_CHUNK;
@@ -74,11 +77,22 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     /** The size of the full AbstractKVStorable */
     public final int elementSize;
 
+    /**
+     * The prototype of the Data of this DRUMS.
+     */
     private Data prototype;
 
     /** The maximal time in ms a bucket is held in memory without synchronization attempt */
     public long MAX_BUCKET_STORAGE_TIME;
 
+    /**
+     * Initilize global arameters by those from the given parameter-file.
+     * 
+     * @param paramFile
+     *            The name of the parameter-file
+     * @param prototype
+     *            a prototype of the Data of this DRUMS
+     */
     public GlobalParameters(String paramFile, Data prototype) {
         this.PARAM_FILE = paramFile;
         this.keySize = prototype.key.length;
@@ -88,6 +102,12 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
         initParameters();
     }
 
+    /**
+     * The standard constructor. Loads all parameters from drums.properties
+     * 
+     * @param prototype
+     *            a prototype of the Data of this DRUMS
+     */
     public GlobalParameters(Data prototype) {
         this("drums.properties", prototype);
     }
@@ -103,6 +123,9 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
         return ((Data) prototype.clone());
     }
 
+    /**
+     * Initialises all Parameters.
+     */
     public void initParameters() {
         InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(PARAM_FILE);
         Properties props = new Properties();
@@ -129,10 +152,13 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
 
         INITIAL_FILE_SIZE = (int) parseSize(props.getProperty("INITIAL_FILE_SIZE", "16M"));
         INITIAL_INCREMENT_SIZE = (int) parseSize(props.getProperty("INITIAL_INCREMENT_SIZE", "16M"));
-        configToString();
+        configToLogInfo();
     }
 
-    public void configToString() {
+    /**
+     * Outputs the configuration to the Logger.
+     */
+    public void configToLogInfo() {
         logger.info("----- MEMEORY USAGE -----");
         logger.info("BUCKET_MEMORY = {}", BUCKET_MEMORY);
         logger.info("MEMORY_CHUNK = {}", MEMORY_CHUNK);
@@ -145,8 +171,15 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
         logger.info("CHUNK_SIZE = {}", INDEX_CHUNK_SIZE);
     }
 
-    static Pattern p_mem = Pattern.compile("(\\d+)(K|M|G)");
+    private static Pattern p_mem = Pattern.compile("(\\d+)(K|M|G)");
 
+    /**
+     * This methods parses the given String, which should represent a size, to a long. 'K' is interpreted as 1024, 'M'
+     * as 1024^2 and 'G' as 1024^3.
+     * 
+     * @param
+     * @return size in byte. -1 if the String was not parsable.
+     */
     public static long parseSize(String s) {
         Matcher m = p_mem.matcher(s);
         if (m.find()) {

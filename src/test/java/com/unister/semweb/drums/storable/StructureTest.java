@@ -31,7 +31,7 @@ import com.unister.semweb.drums.storable.GeneralStructure.Basic_Field_Types;
 /**
  * This class tests the {@link GeneralStorable}. It doesn't test udpate or merge methods.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  *
  */
 public class StructureTest {

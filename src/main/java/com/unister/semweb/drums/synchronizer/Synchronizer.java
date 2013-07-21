@@ -41,7 +41,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * by a {@link SyncThread}. The core assumption is that the list of {@link AbstractKVStorable} and the entries in the
  * file are sorted ascended.
  * 
- * @author n.thieme, m.gleditzsch
+ * @author Nils Thieme, Martin Gleditzsch
  */
 public class Synchronizer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(Synchronizer.class);
@@ -67,7 +67,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
     private ByteBuffer bufferedReader;
 
     /** the header of the bucket, something like an index */
-    private IndexForHeaderIndexFile header;
+    private IndexForHeaderIndexFile<Data> header;
 
     /** the largest key in the actual chunk for writing */
     private byte[] largestKeyInChunk;

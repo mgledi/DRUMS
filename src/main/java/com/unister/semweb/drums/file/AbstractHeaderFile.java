@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * <br>
  * <br>
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public abstract class AbstractHeaderFile {
     Logger logger = LoggerFactory.getLogger(this.getClass());

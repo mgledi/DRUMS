@@ -38,7 +38,7 @@ import com.unister.semweb.drums.utils.RangeHashFunctionTestUtils;
 /**
  * Tests the <code>select</code> method of the {@link DRUMS} class.
  * 
- * @author n.thieme
+ * @author Nils Thieme
  * 
  */
 public class SearchForTest {

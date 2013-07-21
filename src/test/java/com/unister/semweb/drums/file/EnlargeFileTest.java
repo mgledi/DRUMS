@@ -22,22 +22,20 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.unister.semweb.drums.GlobalParameters;
-import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.storable.TestStorable;
 
 /**
  * Tests the enlargement of the {@link HeaderIndexFile}.
  * 
- * @author n.thieme
+ * @author Nils Thieme
  * 
  */
 public class EnlargeFileTest {

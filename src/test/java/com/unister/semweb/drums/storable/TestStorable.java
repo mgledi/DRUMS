@@ -26,7 +26,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * A simple concrete implementation of {@link AbstractKVStorable} to making tests. The data have two different
  * attributes: first value and second value. The first one is a long and the second is an integer value.
  * 
- * @author n.thieme
+ * @author Nils Thieme
  * 
  */
 public class TestStorable extends AbstractKVStorable {

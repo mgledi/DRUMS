@@ -20,7 +20,7 @@ package com.unister.semweb.drums.utils;
 /**
  * Mathematical helper methods.
  * 
- * @author n.thieme
+ * @author Nils Thieme
  * 
  */
 public class MathUtils {

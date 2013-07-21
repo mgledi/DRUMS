@@ -13,33 +13,20 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
-package com.unister.semweb.drums.api;
+package com.unister.semweb.drums.utils;
+
+import java.util.Comparator;
+
+import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
- * Is thrown when an error occurs within the file storage.
  * 
- * @author Nils Thieme
- * 
+ * @author Chaos
+ *
  */
-public class FileStorageException extends Exception {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -6381038599235245823L;
-
-    public FileStorageException() {
-        super();
-    }
-
-    public FileStorageException(String message) {
-        super(message);
-    }
-
-    public FileStorageException(String message, Throwable throwable) {
-        super(message, throwable);
-    }
-
-    public FileStorageException(Throwable throwable) {
-        super(throwable);
+public class AbstractKVStorableComparator implements Comparator<AbstractKVStorable> {
+    @Override
+    public int compare(AbstractKVStorable o1, AbstractKVStorable o2) {
+        return KeyUtils.compareKey(o1.key, o2.key);
     }
 }

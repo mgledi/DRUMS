@@ -28,7 +28,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * This Class tests the sorting machine for the ranges.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class RangeHashSorterTest {
     

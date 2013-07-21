@@ -1,36 +1,36 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.api.DRUMS;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
  * An instance of this class is a container of {@link AbstractKVStorable}s.
  * 
- * @author m.gleditzsch, n.thieme
+ * @author Martin Gleditzsch, Nils Thieme
  */
 public class Bucket<Data extends AbstractKVStorable> {
 
@@ -105,9 +105,8 @@ public class Bucket<Data extends AbstractKVStorable> {
      *            the Data to add
      */
     public synchronized boolean add(AbstractKVStorable toAdd) {
-        boolean wasAdded = false;
         if (memorySizeInBytes >= gp.MAX_MEMORY_PER_BUCKET) {
-            return wasAdded;
+            return false;
         }
         // no memory is available
         try {
@@ -119,14 +118,6 @@ public class Bucket<Data extends AbstractKVStorable> {
                     return false;
                 }
             }
-
-            /* Original from Martin */
-            // if (lastChunkIndex == -1) {
-            // enlargeMemory();
-            // } else if (position_in_chunk == memory[lastChunkIndex].length) {
-            // enlargeMemory();
-            // }
-            /* ******************** */
         } catch (InterruptedException e) {
             // TODO: error log
             e.printStackTrace();
@@ -137,11 +128,12 @@ public class Bucket<Data extends AbstractKVStorable> {
             memory[lastChunkIndex][position_in_chunk] = b[i];
         }
         elementsInBucket++;
-        wasAdded = true;
-        return wasAdded;
+        return true;
     }
 
-    /** Returns true, of this bucket, contains the given element. */
+    /* @param element the element to look for
+     * 
+     * @return true, if this bucket, contains the given element */
     public boolean contains(Data element) {
         boolean contains = false;
         byte[] dst = new byte[gp.elementSize];
@@ -152,7 +144,7 @@ public class Bucket<Data extends AbstractKVStorable> {
             }
             while (bb.remaining() > 0) {
                 bb.get(dst);
-                if (KeyUtils.compareKey(element.toByteBuffer().array(), dst) == 1) {
+                if (KeyUtils.compareKey(element.toByteBuffer().array(), dst) > 0) {
                     contains = true;
                     break;
                 }
@@ -165,7 +157,7 @@ public class Bucket<Data extends AbstractKVStorable> {
     }
 
     /**
-     * enlarges the memory by one chunk. If this was successful <code>true</code> will be returned, otherwise
+     * Enlarges the memory by one chunk. If this was successful <code>true</code> will be returned, otherwise
      * <code>false</code>.
      * 
      * @throws InterruptedException
@@ -216,7 +208,8 @@ public class Bucket<Data extends AbstractKVStorable> {
      * 
      * @return {@link AbstractKVStorable}[] all {@link AbstractKVStorable}s ascending sorted
      */
-    public synchronized AbstractKVStorable[] getBackend() {
+    // TODO: handle backend internally as long byte-array
+    public synchronized Data[] getBackend() {
         sort();
 
         AbstractKVStorable[] data = new AbstractKVStorable[elementsInBucket];
@@ -232,19 +225,20 @@ public class Bucket<Data extends AbstractKVStorable> {
                 data[i++] = prototype.fromByteBuffer(ByteBuffer.wrap(dst));
             }
         }
-        SortMachine.quickSort(data);
-        return data;
+        Arrays.sort(data, new AbstractKVStorableComparator());
+        return (Data[]) data;
     }
 
-    /**
-     * returns the number of elements, actual stored
-     * 
-     * @return int
-     */
+    /** @return the number of elements, actually stored */
     public int size() {
         return elementsInBucket;
     }
 
+    /**
+     * This method frees the allocated memory.
+     * 
+     * @return the number of bytes which are available now
+     */
     public int freeMemory() {
         int size = 0;
         for (int m = 0; m < memory.length; m++) {
@@ -255,11 +249,7 @@ public class Bucket<Data extends AbstractKVStorable> {
         return size;
     }
 
-    /**
-     * Returns the creation time of this bucket.
-     * 
-     * @return
-     */
+    /** @return the creation time of this bucket. */
     public long getCreationTime() {
         return creationTime;
     }

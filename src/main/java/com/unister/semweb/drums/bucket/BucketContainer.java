@@ -27,7 +27,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * This class is responsible for adding {@link AbstractKVStorable}-objects to the correct buckets dependent on its
  * {@link AbstractHashFunction}. It has an additional buffer to store elements, which belong to full buckets.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class BucketContainer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(BucketContainer.class);

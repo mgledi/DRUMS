@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.sync;
 
 import java.util.Collections;
@@ -46,7 +44,7 @@ import com.unister.semweb.drums.synchronizer.Synchronizer;
  * For synchronizing the {@link SyncManager} instantiates new {@link SyncThread}s (each use special {@link Synchronizer}
  * s to move data from cache to HDD).
  * 
- * @author n.thieme, m.gleditzsch
+ * @author Nils Thieme, Martin Gleditzsch
  */
 public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     private static final Logger log = LoggerFactory.getLogger(SyncManager.class);

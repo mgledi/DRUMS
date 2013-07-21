@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.api;
 
 import java.io.Closeable;
@@ -34,8 +32,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
 /**
  * This class instantiates an Read-Only-Iterator for a given DRUMS
  * 
- * @author m.gleditzsch
- * @param 
+ * @author Martin Gleditzsch
+ * @param
  */
 public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<Data>, Closeable {
     static Logger logger = LoggerFactory.getLogger(DRUMSIterator.class);
@@ -63,23 +61,24 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
     /** for fast access, the number of buckets */
     private int numberOfBuckets = 0;
 
-    private int countElementsRead = 0;
+    /** counts all elements read by this iterator */
+    private long countElementsRead = 0;
 
     /** A pointer to the GlobalParameters used by this DRUMS */
-    protected GlobalParameters<Data> gp;
-    
+    final protected GlobalParameters<Data> gp;
+
     /**
-     * Initialises the iterator with the hash function.
+     * Initializes the iterator with the hash function and the global paramters.
      * 
      * @param hashFunction
-     * @param prototype
+     * @param globalparameters
      */
-    public DRUMSIterator(AbstractHashFunction hashFunction, GlobalParameters<Data> gp) {
-        this.gp = gp;
-        this.prototype = gp.getPrototype();
+    public DRUMSIterator(AbstractHashFunction hashFunction, GlobalParameters<Data> globalparameters) {
+        this.gp = globalparameters;
+        this.prototype = globalparameters.getPrototype();
         this.hashFunction = hashFunction;
-        this.curDestBuffer = new byte[gp.elementSize];
-        numberOfBuckets = hashFunction.getNumberOfBuckets();
+        this.curDestBuffer = new byte[globalparameters.elementSize];
+        this.numberOfBuckets = hashFunction.getNumberOfBuckets();
     }
 
     /**
@@ -94,8 +93,7 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
         } else if (actualFile != null && actualFileOffset < actualFile.getFilledUpFromContentStart()) {
             logger.debug("The end of the actual file is not reached yet.");
             return true;
-
-        } // Since version 0.2.23-SNAPSHOT all files are created, even if they don't contain elements 
+        } // Since version 0.2.23-SNAPSHOT all files are created, even if they don't contain elements
         else if (actualBucketId < numberOfBuckets - 1) {
             logger.debug("Not all files were read. Trying to open next file");
             try {
@@ -118,21 +116,19 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
     public Data next() {
         try {
             while (handleFile() && readBuffer.remaining() == 0) {
-                handleReadBuffer();
+                handleReadBuffer(); // if the readBuffer is empty after handling the file, than the next file will be
+                                    // opened
             }
 
             if (readBuffer.remaining() == 0) {
                 return null;
             }
             readBuffer.get(curDestBuffer);
-            AbstractKVStorable d = prototype.fromByteBuffer(ByteBuffer.wrap(curDestBuffer));
+            Data record = prototype.fromByteBuffer(ByteBuffer.wrap(curDestBuffer));
             countElementsRead++;
-            return (Data) d;
-        } catch (FileLockException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
+            return record;
+        } catch (Exception e) {
+            // TODO: handle exceptions properly
             e.printStackTrace();
         }
 
@@ -163,7 +159,7 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
         if (readBuffer == null) {
             filename = gp.databaseDirectory + "/" + hashFunction.getFilename(actualBucketId);
             actualFile = new HeaderIndexFile<Data>(filename, 1, gp);
-            readBuffer = ByteBuffer.allocate((int)actualFile.getChunkSize());
+            readBuffer = ByteBuffer.allocate((int) actualFile.getChunkSize());
             readBuffer.clear();
             readBuffer.limit(0);
         } else if (readBuffer.remaining() == 0 && actualFileOffset >= actualFile.getFilledUpFromContentStart()) {
@@ -186,7 +182,7 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
      */
     @Override
     public void remove() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("You can not delete records from DRUMS with an iterator.");
     }
 
     /** Closes this iterator. */

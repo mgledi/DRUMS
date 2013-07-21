@@ -21,7 +21,7 @@ package com.unister.semweb.drums.file;
  * This class extends the {@link Exception}-class. A {@link FileLockException} should be thrown if a File is locked in
  * some way.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  * 
  */
 public class FileLockException extends Exception {

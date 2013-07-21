@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.storable;
 
 import java.io.Serializable;
@@ -27,7 +25,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * Abstract implementation of interface {@link KVStorable}. Extend this class to build your own objects, which have to
  * be storable.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public abstract class AbstractKVStorable implements Serializable, Cloneable {
     private static final long serialVersionUID = -3973787626582319301L;
@@ -52,6 +50,9 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
         this.value = value;
     }
 
+    /**
+     * @return a pointer to the underlying array, which contains all value-parts
+     */
     public byte[] getValue() {
         return value;
     }
@@ -66,6 +67,9 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
         this.key = key;
     }
 
+    /**
+     * @return a pointer to the underlying array, which contains all key-parts
+     */
     public byte[] getKey() {
         return key;
     }
@@ -73,13 +77,25 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
     @Override
     public abstract AbstractKVStorable clone();
 
-    public abstract int getByteBufferSize();
+    /**
+     * Returns the number of bytes needed to store key and value.
+     * 
+     * @return key.length + value.length
+     */
+    public int getByteBufferSize() {
+        return key.length + value.length;
+    }
 
+    /**
+     * Converts the object to a {@link ByteBuffer}
+     * 
+     * @return
+     */
     public abstract ByteBuffer toByteBuffer();
 
     public abstract void initFromByteBuffer(ByteBuffer bb);
 
-    public abstract AbstractKVStorable fromByteBuffer(ByteBuffer bb);
+    public abstract <Data extends AbstractKVStorable> Data fromByteBuffer(ByteBuffer bb);
 
     /**
      * merges the given {@link AbstractKVStorable} with this one by your implementation and returns an
@@ -88,7 +104,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
      * @param element
      * @return
      */
-    public abstract AbstractKVStorable merge(AbstractKVStorable element);
+    public abstract <Data extends AbstractKVStorable> Data merge(Data element);
 
     /**
      * updates the given {@link AbstractKVStorable} with values from this one by your implementation
@@ -96,7 +112,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
      * @param element
      * @return
      */
-    public abstract void update(AbstractKVStorable element);
+    public abstract <Data extends AbstractKVStorable> void update(Data element);
 
     /**
      * This method returns true if this element is marked as deleted.
@@ -122,8 +138,8 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
     /**
      * This method merges {@link AbstractKVStorable}s in the given array, which have the same key.
      * 
-     * @param {@link AbstractKVStorable}[] toAdd, the {@link AbstractKVStorable}s to merge
-     * @return {@link AbstractKVStorable}[], the merged {@link AbstractKVStorable}s
+     * @param {@link AbstractKVStorable}[] toAdd, the {@link AbstractKVStorable}s to merge. Expected sorted.
+     * @return {@link AbstractKVStorable}[], the merged {@link AbstractKVStorable}s. Returned sorted.
      */
     @SuppressWarnings("unchecked")
     public static <Data extends AbstractKVStorable> Data[] merge(Data[] toAdd) {

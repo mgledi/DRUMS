@@ -64,7 +64,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  *  ...
  * </pre>
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHeaderFile implements IWritableIndexFile {
 
@@ -104,7 +104,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     protected long indexSizeInBytes;
 
     /** A pseudo-index (not each element is indexed, but the chunks where they belong to */
-    protected IndexForHeaderIndexFile index;
+    protected IndexForHeaderIndexFile<Data> index;
 
     /** A pointer to the GlobalParameters used by this DRUMS */
     protected GlobalParameters<Data> gp;
@@ -390,7 +390,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     /** reads and instantiates the index from the <code>indexBuffer</code> */
     public void readIndex() {
         indexBuffer.rewind();
-        index = new IndexForHeaderIndexFile(indexSize, keySize, chunkSize, indexBuffer);
+        index = new IndexForHeaderIndexFile<Data>(indexSize, keySize, chunkSize, indexBuffer);
     }
 
     protected void readHeader() {
@@ -437,7 +437,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * 
      * @return {@link IndexForHeaderIndexFile}
      */
-    public IndexForHeaderIndexFile getIndex() {
+    public IndexForHeaderIndexFile<Data> getIndex() {
         return index;
     }
 

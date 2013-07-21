@@ -39,7 +39,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * This class tests the {@link DRUMSIterator}.
  * 
- * @author m.gleditzsch
+ * @author Martin Gleditzsch
  */
 public class DRUMSIteratorTest {
     RangeHashFunction hashFunction;

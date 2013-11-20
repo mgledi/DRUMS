@@ -54,10 +54,10 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * Use the following code to open an old DRUMS<br>
  * <br>
  * 
- * @author Nils Thieme, Martin Gleditzsch
+ * @author Nils Thieme, Martin Nettling
  */
 public class DRUMS<Data extends AbstractKVStorable> {
-    private static final Logger logger = LoggerFactory.getLogger(DRUMS_API.class);
+    private static final Logger logger = LoggerFactory.getLogger(DRUMS.class);
 
     /** the accessmode for DRUMS */
     public enum AccessMode {
@@ -163,17 +163,17 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * 
      * @param toPersist
      *            data to insert or update
-     * @throws FileStorageException
+     * @throws DRUMSException
      *             if an error occurs
      * @throws InterruptedException
      *             if the call blocks and the current thread is interrupted
      */
-    public void insertOrMerge(Data... toPersist) throws FileStorageException, InterruptedException {
+    public void insertOrMerge(Data... toPersist) throws DRUMSException, InterruptedException {
         try {
             bucketContainer.addToCache(toPersist);
         } catch (BucketContainerException ex) {
             // This exception should never be thrown because the hash function should map all keys to a bucket.
-            throw new FileStorageException(ex);
+            throw new DRUMSException(ex);
         }
     }
 
@@ -215,9 +215,9 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * 
      * @param keys
      * @return
-     * @throws FileStorageException
+     * @throws DRUMSException
      */
-    public List<Data> select(long... keys) throws FileStorageException {
+    public List<Data> select(long... keys) throws DRUMSException {
         byte[][] bKeys = KeyUtils.transformToByteArray(keys);
         return this.select(bKeys);
     }
@@ -229,9 +229,9 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * 
      * @param keys
      * @return
-     * @throws FileStorageException
+     * @throws DRUMSException
      */
-    public List<Data> select(byte[]... keys) throws FileStorageException {
+    public List<Data> select(byte[]... keys) throws DRUMSException {
         List<Data> result = new ArrayList<Data>();
         IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = getBucketKeyMapping(keys);
         String filename;
@@ -247,10 +247,10 @@ public class DRUMS<Data extends AbstractKVStorable> {
             } catch (FileLockException ex) {
                 logger.error("Could not access the file {} within {} retries. The file seems to be locked.", filename,
                         HEADER_FILE_LOCK_RETRY);
-                throw new FileStorageException(ex);
+                throw new DRUMSException(ex);
             } catch (IOException ex) {
                 logger.error("An exception occurred while trying to get objects from the file {}.", filename, ex);
-                throw new FileStorageException(ex);
+                throw new DRUMSException(ex);
             } finally {
                 if (indexFile != null) {
                     indexFile.close();

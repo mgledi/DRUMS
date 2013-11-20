@@ -41,7 +41,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * by a {@link SyncThread}. The core assumption is that the list of {@link AbstractKVStorable} and the entries in the
  * file are sorted ascended.
  * 
- * @author Nils Thieme, Martin Gleditzsch
+ * @author Nils Thieme, Martin Nettling
  */
 public class Synchronizer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(Synchronizer.class);

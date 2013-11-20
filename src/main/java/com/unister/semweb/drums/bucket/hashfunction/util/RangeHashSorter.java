@@ -24,7 +24,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * correspond to each other, meaning that the value of the ith element of the first array corresponds of the ith element
  * of the second array. 
  * 
- * @author Nils Thieme, Martin Gleditzsch
+ * @author Nils Thieme, Martin Nettling
  */
 public class RangeHashSorter implements Serializable {
     /**

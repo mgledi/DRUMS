@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.bucket.SortMachine;
@@ -139,38 +139,6 @@ public class TestUtils {
             result[i] = oneEntry;
         }
         Arrays.sort(result);
-        return result;
-    }
-
-    public static DummyKVStorable[] generateTestdataDifferentFrom(BlockingQueue<DummyKVStorable> notToInclude,
-            int numberOfNewTestdata) {
-        List<DummyKVStorable> notIncludeList = new ArrayList<DummyKVStorable>();
-        notIncludeList.addAll(notToInclude);
-
-        DummyKVStorable[] result = generateTestdataDifferentFromList(notIncludeList, numberOfNewTestdata);
-        return result;
-    }
-
-    public static DummyKVStorable[] generateTestdataDifferentFrom(DummyKVStorable[] notToInclude,
-            int numberOfNewTestdata) {
-        List<DummyKVStorable> notIncludeList = Arrays.asList(notToInclude);
-
-        DummyKVStorable[] result = generateTestdataDifferentFromList(notIncludeList, numberOfNewTestdata);
-        return result;
-    }
-
-    public static DummyKVStorable[] generateTestdataDifferentFromList(List<DummyKVStorable> notToInclude,
-            int numberOfNewTestdata) {
-        Collection<DummyKVStorable> subtraction = new ArrayList<DummyKVStorable>();
-
-        while (subtraction.size() != numberOfNewTestdata) {
-            DummyKVStorable[] newTestdata = generateTestdata(numberOfNewTestdata - subtraction.size());
-            Collections.addAll(subtraction, newTestdata);
-            subtraction = CollectionUtils.subtract(subtraction, notToInclude);
-        }
-
-        DummyKVStorable[] result = new DummyKVStorable[numberOfNewTestdata];
-        result = subtraction.toArray(result);
         return result;
     }
 

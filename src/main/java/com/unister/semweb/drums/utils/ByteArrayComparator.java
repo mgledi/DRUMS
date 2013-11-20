@@ -20,7 +20,7 @@ import java.util.Comparator;
 
 /**
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  * 
  */
 public class ByteArrayComparator implements Comparator<byte[]> {

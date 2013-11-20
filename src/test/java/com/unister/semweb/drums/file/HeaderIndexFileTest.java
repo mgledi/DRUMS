@@ -39,7 +39,7 @@ import com.unister.semweb.drums.storable.DummyKVStorable;
 /**
  * tests the Handling with the DB-File
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class HeaderIndexFileTest {
     HeaderIndexFile<DummyKVStorable> file;

@@ -44,7 +44,7 @@ import com.unister.semweb.drums.synchronizer.Synchronizer;
  * For synchronizing the {@link SyncManager} instantiates new {@link SyncThread}s (each use special {@link Synchronizer}
  * s to move data from cache to HDD).
  * 
- * @author Nils Thieme, Martin Gleditzsch
+ * @author Nils Thieme, Martin Nettling
  */
 public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     private static final Logger log = LoggerFactory.getLogger(SyncManager.class);

@@ -32,7 +32,7 @@ import com.unister.semweb.drums.synchronizer.Synchronizer;
 /**
  * An instance of a {@link SyncThread}. Synchronizes a {@link Bucket} with the file system.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(SyncThread.class);

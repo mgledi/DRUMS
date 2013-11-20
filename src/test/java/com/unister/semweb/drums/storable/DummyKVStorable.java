@@ -28,7 +28,7 @@ import com.unister.semweb.drums.storable.GeneralStructure.Basic_Field_Types;
 /**
  * A {@link DummyKVStorable} for our test szenarios.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class DummyKVStorable extends GeneralStorable {
     private static final long serialVersionUID = -4331461212163985711L;

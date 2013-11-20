@@ -21,25 +21,22 @@ package com.unister.semweb.drums.api;
  * @author Nils Thieme
  * 
  */
-public class FileStorageException extends Exception {
-    /**
-     * 
-     */
+public class DRUMSException extends Exception {
     private static final long serialVersionUID = -6381038599235245823L;
 
-    public FileStorageException() {
+    public DRUMSException() {
         super();
     }
 
-    public FileStorageException(String message) {
+    public DRUMSException(String message) {
         super(message);
     }
 
-    public FileStorageException(String message, Throwable throwable) {
+    public DRUMSException(String message, Throwable throwable) {
         super(message, throwable);
     }
 
-    public FileStorageException(Throwable throwable) {
+    public DRUMSException(Throwable throwable) {
         super(throwable);
     }
 }

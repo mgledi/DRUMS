@@ -21,14 +21,13 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Some very important and useful functions for the keys (byte-arrays) in DRUMS.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class KeyUtils {
     private static final Logger log = LoggerFactory.getLogger(KeyUtils.class);
@@ -61,7 +60,7 @@ public class KeyUtils {
         byte[] result = null;
         if (keySize >= 8) {
             byte[] leadingBytes = new byte[keySize - 8];
-            result = ArrayUtils.addAll(leadingBytes, converter.array());
+            result = ByteBuffer.allocate(8).put(leadingBytes).put(converter.array()).array();
         } else {
             result = Arrays.copyOfRange(converter.array(), converter.array().length - keySize, 8);
         }

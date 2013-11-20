@@ -22,18 +22,20 @@
 		<dependency>
 			<groupId>com.carrotsearch</groupId>
 			<artifactId>hppc</artifactId>
-			<version>0.5.0</version>
+			<version>0.5.3</version>
 		</dependency>
-
+		
+				
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
 		</dependency>
+
 		<dependency>
-			<groupId>commons-configuration</groupId>
-			<artifactId>commons-configuration</artifactId>
-			<version>1.6</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.1</version>
 		</dependency>
 
 		<dependency>
@@ -42,6 +44,7 @@
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>

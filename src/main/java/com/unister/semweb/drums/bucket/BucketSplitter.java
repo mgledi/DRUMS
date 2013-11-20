@@ -36,7 +36,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * <li>generate files and move elements according to the old and new HashFunction <br> 
  * <li>store the HashFunction
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 // TODO: remember KeyComposition in RangeHashFunction
 public class BucketSplitter<Data extends AbstractKVStorable> {

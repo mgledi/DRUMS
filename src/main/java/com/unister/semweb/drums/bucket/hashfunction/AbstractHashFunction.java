@@ -29,7 +29,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * to know the possible range of the hashFunction (<code>getNumberOfBuckets</code>) and a transformation from a
  * key-value to a bucket-id (<code>getBucketId()</code>).
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public abstract class AbstractHashFunction {
 

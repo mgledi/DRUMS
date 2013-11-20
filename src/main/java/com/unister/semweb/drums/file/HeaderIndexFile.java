@@ -64,7 +64,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  *  ...
  * </pre>
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHeaderFile implements IWritableIndexFile {
 

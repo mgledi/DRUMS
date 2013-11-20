@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.unister.semweb.drums.TestUtils;
-import com.unister.semweb.drums.api.FileStorageException;
+import com.unister.semweb.drums.api.DRUMSException;
 import com.unister.semweb.drums.api.DRUMS;
 import com.unister.semweb.drums.api.DRUMS_API;
 import com.unister.semweb.drums.api.DRUMSIterator;
@@ -39,7 +39,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * This class tests the {@link DRUMSIterator}.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class DRUMSIteratorTest {
     RangeHashFunction hashFunction;
@@ -66,7 +66,7 @@ public class DRUMSIteratorTest {
     }
 
     @Test
-    public void iteratorTest() throws FileStorageException, InterruptedException {
+    public void iteratorTest() throws DRUMSException, InterruptedException {
         table = DRUMS_API.openTable(hashFunction, DRUMS.AccessMode.READ_ONLY, TestUtils.gp);
         DRUMSIterator<DummyKVStorable> it = table.getIterator();
         ArrayList<DummyKVStorable> elements = new ArrayList<DummyKVStorable>();

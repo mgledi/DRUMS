@@ -30,7 +30,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * easily asks for memory. This object also must give a report, when it doesn't need this memory anymore.
  * 
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 // TODO: share the same memory instead of having all its own memory
 public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {

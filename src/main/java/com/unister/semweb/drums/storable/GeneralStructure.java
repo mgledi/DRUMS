@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * This class represents the structure of one {@link GeneralStorable}-Type. It is comparable with a "Create Table" in
  * other databases.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class GeneralStructure implements Serializable {
     /** UID for serializing */

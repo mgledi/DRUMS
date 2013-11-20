@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.api;
 
 import java.io.File;
@@ -32,8 +30,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
  * 
- * @author Martin Gleditzsch
- *
+ * @author Martin Nettling
+ * 
  */
 public class DRUMS_API {
     private static final Logger logger = LoggerFactory.getLogger(DRUMS_API.class);
@@ -57,7 +55,7 @@ public class DRUMS_API {
         if (databaseDirectoryFile.exists()) {
             throw new IOException("The directory " + databaseDirectoryFile + " already exist. Can't create a DRUMS.");
         }
-        // First we create the directory structure.
+        // First the directory structure must be created
         new File(gp.databaseDirectory).mkdirs();
         logger.info("Created directory {}.", gp.databaseDirectory);
         DRUMS<Data> table = new DRUMS<Data>(hashFunction, AccessMode.READ_WRITE, gp);
@@ -122,14 +120,18 @@ public class DRUMS_API {
     }
 
     /**
-     * Creates or opens the table. If the directory doesn't exists it will be created. If the directory exists only an
-     * open will be made.
+     * Creates or opens the table. If the directory doesn't exists it will be created.
      * 
      * @param hashFunction
      *            the hash function, decides where to store/search elements
      * @param gp
      *            pointer to the {@link GlobalParameters} used by the {@link DRUMS} to open
-     * @return
+     * 
+     * @see #openTable(AbstractHashFunction, AccessMode, GlobalParameters)
+     * @see #createTable(AbstractHashFunction, GlobalParameters)
+
+     * @return a DRUMS instance
+     * 
      * @throws IOException
      * @throws ClassNotFoundException
      */

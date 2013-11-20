@@ -31,7 +31,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
 /**
  * This class represents a bunch of parameters, which are used global.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class GlobalParameters<Data extends AbstractKVStorable> {
     /**

@@ -30,7 +30,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
 /**
  * An instance of this class is a container of {@link AbstractKVStorable}s.
  * 
- * @author Martin Gleditzsch, Nils Thieme
+ * @author Martin Nettling, Nils Thieme
  */
 public class Bucket<Data extends AbstractKVStorable> {
 

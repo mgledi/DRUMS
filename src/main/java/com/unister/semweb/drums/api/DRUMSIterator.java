@@ -32,7 +32,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
 /**
  * This class instantiates an Read-Only-Iterator for a given DRUMS
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  * @param
  */
 public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<Data>, Closeable {

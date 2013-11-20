@@ -25,7 +25,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * Abstract implementation of interface {@link KVStorable}. Extend this class to build your own objects, which have to
  * be storable.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public abstract class AbstractKVStorable implements Serializable, Cloneable {
     private static final long serialVersionUID = -3973787626582319301L;

@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * Remember: If you want to be as effective as possible, you have to implement your own storable extending the
  * {@link AbstractKVStorable}.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class GeneralStorable extends AbstractKVStorable {
     static Logger logger = LoggerFactory.getLogger(GeneralStorable.class);

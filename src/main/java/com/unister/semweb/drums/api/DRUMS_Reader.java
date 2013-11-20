@@ -34,7 +34,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * when there are no write-operations during reading. All files will be locked. Be careful: Opening all files may cost a
  * lot of memory, because all indices are loaded.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  */
 public class DRUMS_Reader<Data extends AbstractKVStorable> {
     /** Marks if files are opened. Is set to avoid null-pointer exceptions */
@@ -192,10 +192,10 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
      * 
      * @param keys
      * @return {@link ArrayList}
-     * @throws FileStorageException
+     * @throws DRUMSException
      * @throws IOException
      */
-    public List<Data> get(long... keys) throws FileStorageException, IOException {
+    public List<Data> get(long... keys) throws DRUMSException, IOException {
         return this.get(KeyUtils.transformToByteArray(keys));
     }
 
@@ -204,10 +204,10 @@ public class DRUMS_Reader<Data extends AbstractKVStorable> {
      * 
      * @param keys
      * @return {@link ArrayList}
-     * @throws FileStorageException
+     * @throws DRUMSException
      * @throws IOException
      */
-    public List<Data> get(byte[]... keys) throws FileStorageException, IOException {
+    public List<Data> get(byte[]... keys) throws DRUMSException, IOException {
         if (!filesAreOpened) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }

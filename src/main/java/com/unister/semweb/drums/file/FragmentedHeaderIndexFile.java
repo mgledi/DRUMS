@@ -24,7 +24,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
 /**
  * This class is not for use yet.
  * 
- * @author Martin Gleditzsch
+ * @author Martin Nettling
  * 
  */
 public class FragmentedHeaderIndexFile<Data extends AbstractKVStorable> extends HeaderIndexFile<Data> {

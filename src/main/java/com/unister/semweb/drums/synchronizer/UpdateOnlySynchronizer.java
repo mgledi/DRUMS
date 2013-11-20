@@ -37,7 +37,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * Takes a list of {@link AbstractKVStorable} and synchronizes them with a file. ONLY update are supported. The core
  * assumption is that the list of {@link AbstractKVStorable} and the entries in the file are sorted ascended.
  * 
- * @author Nils Thieme, Martin Gleditzsch
+ * @author Nils Thieme, Martin Nettling
  */
 public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     /** */

@@ -106,7 +106,7 @@ public class TestStorable extends AbstractKVStorable {
     }
 
     @Override
-    public int getByteBufferSize() {
+    public int getSize() {
         return KEY_LENGTH + VALUE_LENGTH;
     }
 

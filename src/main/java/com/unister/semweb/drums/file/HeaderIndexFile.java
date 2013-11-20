@@ -363,7 +363,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     protected void createFile() throws FileLockException, IOException {
         size = gp.INITIAL_FILE_SIZE;
         filledUpTo = contentStart;
-        chunkSize = (int) gp.INDEX_CHUNK_SIZE;
+        chunkSize = (int) gp.FILE_CHUNK_SIZE;
         openChannel(false, false);
         setSoftlyClosed(true);
         // have to reset the informations cause in openchannel the empty header was read
@@ -549,7 +549,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         return elementSize;
     }
 
-    /** returns the size in bytes of the chunk to read */
+    /** returns the size in bytes of a chunk */
     public int getChunkSize() {
         return chunkSize;
     }

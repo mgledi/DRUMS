@@ -118,14 +118,14 @@ public class EnlargeFileTest {
         HeaderIndexFile<TestStorable> file = new HeaderIndexFile<TestStorable>(testFilename, AccessMode.READ_WRITE, 1,
                 globalParameters);
         List<Long> filePositions = new ArrayList<Long>();
-        ByteBuffer overallBuffer = ByteBuffer.allocate(globalParameters.getPrototype().getByteBufferSize()
+        ByteBuffer overallBuffer = ByteBuffer.allocate(globalParameters.getPrototype().getSize()
                 * toWrite.size());
         long currentFilePosition = file.getFilledUpFromContentStart();
         for (TestStorable currentTestObject : toWrite) {
             ByteBuffer buffer = currentTestObject.toByteBuffer();
             overallBuffer.put(buffer);
             filePositions.add(currentFilePosition);
-            currentFilePosition += globalParameters.getPrototype().getByteBufferSize();
+            currentFilePosition += globalParameters.getPrototype().getSize();
         }
         overallBuffer.flip();
         file.append(overallBuffer);
@@ -140,7 +140,7 @@ public class EnlargeFileTest {
                 globalParameters);
         List<TestStorable> readData = new ArrayList<TestStorable>();
         for (long currentFilePosition : filePositions) {
-            byte[] buffer = new byte[globalParameters.getPrototype().getByteBufferSize()];
+            byte[] buffer = new byte[globalParameters.getPrototype().getSize()];
             file.read(currentFilePosition, buffer);
 
             TestStorable oneReadTestStorable = new TestStorable(buffer);

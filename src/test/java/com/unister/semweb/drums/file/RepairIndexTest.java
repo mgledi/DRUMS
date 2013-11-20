@@ -47,7 +47,7 @@ public class RepairIndexTest {
     public void inititalise() throws Exception {
         FileUtils.deleteQuietly(new File(filename));
         globalParameters = new GlobalParameters<TestStorable>(new TestStorable());
-        elementsPerChunk = (int) (globalParameters.INDEX_CHUNK_SIZE / globalParameters.elementSize);
+        elementsPerChunk = (int) (globalParameters.FILE_CHUNK_SIZE / globalParameters.elementSize);
     }
 
     /** Only one element is written to the test file. */

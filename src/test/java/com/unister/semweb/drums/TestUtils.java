@@ -209,7 +209,7 @@ public class TestUtils {
         // load file
         DummyKVStorable prototype = gp.getPrototype();
         HeaderIndexFile<DummyKVStorable> dbfile = new HeaderIndexFile<DummyKVStorable>(dbFileName, 1, TestUtils.gp);
-        ByteBuffer buffer = ByteBuffer.allocate(prototype.getByteBufferSize());
+        ByteBuffer buffer = ByteBuffer.allocate(prototype.getSize());
         long offset = 0;
         int k = 0;
         while (offset < dbfile.getFilledUpFromContentStart()) {

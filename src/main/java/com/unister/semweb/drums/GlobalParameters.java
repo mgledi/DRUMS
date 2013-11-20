@@ -67,7 +67,7 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
 
     public long SYNC_CHUNK_SIZE;
 
-    public long INDEX_CHUNK_SIZE;
+    public long FILE_CHUNK_SIZE;
 
     /** The number of threads used for synchronizing. */
     public int NUMBER_OF_SYNCHRONIZER_THREADS = 1;
@@ -100,7 +100,7 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     public GlobalParameters(String paramFile, Data prototype) {
         this.PARAMETER_FILE = paramFile;
         this.keySize = prototype.key.length;
-        this.elementSize = prototype.getByteBufferSize();
+        this.elementSize = prototype.getSize();
         this.prototype = prototype;
         this.ID = GlobalParameters.INSTANCE_COUNT.getAndIncrement();
         initParameters();
@@ -146,13 +146,12 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
         MEMORY_CHUNK = (int) parseSize(props.getProperty("MEMORY_CHUNK", "10K"));
         MAX_MEMORY_PER_BUCKET = parseSize(props.getProperty("MAX_MEMORY_PER_BUCKET", "100M"));
         SYNC_CHUNK_SIZE = parseSize(props.getProperty("SYNC_CHUNK_SIZE", "2M"));
-        INDEX_CHUNK_SIZE = parseSize(props.getProperty("INDEX_CHUNK_SIZE", "32K"));
-        INDEX_CHUNK_SIZE = INDEX_CHUNK_SIZE - INDEX_CHUNK_SIZE % prototype.getByteBufferSize(); // estimate exact index
-                                                                                                // size
+        FILE_CHUNK_SIZE = parseSize(props.getProperty("FILE_CHUNK_SIZE", "32K"));
+        // determine exact index size
+        FILE_CHUNK_SIZE = FILE_CHUNK_SIZE - FILE_CHUNK_SIZE % prototype.getSize(); 
         NUMBER_OF_SYNCHRONIZER_THREADS = Integer.valueOf(props.getProperty("NUMBER_OF_SYNCHRONIZER_THREADS", "1"));
         MAX_BUCKET_STORAGE_TIME = Long.valueOf(props.getProperty("MAX_BUCKET_STORAGE_TIME", "84000000"));
-        MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = Integer
-                .valueOf(props.getProperty("MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC", "1"));
+        MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = Integer                .valueOf(props.getProperty("MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC", "1"));
 
         INITIAL_FILE_SIZE = (int) parseSize(props.getProperty("INITIAL_FILE_SIZE", "16M"));
         INITIAL_INCREMENT_SIZE = (int) parseSize(props.getProperty("INITIAL_INCREMENT_SIZE", "16M"));
@@ -172,7 +171,7 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
         logger.info("----- HeaderIndexFile -----");
         logger.info("INITIAL_FILE_SIZE = {}", INITIAL_FILE_SIZE);
         logger.info("INITIAL_INCREMENT_SIZE = {}", INITIAL_INCREMENT_SIZE);
-        logger.info("CHUNK_SIZE = {}", INDEX_CHUNK_SIZE);
+        logger.info("CHUNK_SIZE = {}", FILE_CHUNK_SIZE);
     }
 
     private static Pattern p_mem = Pattern.compile("(\\d+)(K|M|G)");

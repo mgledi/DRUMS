@@ -106,7 +106,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
         this.gp = gp;
         this.prototype = gp.getPrototype();
         this.dataFilename = dataFilename;
-        this.elementSize = prototype.getByteBufferSize();
+        this.elementSize = prototype.getSize();
         this.numberOfEntriesInOneChunk = (int) Math.floor(gp.SYNC_CHUNK_SIZE / elementSize);
         this.bufferedWriter = ByteBuffer.allocate(numberOfEntriesInOneChunk * elementSize);
         this.bufferedReader = ByteBuffer.allocate(numberOfEntriesInOneChunk * elementSize);

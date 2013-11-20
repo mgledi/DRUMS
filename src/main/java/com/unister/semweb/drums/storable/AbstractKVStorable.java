@@ -82,7 +82,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
      * 
      * @return key.length + value.length
      */
-    public int getByteBufferSize() {
+    public int getSize() {
         return key.length + value.length;
     }
 

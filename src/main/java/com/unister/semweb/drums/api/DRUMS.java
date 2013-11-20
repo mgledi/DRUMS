@@ -104,7 +104,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         this.gp = gp;
         DynamicMemoryAllocater.instantiate(gp);
         gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = (int) ((gp.BUCKET_MEMORY - gp.BUCKET_MEMORY % gp.MEMORY_CHUNK)
-                / hashFunction.getNumberOfBuckets() / prototype.getByteBufferSize() / 2);
+                / hashFunction.getNumberOfBuckets() / prototype.getSize() / 2);
         logger.info("Setted MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC to {}", gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC);
         if (accessMode == AccessMode.READ_WRITE) {
             buckets = new Bucket[hashFunction.getNumberOfBuckets()];

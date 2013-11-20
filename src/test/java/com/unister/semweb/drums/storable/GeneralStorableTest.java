@@ -78,7 +78,7 @@ public class GeneralStorableTest {
         s.addValuePart("long", Basic_Field_Types.Long);
 
         GeneralStorable cur = new GeneralStorable(s);
-        assertEquals(54, cur.getByteBufferSize());
+        assertEquals(54, cur.getSize());
         
         // test set keys
         cur.setKey("byte", (byte) 123);

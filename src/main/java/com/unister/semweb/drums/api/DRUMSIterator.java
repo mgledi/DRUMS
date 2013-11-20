@@ -30,13 +30,13 @@ import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
- * This class instantiates an Read-Only-Iterator for a given DRUMS
+ * An instance of this class provides a Read-Only-Iterator for a given DRUMS-table. During iteration, no elements should
+ * be inserted by another process.
  * 
  * @author Martin Nettling
- * @param
  */
 public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<Data>, Closeable {
-    static Logger logger = LoggerFactory.getLogger(DRUMSIterator.class);
+    private static Logger logger = LoggerFactory.getLogger(DRUMSIterator.class);
     /** The hash function. Maps an element to a bucket. */
     private AbstractHashFunction hashFunction;
 
@@ -116,8 +116,8 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
     public Data next() {
         try {
             while (handleFile() && readBuffer.remaining() == 0) {
-                handleReadBuffer(); // if the readBuffer is empty after handling the file, than the next file will be
-                                    // opened
+                // if the readBuffer is empty after handling the file, than the next file will be opened
+                handleReadBuffer();
             }
 
             if (readBuffer.remaining() == 0) {
@@ -177,9 +177,7 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
         return true;
     }
 
-    /**
-     * Operation is <b>NOT</b> supported by this iterator.
-     */
+    /** Operation is <b>NOT</b> supported by this iterator. */
     @Override
     public void remove() {
         throw new UnsupportedOperationException("You can not delete records from DRUMS with an iterator.");

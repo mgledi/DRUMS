@@ -88,7 +88,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
     /** A pointer to the {@link GlobalParameters} used by this {@link DRUMS} */
     protected GlobalParameters<Data> gp;
 
-    protected DRUMS_Reader<Data> reader_instance;
+    protected DRUMSReader<Data> reader_instance;
 
     /**
      * A private constructor.
@@ -223,7 +223,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Takes a list of keys and searches for that in all buckets. To speed up the search the size of the read buffer can
+     * Takes a list of keys and searches for that in all buckets. To speed up the search, the size of the read buffer can
      * be specified that will be used to read in the database file. Greater values speed up more. The read buffer is the
      * number of elements of data that should hold in memory.
      * 
@@ -450,7 +450,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Returns a {@link DRUMS_Reader}. If the {@link DRUMS_Reader} was not instantiated yet, it will be instantiated. If
+     * Returns a {@link DRUMSReader}. If the {@link DRUMSReader} was not instantiated yet, it will be instantiated. If
      * there exists an instance, but the files were already closed, the files will be reopened.<br>
      * <br>
      * Remember, if you have an opened Reader. You can't synchronize buckets.
@@ -459,11 +459,11 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * @throws IOException
      * @throws FileLockException
      */
-    public DRUMS_Reader<Data> getReader() throws FileLockException, IOException {
+    public DRUMSReader<Data> getReader() throws FileLockException, IOException {
         if (reader_instance != null && !reader_instance.filesAreOpened) {
             reader_instance.openFiles();
         } else {
-            reader_instance = new DRUMS_Reader<Data>(this);
+            reader_instance = new DRUMSReader<Data>(this);
         }
         return reader_instance;
     }

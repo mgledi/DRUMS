@@ -257,7 +257,11 @@ public class KeyUtils {
         return unsigned;
     }
 
-    /** Makes a string representation from the key */
+    /** Generates a string representation of the given key
+     * 
+     * @param key
+     * @return the String representation of the given key
+     */
     public static String transform(byte[] key) {
         StringBuilder result = new StringBuilder();
         int[] key2 = toUnsignedInt(key);

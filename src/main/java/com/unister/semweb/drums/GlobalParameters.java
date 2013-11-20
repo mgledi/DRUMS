@@ -26,67 +26,71 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.unister.semweb.drums.api.DRUMS;
+import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
- * This class represents a bunch of parameters, which are used global.
+ * This class represents a bunch of parameters, which are used globally in one DRUMS-Instance. The instance of
+ * {@link GlobalParameters} should be available in all internal Objects used by {@link DRUMS}.
  * 
  * @author Martin Nettling
  */
 public class GlobalParameters<Data extends AbstractKVStorable> {
-    /**
-     * My private Logger.
-     */
+    /** My private Logger. */
     private static Logger logger = LoggerFactory.getLogger(GlobalParameters.class);
-    /** A global count of all instances */
+    /**
+     * A global count of all instances of {@link GlobalParameters}. This variable is needed if more than one DRUMS will
+     * run in one JVM.
+     */
     public static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
-    /** The database directory. In this directory all records are stored. */
+
+    /** The database directory. All records are written to files in this directory. */
     public String databaseDirectory;
     /** The name of the underlying parameter file. */
-    public String PARAM_FILE;
-    /** a idendification number of this parameter set. This needed if more than one DRUMS is instantiated in one JVM */
+    public String PARAMETER_FILE;
+    /**
+     * a identification number of this parameter set. This variable is needed if more than one DRUMS is instantiated in
+     * one JVM.
+     */
     public final int ID;
-    /** The amount of bytes all buckets are allowed to use */
+    /** The amount of bytes all buckets are allowed to use. */
     public long BUCKET_MEMORY;
-    /** The maximal size of a bucket in bytes */
+    /**
+     * The maximal size of a bucket in bytes. If this size is exceeded, no more elements for this bucket are accepted,
+     * until it is synchronized to disk.
+     */
     public long MAX_MEMORY_PER_BUCKET;
 
+    /** the size of one chunk in memory */
     public int MEMORY_CHUNK;
 
     public long SYNC_CHUNK_SIZE;
 
     public long INDEX_CHUNK_SIZE;
 
-    /** The number of threads used for synchronizing */
+    /** The number of threads used for synchronizing. */
     public int NUMBER_OF_SYNCHRONIZER_THREADS = 1;
-
+    /** The minimal number of elements which must be in one bucket, before this bucket is allowed to be synchronized. */
     public int MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = 1;
-
     /** File extension of the database files that store the {@link AbstractKVStorable}. */
     public String linkDataFileExtension = ".db";
-
-    /** the initial size by which the file is enlarged. Will be set by {@link GlobalParameters} */
+    /** the initial size by which the file is enlarged, when no more records will fit into the file. */
     public int INITIAL_INCREMENT_SIZE;
-
-    /** the initial size of the file. Will be set by {@link GlobalParameters} */
+    /** the initial size of a {@link HeaderIndexFile}. */
     public int INITIAL_FILE_SIZE;
-
-    /** The size of the key of the AbstractKVStorable */
+    /** The size of the key of the implementation of {@link AbstractKVStorable}. */
     public final int keySize;
-
-    /** The size of the full AbstractKVStorable */
+    /** The number bytes needed by an instance of {@link AbstractKVStorable}. */
     public final int elementSize;
-
-    /**
-     * The prototype of the Data of this DRUMS.
-     */
+    /** The prototype of the Data of this DRUMS. */
     private Data prototype;
 
-    /** The maximal time in ms a bucket is held in memory without synchronization attempt */
+    /** The maximal time in ms a bucket is held in memory without synchronization attempt. */
     public long MAX_BUCKET_STORAGE_TIME;
 
     /**
-     * Initilize global arameters by those from the given parameter-file.
+     * Initialize global parameters by those from the given parameter-file.
      * 
      * @param paramFile
      *            The name of the parameter-file
@@ -94,7 +98,7 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
      *            a prototype of the Data of this DRUMS
      */
     public GlobalParameters(String paramFile, Data prototype) {
-        this.PARAM_FILE = paramFile;
+        this.PARAMETER_FILE = paramFile;
         this.keySize = prototype.key.length;
         this.elementSize = prototype.getByteBufferSize();
         this.prototype = prototype;
@@ -127,12 +131,12 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
      * Initialises all Parameters.
      */
     public void initParameters() {
-        InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(PARAM_FILE);
+        InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(PARAMETER_FILE);
         Properties props = new Properties();
         try {
             props.load(fileStream);
             if (fileStream == null) {
-                fileStream = new FileInputStream(PARAM_FILE);
+                fileStream = new FileInputStream(PARAMETER_FILE);
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);

@@ -1,25 +1,26 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.file;
 
 import java.nio.MappedByteBuffer;
+import java.util.Arrays;
 
+import com.carrotsearch.hppc.ByteCollection;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.utils.ByteArrayComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -37,6 +38,9 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * @author Martin Nettling
  */
 public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
+
+    /** the interal ByteArrayComparator. TODO: get a an Comparator which works on Unsafe-Rawbytes */
+    private ByteArrayComparator comparator = new ByteArrayComparator();
 
     /** chunkId -> largest key in this chunk */
     protected byte maxKeyPerChunk[][];
@@ -110,13 +114,22 @@ public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
     }
 
     /**
-     * returns the index of the chunk, where the element could be find. If the element cant be in one chunk the function
-     * returns -1
+     * returns the index of the chunk, where the element could be found. If the element can't be in one of the
+     * chunks the method will return -1.
      * 
-     * @param long key, the key of the element to find
-     * @return
+     * @param key
+     *            the key to look for
+     * @return the id of the chunk, where the key could be found. If there is no putative chunk, then -1 will returned. 
      */
     public int getChunkId(byte[] key) {
+//        int idx = Arrays.binarySearch(maxKeyPerChunk, 0, filledUpTo, key, comparator);
+//        idx = idx < 0 ? -idx - 1 : idx;
+//        if(idx > filledUpTo) {
+//            return -1;
+//        } else {
+//            return idx;
+//        }
+        
         // adapted binary search
         int minElement = 0, maxElement = filledUpTo, midElement;
         byte comp1 = 0, comp2 = 0;
@@ -151,21 +164,6 @@ public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
             sb.append(i + ": " + KeyUtils.transform(maxKeyPerChunk[i])).append("\n");
         }
         return sb.toString();
-    }
-
-    @Deprecated
-    public int getChunkIdLinearSearch(byte[] key) {
-        for (int i = 1; i < filledUpTo; i++) {
-            byte comp1 = KeyUtils.compareKey(key, maxKeyPerChunk[i - 1]);
-            byte comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[i]);
-
-            if (comp1 > 0 && comp2 <= 0) {
-                return i;
-            } else if (i == 1 && comp1 <= 0) {
-                return 0;
-            }
-        }
-        return -1;
     }
 
     /**

@@ -128,7 +128,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
         // this.actualProcessingBucketIds = Collections.synchronizedSet(tmpSet);
         this.actualProcessingBuckets = Collections.synchronizedSet(tmpSet);
         this.pathToDbFiles = gp.databaseDirectory;
-        this.maxBucketStorageTime = Long.MAX_VALUE;
+        this.setMaxBucketStorageTime(gp.MAX_BUCKET_STORAGE_TIME);;
         this.synchronizerFactory = synchronizerFactory;
         this.allowedBucketsInBuffer = gp.NUMBER_OF_SYNCHRONIZER_THREADS * 4;
         this.numberOfBuckets = bucketContainer.getNumberOfBuckets();
@@ -390,7 +390,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     }
 
     /**
-     * Sets the maximal time that a bucket can linger within the BucketContainer without synchronsation to hard drive.
+     * Sets the maximal time that a bucket can linger within the BucketContainer without synchronization to hard drive.
      * 
      * @param maxBucketStorageTime
      */

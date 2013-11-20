@@ -29,7 +29,7 @@ import org.junit.Test;
 import com.unister.semweb.drums.TestUtils;
 import com.unister.semweb.drums.api.DRUMSException;
 import com.unister.semweb.drums.api.DRUMS;
-import com.unister.semweb.drums.api.DRUMS_API;
+import com.unister.semweb.drums.api.DRUMSInitialisation;
 import com.unister.semweb.drums.api.DRUMSIterator;
 import com.unister.semweb.drums.bucket.SortMachine;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
@@ -57,7 +57,7 @@ public class DRUMSIteratorTest {
         this.hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");
 
         // fill with data
-        table = DRUMS_API.createTable(hashFunction, TestUtils.gp);
+        table = DRUMSInitialisation.createTable(hashFunction, TestUtils.gp);
         // remember, the element with key 0 is ignored
         generatedData = TestUtils.createDummyData(1, 50);
         SortMachine.quickSort(generatedData);
@@ -67,7 +67,7 @@ public class DRUMSIteratorTest {
 
     @Test
     public void iteratorTest() throws DRUMSException, InterruptedException {
-        table = DRUMS_API.openTable(hashFunction, DRUMS.AccessMode.READ_ONLY, TestUtils.gp);
+        table = DRUMSInitialisation.openTable(hashFunction, DRUMS.AccessMode.READ_ONLY, TestUtils.gp);
         DRUMSIterator<DummyKVStorable> it = table.getIterator();
         ArrayList<DummyKVStorable> elements = new ArrayList<DummyKVStorable>();
         while (it.hasNext()) {

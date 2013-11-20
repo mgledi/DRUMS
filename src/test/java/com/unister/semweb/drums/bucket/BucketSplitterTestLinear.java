@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import com.unister.semweb.drums.TestUtils;
 import com.unister.semweb.drums.api.DRUMS;
-import com.unister.semweb.drums.api.DRUMS_API;
+import com.unister.semweb.drums.api.DRUMSInitialisation;
 import com.unister.semweb.drums.api.DRUMS.AccessMode;
 import com.unister.semweb.drums.bucket.BucketSplitter;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
@@ -67,7 +67,7 @@ public class BucketSplitterTestLinear {
                 TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 2);
 
-        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMS_API.openTable(hashFunction,
+        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInitialisation.openTable(hashFunction,
                 AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         drumsAfterSplitting.setHashFunction(hashFunction);
@@ -104,7 +104,7 @@ public class BucketSplitterTestLinear {
                 TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 4);
 
-        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMS_API.openTable(hashFunction,
+        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInitialisation.openTable(hashFunction,
                 AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         drumsAfterSplitting.setHashFunction(hashFunction);
@@ -153,7 +153,7 @@ public class BucketSplitterTestLinear {
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction, TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 4);
 
-        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMS_API.openTable(hashFunction, AccessMode.READ_ONLY,
+        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInitialisation.openTable(hashFunction, AccessMode.READ_ONLY,
                 TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         drumsAfterSplitting.setHashFunction(hashFunction);
@@ -202,7 +202,7 @@ public class BucketSplitterTestLinear {
                 TestUtils.gp);
         splitter.splitAndStoreConfiguration(1, 4);
 
-        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMS_API.openTable(hashFunction,
+        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInitialisation.openTable(hashFunction,
                 AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         drumsAfterSplitting.setHashFunction(hashFunction);
@@ -245,7 +245,7 @@ public class BucketSplitterTestLinear {
      */
     private DummyKVStorable[] createAndFillDRUMS(int numberOfData, RangeHashFunction hashFunction) throws Exception {
         DummyKVStorable[] testData = TestUtils.generateTestdata(numberOfData);
-        DRUMS<DummyKVStorable> drums = DRUMS_API.createOrOpenTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> drums = DRUMSInitialisation.createOrOpenTable(hashFunction, TestUtils.gp);
         drums.insertOrMerge(testData);
         drums.close();
         return testData;

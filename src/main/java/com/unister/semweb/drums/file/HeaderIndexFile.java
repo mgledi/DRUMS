@@ -132,9 +132,11 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         this.mode = mode;
         this.max_retries_connect = max_retries_connect;
         this.init();
+
         if (closedSoftly == 0) {
             logger.warn("File {} was not closed correctly and might be corrupted", osFile.getName());
         }
+        System.out.println("channel opened after init()");
     }
 
     /**
@@ -175,6 +177,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
                     "The readChunkSize ({}) is not a multiple of elementsize ({}). This might lead to a wrong index",
                     chunkSize, elementSize);
         }
+        System.out.println("channel opened at init()");
     }
 
     /**

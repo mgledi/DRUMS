@@ -68,7 +68,7 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
     final protected GlobalParameters<Data> gp;
 
     /**
-     * Initializes the iterator with the hash function and the global paramters.
+     * Initializes the iterator with the hash function and the global parameters.
      * 
      * @param hashFunction
      * @param globalparameters

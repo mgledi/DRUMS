@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.drums.TestUtils;
 import com.unister.semweb.drums.api.DRUMS;
-import com.unister.semweb.drums.api.DRUMSInitialisation;
+import com.unister.semweb.drums.api.DRUMSInstantiator;
 import com.unister.semweb.drums.bucket.SortMachine;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
@@ -48,12 +48,16 @@ public class DRUMSTest {
 
     @Before
     public void initialise() throws Exception {
+        System.gc(); // needed, that files are deletable under windows
         long[] ranges = new long[] { 0, 10, 20, 30 };
         byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
-        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
-
+        System.out.println("deleted");
+//        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
+        FileUtils.forceDelete(new File(TestUtils.gp.databaseDirectory));
+        System.out.println(new File(TestUtils.gp.databaseDirectory).exists());
         hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");
+        System.gc(); 
     }
 
     /**
@@ -65,7 +69,7 @@ public class DRUMSTest {
     @Test
     public void findElementInReadBufferTest() throws IOException, ClassNotFoundException {
         log.info("Test Binary search. findElementInReadBufferTest()");
-        DRUMS<DummyKVStorable> table = DRUMSInitialisation.createOrOpenTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> table = DRUMSInstantiator.createOrOpenTable(hashFunction, TestUtils.gp);
         // create data
         DummyKVStorable d1 = DummyKVStorable.getInstance();
         d1.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
@@ -103,7 +107,7 @@ public class DRUMSTest {
         log.info("Test simple write to one Bucket. createTableAndInsertTest()");
         // Adding elements to the drum.
         DummyKVStorable[] test = TestUtils.createDummyData(10);
-        DRUMS<DummyKVStorable> table = DRUMSInitialisation.createTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(test);
         table.close();
         List<DummyKVStorable> readData = TestUtils.readFrom(TestUtils.gp.databaseDirectory + "/2.db", 10);
@@ -125,7 +129,7 @@ public class DRUMSTest {
 
         DummyKVStorable[] toAdd = new DummyKVStorable[] { bucket2_el1, bucket2_el2, bucket4_el1, bucket4_el2 };
 
-        DRUMS<DummyKVStorable> table = DRUMSInitialisation.createTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
 
@@ -150,11 +154,11 @@ public class DRUMSTest {
         DummyKVStorable data = TestUtils.createDummyData(KeyUtils.convert(1), 1, 0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { data };
 
-        DRUMS<DummyKVStorable> table = DRUMSInitialisation.createTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
         
-        List<DummyKVStorable> selectedData = table.select(1l);
+        List<DummyKVStorable> selectedData = table.select(KeyUtils.convert(1l));
 
         Assert.assertEquals(1, selectedData.size());
         Assert.assertEquals(data, selectedData.get(0));
@@ -172,11 +176,11 @@ public class DRUMSTest {
         DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.convert(12), 19,0.29);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
 
-        DRUMS<DummyKVStorable> table = DRUMSInitialisation.createTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
         
-        List<DummyKVStorable> selectedData = table.select(12, 10, 2);
+        List<DummyKVStorable> selectedData = table.select(KeyUtils.convert(12), KeyUtils.convert(10), KeyUtils.convert(2));
         
         DummyKVStorable[] result = selectedData.toArray(new DummyKVStorable[selectedData.size()]);
         SortMachine.quickSort(toAdd);
@@ -194,7 +198,7 @@ public class DRUMSTest {
         DummyKVStorable testElement = TestUtils.createDummyData(KeyUtils.convert(1), 2, 0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { testElement };
         
-        DRUMS<DummyKVStorable> table = DRUMSInitialisation.createTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
             
@@ -215,7 +219,7 @@ public class DRUMSTest {
     public void readTestSeveralElements() throws Exception {
         DummyKVStorable[] testdata = TestUtils.createDummyData(10);
 
-        DRUMS<DummyKVStorable> table = DRUMSInitialisation.createTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(testdata);
         table.close();
 
@@ -241,7 +245,7 @@ public class DRUMSTest {
 
         DummyKVStorable[] completeTestdata = TestUtils.merge(testdata, secondRange, thirdRange);
 
-        DRUMS<DummyKVStorable> table = DRUMSInitialisation.createTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(completeTestdata);
         table.close();
 
@@ -260,11 +264,11 @@ public class DRUMSTest {
         DummyKVStorable date1 = TestUtils.createDummyData(KeyUtils.convert(5), 1, 0.5);
         DummyKVStorable[] completeTestdata = new DummyKVStorable[]{date1};
         
-        DRUMS<DummyKVStorable> table = DRUMSInitialisation.createTable(hashFunction, TestUtils.gp);
+        DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(completeTestdata);
         table.close();
         
-        table = DRUMSInitialisation.createOrOpenTable(hashFunction, TestUtils.gp);
+        table = DRUMSInstantiator.createOrOpenTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(completeTestdata);
         table.close();
         List<DummyKVStorable> readSecondBucket = table.read(1, 0, 7);

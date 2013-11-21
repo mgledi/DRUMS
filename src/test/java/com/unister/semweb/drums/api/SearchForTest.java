@@ -30,7 +30,7 @@ import org.junit.Test;
 
 import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.api.DRUMS;
-import com.unister.semweb.drums.api.DRUMSInitialisation;
+import com.unister.semweb.drums.api.DRUMSInstantiator;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.drums.storable.TestStorable;
 import com.unister.semweb.drums.utils.RangeHashFunctionTestUtils;
@@ -65,14 +65,14 @@ public class SearchForTest {
     @Test
     public void searchForKnownKeys() throws Exception {
         RangeHashFunction hashFunction = new RangeHashFunction(new File(rangeHashFunctionFilename));
-        DRUMS<TestStorable> drums = DRUMSInitialisation.createOrOpenTable(hashFunction, globalParameters);
+        DRUMS<TestStorable> drums = DRUMSInstantiator.createOrOpenTable(hashFunction, globalParameters);
 
         TestStorable[] testdata = generateTestdata(100, 1);
         drums.insertOrMerge(testdata);
         drums.close();
 
         byte[][] keysToSearchFor = extractKeys(testdata);
-        DRUMS<TestStorable> searchDrums = DRUMSInitialisation.createOrOpenTable(hashFunction, globalParameters);
+        DRUMS<TestStorable> searchDrums = DRUMSInstantiator.createOrOpenTable(hashFunction, globalParameters);
         List<TestStorable> readData = searchDrums.select(keysToSearchFor);
         Assert.assertEquals(testdata.length, readData.size());
         Assert.assertTrue(equals(readData, testdata));
@@ -85,14 +85,14 @@ public class SearchForTest {
     @Test
     public void searchForUnknownKeys() throws Exception {
         RangeHashFunction hashFunction = new RangeHashFunction(new File(rangeHashFunctionFilename));
-        DRUMS<TestStorable> drums = DRUMSInitialisation.createOrOpenTable(hashFunction, globalParameters);
+        DRUMS<TestStorable> drums = DRUMSInstantiator.createOrOpenTable(hashFunction, globalParameters);
 
         TestStorable[] testdata = generateTestdata(100, 1);
         drums.insertOrMerge(testdata);
         drums.close();
 
         byte[][] keysToSearchFor = generateKeys(200, 100);
-        DRUMS<TestStorable> searchDrums = DRUMSInitialisation.createOrOpenTable(hashFunction, globalParameters);
+        DRUMS<TestStorable> searchDrums = DRUMSInstantiator.createOrOpenTable(hashFunction, globalParameters);
         List<TestStorable> readData = searchDrums.select(keysToSearchFor);
         Assert.assertEquals(0, readData.size());
     }
@@ -101,7 +101,7 @@ public class SearchForTest {
     @Test
     public void searchForKnownAndUnknownKeys() throws Exception {
         RangeHashFunction hashFunction = new RangeHashFunction(new File(rangeHashFunctionFilename));
-        DRUMS<TestStorable> drums = DRUMSInitialisation.createOrOpenTable(hashFunction, globalParameters);
+        DRUMS<TestStorable> drums = DRUMSInstantiator.createOrOpenTable(hashFunction, globalParameters);
 
         TestStorable[] testdata = generateTestdata(100, 1);
         drums.insertOrMerge(testdata);
@@ -111,7 +111,7 @@ public class SearchForTest {
         byte[][] unknownKeys = generateKeys(200, 100);
 
         byte[][] keysToSearchFor = (byte[][]) ArrayUtils.addAll(extractedKeys, unknownKeys);
-        DRUMS<TestStorable> searchDrums = DRUMSInitialisation.createOrOpenTable(hashFunction, globalParameters);
+        DRUMS<TestStorable> searchDrums = DRUMSInstantiator.createOrOpenTable(hashFunction, globalParameters);
         List<TestStorable> readData = searchDrums.select(keysToSearchFor);
         Assert.assertEquals(testdata.length, readData.size());
         Assert.assertTrue(equals(readData, testdata));

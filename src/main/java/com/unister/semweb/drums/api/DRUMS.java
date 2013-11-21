@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.api;
 
 import java.io.File;
@@ -46,13 +44,9 @@ import com.unister.semweb.drums.synchronizer.UpdateOnlySynchronizer;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
- * This class provides the interface for managing the storage of {@link AbstractKVStorable}s. The name DRUMS is a
- * acronym for sorted disk repository with update management. You can imagine a DRUMS like a partitioned table.<br>
- * <br>
- * Use the following code to create a new DRUMS<br>
- * <br>
- * Use the following code to open an old DRUMS<br>
- * <br>
+ * This class provides the interface for managing the storage of {@link AbstractKVStorable}s. Use the static methods in
+ * {@link DRUMSInstantiator} to get an instance of {@link DRUMS}. The name DRUMS is a acronym for sorted disk repository
+ * with update management. <br>
  * 
  * @author Nils Thieme, Martin Nettling
  */
@@ -63,9 +57,6 @@ public class DRUMS<Data extends AbstractKVStorable> {
     public enum AccessMode {
         READ_ONLY, READ_WRITE;
     }
-
-    /** the number of retries if a file is locked by another process */
-    private static final int HEADER_FILE_LOCK_RETRY = 100;
 
     /** the hashfunction, decides where to search for element, or where to store it */
     private AbstractHashFunction hashFunction;
@@ -91,11 +82,10 @@ public class DRUMS<Data extends AbstractKVStorable> {
     protected DRUMSReader<Data> reader_instance;
 
     /**
-     * A private constructor.
+     * This constructor should only be called by factory methods from this package.
      * 
      * @param databaseDirectory
      * @param hashFunction
-     * @param prototype
      * @param accessMode
      */
     protected DRUMS(AbstractHashFunction hashFunction, AccessMode accessMode, GlobalParameters<Data> gp) {
@@ -107,7 +97,9 @@ public class DRUMS<Data extends AbstractKVStorable> {
                 / hashFunction.getNumberOfBuckets() / prototype.getSize() / 2);
         logger.info("Setted MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC to {}", gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC);
         if (accessMode == AccessMode.READ_WRITE) {
-            buckets = new Bucket[hashFunction.getNumberOfBuckets()];
+            @SuppressWarnings("unchecked")
+            Bucket<Data>[] tmp = new Bucket[hashFunction.getNumberOfBuckets()];
+            buckets = tmp;
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
                 buckets[i] = new Bucket<Data>(i, gp);
                 String tmpFileName = gp.databaseDirectory + "/" + hashFunction.getFilename(i);
@@ -130,41 +122,31 @@ public class DRUMS<Data extends AbstractKVStorable> {
         }
     }
 
-    /**
-     * Sets the {@link SynchronizerFactory}.
-     */
+    /** Sets the {@link SynchronizerFactory}. */
     public void setSynchronizerFactory(ISynchronizerFactory<Data> factory) {
         this.synchronizerFactory = factory;
         this.syncManager.setSynchronizer(factory);
     }
 
-    /**
-     * Returns a pointer to the local {@link BucketContainer}
-     * 
-     * @return
-     */
+    /** @return a pointer to the local {@link BucketContainer} */
     public BucketContainer<Data> getBucketContainer() {
         return this.bucketContainer;
     }
 
-    /**
-     * Returns a pointer to the local {@link SyncManager}
-     * 
-     * @return {@link SyncManager}
-     */
+    /* @return a pointer to the local {@link SyncManager} */
     public SyncManager<Data> getSyncManager() {
         return this.syncManager;
     }
 
     /**
-     * Adds or updates the given data to the file storage. If an error occurs a FileStorageException is thrown. The call
-     * possible blocks if all memory buckets are full. If the current thread is interrupted then an
-     * {@link InterruptedException} will be thrown.
+     * Adds or merges the given data. If all memory buckets are full, this method is blocking the calling thread. <br>
+     * <br>
+     * A merge calls the method {@link Data#merge(Data)}.
      * 
      * @param toPersist
      *            data to insert or update
      * @throws DRUMSException
-     *             if an error occurs
+     *             if an unexpected error occurs
      * @throws InterruptedException
      *             if the call blocks and the current thread is interrupted
      */
@@ -178,20 +160,20 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * This method are for efficient update operations. Be careful, ONLY updates are provided. If the given array
-     * contains elements, not already stored in the DRUMS, they will be not respected.<br>
+     * Updates the given data. Be careful, ONLY updates are provided. If the given array contains elements, which are
+     * not already stored in the underlying DRUMS-table, they will be not taken into account during synchronization.<br>
      * <br>
-     * This method uses the {@link UpdateOnlySynchronizer}, which by itselfs uses the Data's implemented update-function
-     * to update elements. If you want to merge objects, use <code>insertOrMerge(...)</code> instead. (this is fairly
-     * slower)
+     * This method uses the {@link UpdateOnlySynchronizer}, which by itself uses the Data's implemented update-function
+     * ({@link Data#update(Data)}) to update elements. If you want to merge objects, use {@link #insertOrMerge(Data ...)}
+     * instead.
      * 
      * @throws IOException
      */
-    public void update(Data... toPersist) throws IOException {
+    public void update(Data... toMerge) throws IOException {
         // ############ reorder data
         IntObjectOpenHashMap<ArrayList<Data>> bucketDataMapping = new IntObjectOpenHashMap<ArrayList<Data>>();
         int bucketId;
-        for (Data d : toPersist) {
+        for (Data d : toMerge) {
             bucketId = hashFunction.getBucketId(d.key);
             if (!bucketDataMapping.containsKey(bucketId)) {
                 bucketDataMapping.put(bucketId, new ArrayList<Data>());
@@ -210,25 +192,11 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Takes a list of long-keys and transform them byte[]-keys. Overloads
-     * <code>public List<Data> select(byte[]... keys)</code>
+     * Selects all existing records to the keys in the given array.
      * 
      * @param keys
-     * @return
-     * @throws DRUMSException
-     */
-    public List<Data> select(long... keys) throws DRUMSException {
-        byte[][] bKeys = KeyUtils.transformToByteArray(keys);
-        return this.select(bKeys);
-    }
-
-    /**
-     * Takes a list of keys and searches for that in all buckets. To speed up the search, the size of the read buffer can
-     * be specified that will be used to read in the database file. Greater values speed up more. The read buffer is the
-     * number of elements of data that should hold in memory.
-     * 
-     * @param keys
-     * @return
+     *            the keys to look for
+     * @return a list of all found elements
      * @throws DRUMSException
      */
     public List<Data> select(byte[]... keys) throws DRUMSException {
@@ -240,13 +208,13 @@ public class DRUMS<Data extends AbstractKVStorable> {
             HeaderIndexFile<Data> indexFile = null;
             try {
                 indexFile = new HeaderIndexFile<Data>(filename, HeaderIndexFile.AccessMode.READ_ONLY,
-                        HEADER_FILE_LOCK_RETRY, gp);
+                        gp.HEADER_FILE_LOCK_RETRY, gp);
 
                 ArrayList<byte[]> keyList = entry.value;
                 result.addAll(searchForData(indexFile, keyList.toArray(new byte[keyList.size()][])));
             } catch (FileLockException ex) {
                 logger.error("Could not access the file {} within {} retries. The file seems to be locked.", filename,
-                        HEADER_FILE_LOCK_RETRY);
+                        gp.HEADER_FILE_LOCK_RETRY);
                 throw new DRUMSException(ex);
             } catch (IOException ex) {
                 logger.error("An exception occurred while trying to get objects from the file {}.", filename, ex);
@@ -278,7 +246,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
     public List<Data> read(int bucketId, int elementOffset, int numberToRead) throws FileLockException, IOException {
         String filename = gp.databaseDirectory + "/" + hashFunction.getFilename(bucketId);
         HeaderIndexFile<Data> indexFile = new HeaderIndexFile<Data>(filename, HeaderIndexFile.AccessMode.READ_ONLY,
-                HEADER_FILE_LOCK_RETRY, gp);
+                gp.HEADER_FILE_LOCK_RETRY, gp);
 
         List<Data> result = new ArrayList<Data>();
         // where to start
@@ -300,12 +268,11 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * This method searches for each given key the corresponding bucket. It creates a map that points from the bucket-id
-     * to a list of keys in that bucket.
+     * This method maps all keys in the given array to their corresponding buckets and returns the determined mapping.
      * 
      * @param keys
      *            the keys to search for
-     * @return
+     * @return a mapping from bucketid to a list of keys.
      */
     protected IntObjectOpenHashMap<ArrayList<byte[]>> getBucketKeyMapping(byte[]... keys) {
         IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = new IntObjectOpenHashMap<ArrayList<byte[]>>();
@@ -321,16 +288,16 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Searches for the {@link AbstractKVStorable}s corresponding the given <code>keys</code> within the given
-     * <code>indexFile</code>. This is done by using the {@link IndexForHeaderIndexFile} in the given
-     * {@link HeaderIndexFile}. If you want to do this in a more sequential way, try to use the method
-     * <code>read()</code>
+     * Searches for the {@link Data}-records corresponding the given keys within the given indexFile. This is done by
+     * using the {@link IndexForHeaderIndexFile} from the given {@link HeaderIndexFile}. If you want to do this in a
+     * more sequential way, try to use the method {@link #read(int, int, int)} or use an {@link DRUMSIterator}. (
+     * {@link #getIterator()})
      * 
      * @param indexFile
      *            {@link HeaderIndexFile}, where to search for the keys
      * @param keys
      *            the keys to search for
-     * @return Arraylist which contains the found data. Can be less than the number of given keys
+     * @return an {@link ArrayList} which contains the found records. Can be less than the number of requested keys.
      */
     public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[]... keys) throws IOException {
         SortMachine.quickSort(keys);
@@ -370,7 +337,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
             Data copy = prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
             result.add(copy);
             if (indexInChunk == -1) {
-                logger.warn("Element with key {} was not found and therefore not updated", key);
+                logger.warn("Element with key {} was not found.", key);
                 indexInChunk = 0;
             }
             lastChunkIdx = actualChunkIdx; // remember last chunk
@@ -380,9 +347,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Returns the number of elements in the database.
-     * 
-     * @return
+     * @return the number of elements in the database.
      * @throws IOException
      * @throws FileLockException
      */
@@ -390,7 +355,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         long size = 0L;
         for (int bucketId = 0; bucketId < hashFunction.getNumberOfBuckets(); bucketId++) {
             HeaderIndexFile<Data> headerIndexFile = new HeaderIndexFile<Data>(gp.databaseDirectory + "/"
-                    + hashFunction.getFilename(bucketId), HEADER_FILE_LOCK_RETRY, gp);
+                    + hashFunction.getFilename(bucketId), gp.HEADER_FILE_LOCK_RETRY, gp);
             size += headerIndexFile.getFilledUpFromContentStart() / gp.elementSize;
             headerIndexFile.close();
         }
@@ -399,7 +364,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
 
     /**
      * Searches for the given key in workingBuffer, beginning at the given index. Remember: The records in the
-     * <code>workingbuffer</code> have to be ordered ascending.
+     * given workingBuffer have to be ordered ascending.
      * 
      * @param workingBuffer
      *            the ByteBuffer to work on
@@ -441,9 +406,9 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Instantiates a new {@link DRUMSIterator} and returns it
+     * Instantiates a new {@link DRUMSIterator} and returns it.
      * 
-     * @return
+     * @return a new {@link DRUMSIterator}
      */
     public DRUMSIterator<Data> getIterator() {
         return new DRUMSIterator<Data>(hashFunction, gp);
@@ -455,7 +420,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * <br>
      * Remember, if you have an opened Reader. You can't synchronize buckets.
      * 
-     * @return DRUMS_Reader
+     * @return a pointer to the internal {@link DRUMSReader}-instance
      * @throws IOException
      * @throws FileLockException
      */
@@ -468,7 +433,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         return reader_instance;
     }
 
-    /** Joins all the DRUMS. */
+    /** Joins all the DRUMS-table. */
     public void join() throws InterruptedException {
         syncManager.join();
     }

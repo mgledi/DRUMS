@@ -65,10 +65,13 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     /** the size of one chunk in memory */
     public int MEMORY_CHUNK;
 
+    /** the number of retries if a file is locked by another process */
+    public int HEADER_FILE_LOCK_RETRY = 100;
+    
+
     public long SYNC_CHUNK_SIZE;
-
+    /** The size of one chunk in an {@link HeaderIndexFile} */
     public long FILE_CHUNK_SIZE;
-
     /** The number of threads used for synchronizing. */
     public int NUMBER_OF_SYNCHRONIZER_THREADS = 1;
     /** The minimal number of elements which must be in one bucket, before this bucket is allowed to be synchronized. */
@@ -151,7 +154,8 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
         FILE_CHUNK_SIZE = FILE_CHUNK_SIZE - FILE_CHUNK_SIZE % prototype.getSize(); 
         NUMBER_OF_SYNCHRONIZER_THREADS = Integer.valueOf(props.getProperty("NUMBER_OF_SYNCHRONIZER_THREADS", "1"));
         MAX_BUCKET_STORAGE_TIME = Long.valueOf(props.getProperty("MAX_BUCKET_STORAGE_TIME", "84000000"));
-        MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = Integer                .valueOf(props.getProperty("MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC", "1"));
+        MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = Integer.valueOf(props.getProperty("MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC", "1"));
+        HEADER_FILE_LOCK_RETRY = Integer.valueOf(props.getProperty("HEADER_FILE_LOCK_RETRY", "100"));
 
         INITIAL_FILE_SIZE = (int) parseSize(props.getProperty("INITIAL_FILE_SIZE", "16M"));
         INITIAL_INCREMENT_SIZE = (int) parseSize(props.getProperty("INITIAL_INCREMENT_SIZE", "16M"));

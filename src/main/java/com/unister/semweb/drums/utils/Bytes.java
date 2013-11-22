@@ -16,6 +16,7 @@ import sun.misc.Unsafe;
 /**
  * Utility class that handles byte arrays.
  */
+@SuppressWarnings("restriction")
 public class Bytes {
     private static final Logger LOGGER = LoggerFactory.getLogger(Bytes.class);
     /** Size of boolean in bytes */
@@ -438,7 +439,6 @@ public class Bytes {
         return b;
     }
 
-    
     /**
      * Converts a byte array to a char value
      * 
@@ -487,8 +487,7 @@ public class Bytes {
         n ^= bytes[offset + 1] & 0xFF;
         return n;
     }
-    
-    
+
     /**
      * Converts a byte array to a short value
      * 
@@ -577,7 +576,7 @@ public class Bytes {
         bytes[offset] = (byte) val;
         return offset + SIZEOF_SHORT;
     }
-    
+
     /**
      * Put a char value out to the specified byte array position.
      * 
@@ -860,12 +859,17 @@ public class Bytes {
         return compareTo(left, right) == 0;
     }
 
+    /**
+     * @param left
+     *            left operand
+     * @param right
+     *            right operand
+     * @return True if equal
+     */
     public static boolean equals(final byte[] left, int leftOffset, int leftLen,
             final byte[] right, int rightOffset, int rightLen) {
         // short circuit case
-        if (left == right &&
-                leftOffset == rightOffset &&
-                leftLen == rightLen) {
+        if (left == right &&  leftOffset == rightOffset && leftLen == rightLen) {
             return true;
         }
         // different lengths fast check
@@ -879,8 +883,9 @@ public class Bytes {
         // Since we're often comparing adjacent sorted data,
         // it's usual to have equal arrays except for the very last byte
         // so check that first
-        if (left[leftOffset + leftLen - 1] != right[rightOffset + rightLen - 1])
+        if (left[leftOffset + leftLen - 1] != right[rightOffset + rightLen - 1]) {
             return false;
+        }
 
         return LexicographicalComparerHolder.BEST_COMPARER.
                 compareTo(left, leftOffset, leftLen, right, rightOffset, rightLen) == 0;
@@ -1137,57 +1142,5 @@ public class Bytes {
         for (int i = offset; i < offset + length; i++)
             hash = (31 * hash) + (int) bytes[i];
         return hash;
-    }
-
-    /* increment/deincrement for positive value */
-    private static byte[] binaryIncrementPos(byte[] value, long amount) {
-        long amo = amount;
-        int sign = 1;
-        if (amount < 0) {
-            amo = -amount;
-            sign = -1;
-        }
-        for (int i = 0; i < value.length; i++) {
-            int cur = ((int) amo % 256) * sign;
-            amo = (amo >> 8);
-            int val = value[value.length - i - 1] & 0x0ff;
-            int total = val + cur;
-            if (total > 255) {
-                amo += sign;
-                total %= 256;
-            } else if (total < 0) {
-                amo -= sign;
-            }
-            value[value.length - i - 1] = (byte) total;
-            if (amo == 0)
-                return value;
-        }
-        return value;
-    }
-
-    /* increment/deincrement for negative value */
-    private static byte[] binaryIncrementNeg(byte[] value, long amount) {
-        long amo = amount;
-        int sign = 1;
-        if (amount < 0) {
-            amo = -amount;
-            sign = -1;
-        }
-        for (int i = 0; i < value.length; i++) {
-            int cur = ((int) amo % 256) * sign;
-            amo = (amo >> 8);
-            int val = ((~value[value.length - i - 1]) & 0x0ff) + 1;
-            int total = cur - val;
-            if (total >= 0) {
-                amo += sign;
-            } else if (total < -256) {
-                amo -= sign;
-                total %= 256;
-            }
-            value[value.length - i - 1] = (byte) total;
-            if (amo == 0)
-                return value;
-        }
-        return value;
     }
 }

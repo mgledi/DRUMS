@@ -18,7 +18,6 @@ package com.unister.semweb.drums.file;
 import java.nio.MappedByteBuffer;
 import java.util.Arrays;
 
-import com.carrotsearch.hppc.ByteCollection;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.utils.ByteArrayComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
@@ -39,7 +38,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  */
 public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
 
-    /** the interal ByteArrayComparator. TODO: get a an Comparator which works on Unsafe-Rawbytes */
+    /** the interal ByteArrayComparator */
     private ByteArrayComparator comparator = new ByteArrayComparator();
 
     /** chunkId -> largest key in this chunk */
@@ -63,9 +62,12 @@ public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
      * This constructor instantiates a new {@link IndexForHeaderIndexFile}. You need to give the number of the indexed
      * chunks, the chunksize and the {@link MappedByteBuffer}, where the index should be written to.
      * 
-     * @param <b>int numberOfChunks</b> the expected or maximal number of chunks
-     * @param <b>int chunkSize</b>, the size of one chunk
-     * @param <b>MappedByteBuffer indexBuffer</b>, the buffer were to write the indexinformations
+     * @param numberOfChunks
+     *            the expected or maximal number of chunks
+     * @param chunkSize
+     *            the size of one chunk
+     * @param indexBufferthe
+     *            buffer were to write the indexinformations
      */
     public IndexForHeaderIndexFile(final int numberOfChunks, final int keySize, final int chunkSize,
             final MappedByteBuffer indexBuffer) {
@@ -119,49 +121,23 @@ public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
      * 
      * @param key
      *            the key to look for
-     * @return the id of the chunk, where the key could be found. If there is no putative chunk, then -1 will returned. 
+     * @return the id of the chunk, where the key could be found. If there is no putative chunk, then -1 will returned.
      */
     public int getChunkId(byte[] key) {
-//        int idx = Arrays.binarySearch(maxKeyPerChunk, 0, filledUpTo, key, comparator);
-//        idx = idx < 0 ? -idx - 1 : idx;
-//        if(idx > filledUpTo) {
-//            return -1;
-//        } else {
-//            return idx;
-//        }
-        
-        // adapted binary search
-        int minElement = 0, maxElement = filledUpTo, midElement;
-        byte comp1 = 0, comp2 = 0;
-        while (minElement <= maxElement) {
-            midElement = minElement + (maxElement - minElement) / 2;
-            // handle special case (maxElement was 1)
-            if (midElement == 0 && KeyUtils.compareKey(key, maxKeyPerChunk[0]) > 0) {
-                if (filledUpTo == 0) {
-                    return -1;
-                }
-                return 1;
-            } else if (midElement == 0) {
-                return 0;
-            }
-            comp1 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement - 1]);
-            comp2 = KeyUtils.compareKey(key, maxKeyPerChunk[midElement]);
-            if (comp1 > 0 && comp2 <= 0) {
-                return midElement;
-            } else if (comp1 > 0) {
-                minElement = midElement + 1;
-            } else {
-                maxElement = midElement - 1;
-            }
+        int idx = Arrays.binarySearch(maxKeyPerChunk, 0, filledUpTo + 1, key, comparator);
+        idx = idx < 0 ? -idx - 1 : idx;
+        if (idx > filledUpTo) {
+            return -1;
+        } else {
+            return idx;
         }
-        return -1;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < filledUpTo; i++) {
-            sb.append(i + ": " + KeyUtils.transform(maxKeyPerChunk[i])).append("\n");
+            sb.append(i + ": " + KeyUtils.toStringUnsignedInt(maxKeyPerChunk[i])).append("\n");
         }
         return sb.toString();
     }
@@ -173,7 +149,7 @@ public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
      */
     public boolean isConsistent() {
         for (int i = 1; i < filledUpTo; i++) {
-            byte comp1 = KeyUtils.compareKey(maxKeyPerChunk[i], maxKeyPerChunk[i - 1]);
+            int comp1 = KeyUtils.compareKey(maxKeyPerChunk[i], maxKeyPerChunk[i - 1]);
             if (comp1 <= 0) {
                 return false;
             }

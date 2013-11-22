@@ -57,7 +57,10 @@ public abstract class AbstractHeaderFile {
 
     /** The possible AccessModes. READ_ONLY and READ_WRITE */
     public enum AccessMode {
-        READ_ONLY, READ_WRITE
+        /** only read on files is allowed */
+        READ_ONLY,
+        /** read and write is allowed */
+        READ_WRITE
     };
 
     /** the size of the header */
@@ -108,9 +111,8 @@ public abstract class AbstractHeaderFile {
     /**
      * writes the bytes from the given ByteBuffer to the file beginning at offset.
      * 
-     * @param long offset
-     * @param ByteBuffer
-     *            sourceBuffer
+     * @param ffset
+     * @param sourceBuffer
      * @throws IOException
      */
     public abstract void write(long offset, ByteBuffer sourceBuffer) throws IOException;
@@ -118,8 +120,8 @@ public abstract class AbstractHeaderFile {
     /**
      * writes the bytes from the given Byte-array to the file beginning at offset.
      * 
-     * @param long offset
-     * @param byte[] sourceBuffer
+     * @param offset
+     * @param sourceBuffer
      * @throws IOException
      */
     public abstract void write(long offset, byte[] sourceBuffer) throws IOException;
@@ -127,7 +129,7 @@ public abstract class AbstractHeaderFile {
     /**
      * appends the given sourceBuffer to the file and returns the file position of the appended entry
      * 
-     * @param byte[] sourceBuffer
+     * @param sourceBuffer
      * @throws IOException
      */
     public abstract long append(byte[] sourceBuffer) throws IOException;
@@ -145,9 +147,8 @@ public abstract class AbstractHeaderFile {
      * Reads x bytes from the file to the given ByteBuffer, where x is the minimum of the capacity of the buffer and the
      * remaining written bytes in the file.
      * 
-     * @param long offset
-     * @param ByteBuffer
-     *            destBuffer
+     * @param offset
+     * @param destBuffer
      * @throws IOException
      */
     public abstract int read(long offset, ByteBuffer destBuffer) throws IOException;
@@ -156,9 +157,8 @@ public abstract class AbstractHeaderFile {
      * Reads x bytes from the file to the given ByteBuffer, where x is the minimum of the capacity of the buffer and the
      * remaining written bytes in the file.
      * 
-     * @param long offset
-     * @param ByteBuffer
-     *            destBuffer
+     * @param offset
+     * @param destBuffer
      * @throws IOException
      */
     public abstract int read(long offset, byte[] destBuffer) throws IOException;
@@ -166,7 +166,7 @@ public abstract class AbstractHeaderFile {
     /**
      * returns the remaining bytes between <code>filledUpTo</code> and the given <code>offset</code>
      * 
-     * @param long offset
+     * @param offset
      * @return long
      */
     public long getRemainingBytes(long offset) {

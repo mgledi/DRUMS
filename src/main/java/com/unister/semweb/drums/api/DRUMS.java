@@ -385,7 +385,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         // binary search
         int maxElement = numberOfEntries - 1;
         int midElement;
-        byte comp;
+        int comp;
         byte[] tempKey = new byte[gp.keySize];
 
         while (minElement <= maxElement) {

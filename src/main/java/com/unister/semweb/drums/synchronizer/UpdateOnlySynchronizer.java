@@ -155,7 +155,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
         // binary search
         int maxElement = numberOfEntries - 1;
         int midElement;
-        byte compare;
+        int compare;
         byte[] tmpKey = new byte[actualKey.length];
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
@@ -174,7 +174,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
                 workingBuffer.position(indexInChunk);
                 workingBuffer.put(data.toByteBuffer());
                 return indexInChunk;
-            } else if (compare == -1) {
+            } else if (compare < 0) {
                 maxElement = midElement - 1;
             } else {
                 minElement = midElement + 1;

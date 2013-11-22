@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.unister.semweb.drums.utils.Bytes;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -31,14 +32,6 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * @author Martin Nettling, Nils Thieme
  */
 public class KeyUtilsTest {
-    @Test
-    public void transformByteToLong() {
-        byte[] b = KeyUtils.transformFromLong(123456789l, 8);
-        assertEquals(123456789l, KeyUtils.transformFromByte(b));
-        
-        byte[] b2 = KeyUtils.convert(123456789l);
-        assertEquals(123456789l, KeyUtils.transformFromByte(b2));
-    }
     
     @Test
     public void equalKeysZero() {
@@ -122,36 +115,6 @@ public class KeyUtilsTest {
         if (KeyUtils.compareKey(key1, key2) == 1) {
             Assert.assertTrue(true);
         }
-    }
-
-    /**
-     * Tests the method with valid data, the array starts with another.
-     */
-    @Test
-    public void validBeginsWith() {
-        byte[] beginsWith = new byte[] { 12, 23, 45, 32, 12 };
-        byte[] compareWith = new byte[] { 12, 23, 45, 32, 12, 11, 54, 32, 65, 123, 34 };
-        Assert.assertTrue(KeyUtils.startsWith(beginsWith, compareWith));
-    }
-
-    /**
-     * The byte array doesn't starts with the given array.
-     */
-    @Test
-    public void invalidBeginsWith() {
-        byte[] beginsWith = new byte[] { 12, 23, 45, 32, 13 };
-        byte[] compareWith = new byte[] { 12, 23, 45, 32, 12, 11, 54, 32, 65, 123, 34 };
-        Assert.assertFalse(KeyUtils.startsWith(beginsWith, compareWith));
-    }
-
-    /**
-     * The prefix byte array has less bytes than the compare byte array.
-     */
-    @Test
-    public void invalidSizes() {
-        byte[] beginsWith = new byte[] { 12, 23, 45, 32, 12 };
-        byte[] compareWith = new byte[] { 12, 23, 45 };
-        Assert.assertFalse(KeyUtils.startsWith(beginsWith, compareWith));
     }
 
     private byte[] intArrayToByteArray(int... bytes) {

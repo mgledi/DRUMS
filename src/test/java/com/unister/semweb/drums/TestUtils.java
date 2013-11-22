@@ -35,6 +35,7 @@ import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.DummyKVStorable;
 import com.unister.semweb.drums.synchronizer.Synchronizer;
 import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
+import com.unister.semweb.drums.utils.Bytes;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 public class TestUtils {
@@ -92,7 +93,7 @@ public class TestUtils {
     public static DummyKVStorable[] generateTestdata(int numberToGenerate) {
         DummyKVStorable[] result = new DummyKVStorable[numberToGenerate];
         for (int i = 0; i < numberToGenerate; i++) {
-            DummyKVStorable oneEntry = TestUtils.createDummyData(KeyUtils.convert(i + 1), i + 1000, i - 0.05);
+            DummyKVStorable oneEntry = TestUtils.createDummyData(Bytes.toBytes(i + 1l), i + 1000, i - 0.05);
             result[i] = oneEntry;
         }
 
@@ -113,7 +114,7 @@ public class TestUtils {
         for (int i = 0; i < numberToGenerate; i++) {
 
             DummyKVStorable oneEntry = TestUtils.createDummyData(
-                    KeyUtils.convert((i * distance) + 1),
+                    Bytes.toBytes((i * distance) + 1l),
                     i + 1000,
                     i - 0.05);
             result[i] = oneEntry;
@@ -131,7 +132,7 @@ public class TestUtils {
                     / (double) allowedUniqueElements;
             long newKey = (long) (dummyValue * maximumValueForKey);
 
-            DummyKVStorable oneEntry = TestUtils.createDummyData(KeyUtils.convert(newKey), 1,
+            DummyKVStorable oneEntry = TestUtils.createDummyData(Bytes.toBytes((long)newKey), 1,
                     randomGenerator.nextDouble());
             result[i] = oneEntry;
         }
@@ -232,7 +233,7 @@ public class TestUtils {
     public static DummyKVStorable[] createDummyData(int numberOfData) throws IOException {
         DummyKVStorable[] result = new DummyKVStorable[numberOfData];
         for (int i = 0; i < numberOfData; i++) {
-            DummyKVStorable newData = createDummyData(KeyUtils.convert(i + 1), i, 1d / i);
+            DummyKVStorable newData = createDummyData(Bytes.toBytes(i + 1l), i, 1d / i);
             result[i] = newData;
         }
         return result;
@@ -251,7 +252,7 @@ public class TestUtils {
     public static DummyKVStorable[] createDummyData(int firstKey, int lastKey) {
         DummyKVStorable[] result = new DummyKVStorable[lastKey - firstKey];
         for (int i = firstKey; i < lastKey; i++) {
-            DummyKVStorable oneDate = createDummyData(KeyUtils.convert(i), i + 1, 1d / i);
+            DummyKVStorable oneDate = createDummyData(Bytes.toBytes((long)i), i + 1, 1d / i);
             result[i - firstKey] = oneDate;
         }
         return result;

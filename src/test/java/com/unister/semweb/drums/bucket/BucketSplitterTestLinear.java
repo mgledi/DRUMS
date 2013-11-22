@@ -65,6 +65,7 @@ public class BucketSplitterTestLinear {
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction,
                 TestUtils.gp);
+        
         splitter.splitAndStoreConfiguration(0, 2);
 
         DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInstantiator.openTable(hashFunction,

@@ -23,17 +23,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.drums.bucket.hashfunction.util.RangeHashSorter;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.utils.ByteArrayComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -42,8 +40,6 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * @author Martin Nettling
  */
 public class RangeHashFunction extends AbstractHashFunction {
-    private static final Logger log = LoggerFactory.getLogger(RangeHashFunction.class);
-
     /** the file where the hashfunction is stored human-readable */
     private String hashFunctionFile;
 
@@ -70,10 +66,10 @@ public class RangeHashFunction extends AbstractHashFunction {
     public RangeHashFunction(int ranges, int keySize, String filename /* TODO: prototype */) {
         this.hashFunctionFile = filename;
         this.buckets = ranges;
-        byte[] max = new byte[keySize];
+        byte[] max = new byte[keySize], min = new byte[keySize];
         Arrays.fill(max, (byte) -1);
         try {
-            this.maxRangeValues = KeyUtils.getRanges(new byte[keySize], max, keySize);
+            this.maxRangeValues = KeyUtils.getMaxValsPerRange(min, max, keySize);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -116,7 +112,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         sortMachine.quickSort();
         generateBucketIds();
     }
-    
+
     /**
      * This method instantiates a new {@link RangeHashFunction} by the given {@link File}. The File contains some long
      * values, which describe the maximal allowed values for the buckets. The minimal value will be the direct successor
@@ -128,13 +124,13 @@ public class RangeHashFunction extends AbstractHashFunction {
         IOUtils.closeQuietly(fileReader);
         this.hashFunctionFile = file.getAbsolutePath();
     }
-    
+
     /** Creates the RangeHashFunction with the content of the given {@link Reader}. */
     public RangeHashFunction(Reader reader) throws IOException {
         initialise(reader);
     }
 
-    /** Initialises the RangeHashFunction with the content of the {@link Reader}.*/
+    /** Initializes the RangeHashFunction with the content of the {@link Reader}. */
     private void initialise(Reader reader) throws IOException {
         List<String> readData = IOUtils.readLines(reader);
 
@@ -211,7 +207,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         return maxRangeValues[bucketId];
     }
 
-    /** Gets the bucket id to the given <code>key</code>. */
+    /** Determines the bucket id to the given <code>key</code>. */
     @Override
     public int getBucketId(byte[] key) {
         int index = searchBucketIndex(key, 0, maxRangeValues.length - 1);
@@ -219,37 +215,20 @@ public class RangeHashFunction extends AbstractHashFunction {
     }
 
     /**
-     * Searches for the index in maxRangeValues for the given <code>key</code>. This is done by a binary search. So we
-     * need the left and right index. Remeber: this may not be the bucketId
+     * Searches for the given <code>key</code> in {@link #maxRangeValues} and returns the index of the corresponding
+     * range. Remember: this may not be the bucketId
      */
-    public int searchBucketIndex(byte[] key, int leftIndex, int rightIndex) {
+    protected int searchBucketIndex(byte[] key, int leftIndex, int rightIndex) {
         if (KeyUtils.compareKey(key, maxRangeValues[rightIndex]) > 0) {
             return 0;
         }
-
-        byte comp1, comp2;
-        while (leftIndex <= rightIndex) {
-            int midIndex = ((rightIndex - leftIndex) / 2) + leftIndex;
-            comp2 = KeyUtils.compareKey(key, maxRangeValues[midIndex]);
-            if (midIndex == 0) {
-                if (comp2 > 0) {
-                    return 1;
-                }
-                return 0;
-            }
-            comp1 = KeyUtils.compareKey(maxRangeValues[midIndex - 1], key);
-            if (comp1 < 0 && comp2 <= 0) {
-                return midIndex;
-            } else if (comp2 > 0) {
-                leftIndex = midIndex + 1;
-            } else {
-                rightIndex = midIndex - 1;
-            }
+        int idx = Arrays.binarySearch(maxRangeValues, leftIndex, rightIndex, key, new ByteArrayComparator());
+        idx = idx < 0 ? -idx - 1 : idx;
+        if (idx > rightIndex) {
+            return -1;
+        } else {
+            return idx;
         }
-
-        log.error("Could not find a bucket for key {}", key);
-        return -1;
-
     }
 
     /** Gets the bucket id from the given date. */
@@ -345,88 +324,6 @@ public class RangeHashFunction extends AbstractHashFunction {
     }
 
     /**
-     * Returns the bucket ids for the given byte prefix. Example: Suppose you have the following ranges:
-     * <ul>
-     * <li>1 0 0 0 - 1 1 0 0</li>
-     * <li>1 1 0 1 - 1 1 1 1</li>
-     * <li>2 0 0 0 - 2 1 1 1</li>
-     * </ul>
-     * 
-     * The prefix is 1 then the method will return the bucket ids of the first two ranges.
-     * 
-     * If the <code>prefix</code> has more elements than the keys within the hash function an
-     * {@link IllegalArgumentException} is thrown.
-     * 
-     * @param prefix
-     * @return
-     */
-    public int[] getBucketIdsFor(byte[] prefix) throws IllegalArgumentException {
-        List<Integer> intermediateResult = new ArrayList<Integer>();
-
-        int keySize = maxRangeValues[0].length;
-
-        byte[] begin = Arrays.copyOf(prefix, keySize);
-        byte[] end = Arrays.copyOf(prefix, keySize);
-        Arrays.fill(end, prefix.length, keySize, (byte) 255);
-
-        byte[] leftKey = new byte[keySize];
-        byte[] rightKey = new byte[keySize];
-
-        for (int i = 0; i < maxRangeValues.length; i++) {
-            rightKey = maxRangeValues[i];
-
-            int compareLeftBegin = KeyUtils.compareKey(leftKey, begin);
-            int compareBeginRight = KeyUtils.compareKey(begin, rightKey);
-
-            int compareLeftEnd = KeyUtils.compareKey(leftKey, end);
-            int compareEndRight = KeyUtils.compareKey(end, rightKey);
-
-            int compareBeginLeft = KeyUtils.compareKey(begin, leftKey);
-
-            if ((compareLeftBegin < 0 && compareBeginRight <= 0) || (compareLeftEnd < 0 && compareEndRight <= 0)
-                    || (compareBeginLeft <= 0 && compareLeftEnd < 0)) {
-                /* Before we determine the bucket id of the left key we add 1 to the key. */
-                byte[] incrementedLeftKey = increment(leftKey);
-                intermediateResult.add(getBucketId(incrementedLeftKey));
-            }
-            leftKey = rightKey;
-        }
-
-        /* This handles the last range if the prefix lies within the last range. */
-        byte[] lastRangeValue = maxRangeValues[maxRangeValues.length - 1];
-        int compareLastBegin = KeyUtils.compareKey(lastRangeValue, begin);
-        int compareLastEnd = KeyUtils.compareKey(lastRangeValue, end);
-
-        byte[] nullHash = new byte[keySize];
-
-        if (compareLastBegin < 0 || compareLastEnd < 0 || Arrays.equals(begin, nullHash)
-                || Arrays.equals(end, nullHash)) {
-            intermediateResult.add(0);
-        }
-
-        int[] result = new int[intermediateResult.size()];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = intermediateResult.get(i);
-        }
-        return result;
-    }
-
-    /** Increment the given value by one. */
-    private byte[] increment(byte[] toIncrement) {
-        byte[] increment = new byte[toIncrement.length];
-        increment[increment.length - 1] = 1;
-
-        try {
-            byte[] incrementedResult = KeyUtils.sumUnsigned(toIncrement, increment);
-            return incrementedResult;
-
-        } catch (Exception ex) {
-            log.error("Could not increment number: {}", Arrays.toString(toIncrement), ex);
-        }
-        return toIncrement;
-    }
-
-    /**
      * Returns the ranges of this hash function.
      * 
      * @return
@@ -462,7 +359,7 @@ public class RangeHashFunction extends AbstractHashFunction {
      * Makes a copy of the current {@link RangeHashFunction}. <b>Note: the file name is also copied. Make sure that you
      * don't overwrite the file if you change one of the functions.</b>
      * 
-     * @return
+     * @return a copy of this {@link RangeHashFunction}
      */
     public RangeHashFunction copy() {
         RangeHashFunction clone = new RangeHashFunction(maxRangeValues, filenames, hashFunctionFile);

@@ -37,6 +37,7 @@ import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.drums.storable.DummyKVStorable;
 import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
+import com.unister.semweb.drums.utils.Bytes;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /** Tests the DRUMS API. */
@@ -48,14 +49,12 @@ public class DRUMSTest {
     public void initialise() throws Exception {
         System.gc(); // needed, that files are deletable under windows
         long[] ranges = new long[] { 0, 10, 20, 30 };
-        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
+        byte[][] bRanges = KeyUtils.toByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
-        System.out.println("deleted");
-//        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
+        // FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
         FileUtils.forceDelete(new File(TestUtils.gp.databaseDirectory));
-        System.out.println(new File(TestUtils.gp.databaseDirectory).exists());
         hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");
-        System.gc(); 
+        System.gc();
     }
 
     /**
@@ -120,10 +119,10 @@ public class DRUMSTest {
     @Test
     public void insertDifferentRanges() throws Exception {
         log.info("Test extended write to different Buckets. createTableAndInsertTest()");
-        DummyKVStorable bucket2_el1 = TestUtils.createDummyData(KeyUtils.convert(5), 1, 0.5);
-        DummyKVStorable bucket2_el2 = TestUtils.createDummyData(KeyUtils.convert(10), 12, 0.3);
-        DummyKVStorable bucket4_el1 = TestUtils.createDummyData(KeyUtils.convert(29), 9, 0.23);
-        DummyKVStorable bucket4_el2 = TestUtils.createDummyData(KeyUtils.convert(30), 9, 0.23);
+        DummyKVStorable bucket2_el1 = TestUtils.createDummyData(Bytes.toBytes(5l), 1, 0.5);
+        DummyKVStorable bucket2_el2 = TestUtils.createDummyData(Bytes.toBytes(10l), 12, 0.3);
+        DummyKVStorable bucket4_el1 = TestUtils.createDummyData(Bytes.toBytes(29l), 9, 0.23);
+        DummyKVStorable bucket4_el2 = TestUtils.createDummyData(Bytes.toBytes(30l), 9, 0.23);
 
         DummyKVStorable[] toAdd = new DummyKVStorable[] { bucket2_el1, bucket2_el2, bucket4_el1, bucket4_el2 };
 
@@ -149,14 +148,14 @@ public class DRUMSTest {
      */
     @Test
     public void selectTestSingleElement() throws Exception {
-        DummyKVStorable data = TestUtils.createDummyData(KeyUtils.convert(1), 1, 0.23);
+        DummyKVStorable data = TestUtils.createDummyData(Bytes.toBytes(1l), 1, 0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { data };
 
         DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
-        
-        List<DummyKVStorable> selectedData = table.select(KeyUtils.convert(1l));
+
+        List<DummyKVStorable> selectedData = table.select(Bytes.toBytes(1l));
 
         Assert.assertEquals(1, selectedData.size());
         Assert.assertEquals(data, selectedData.get(0));
@@ -169,17 +168,17 @@ public class DRUMSTest {
      */
     @Test
     public void selectTestSeveralRanges() throws Exception {
-        DummyKVStorable firstRange = TestUtils.createDummyData(KeyUtils.convert(2), 2, 0.24);
-        DummyKVStorable secondRange = TestUtils.createDummyData(KeyUtils.convert(10), 10, 0.23);
-        DummyKVStorable thirdRange = TestUtils.createDummyData(KeyUtils.convert(12), 19,0.29);
+        DummyKVStorable firstRange = TestUtils.createDummyData(Bytes.toBytes(2l), 2, 0.24);
+        DummyKVStorable secondRange = TestUtils.createDummyData(Bytes.toBytes(10l), 10, 0.23);
+        DummyKVStorable thirdRange = TestUtils.createDummyData(Bytes.toBytes(12l), 19, 0.29);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { firstRange, secondRange, thirdRange };
 
         DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
-        
-        List<DummyKVStorable> selectedData = table.select(KeyUtils.convert(12), KeyUtils.convert(10), KeyUtils.convert(2));
-        
+
+        List<DummyKVStorable> selectedData = table.select(Bytes.toBytes(12l), Bytes.toBytes(10l), Bytes.toBytes(2l));
+
         DummyKVStorable[] result = selectedData.toArray(new DummyKVStorable[selectedData.size()]);
         Arrays.sort(toAdd, new AbstractKVStorableComparator());
         Arrays.sort(result, new AbstractKVStorableComparator());
@@ -193,15 +192,15 @@ public class DRUMSTest {
      */
     @Test
     public void readTestSingleElement() throws Exception {
-        DummyKVStorable testElement = TestUtils.createDummyData(KeyUtils.convert(1), 2, 0.23);
+        DummyKVStorable testElement = TestUtils.createDummyData(Bytes.toBytes(1l), 2, 0.23);
         DummyKVStorable[] toAdd = new DummyKVStorable[] { testElement };
-        
+
         DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(toAdd);
         table.close();
-            
+
         List<DummyKVStorable> selectedData = table.read(1, 0, 10);
-        
+
         DummyKVStorable[] result = selectedData.toArray(new DummyKVStorable[selectedData.size()]);
         Arrays.sort(toAdd, new AbstractKVStorableComparator());
         Arrays.sort(result, new AbstractKVStorableComparator());
@@ -226,13 +225,12 @@ public class DRUMSTest {
         DummyKVStorable[] result = selectedData.toArray(new DummyKVStorable[selectedData.size()]);
         Arrays.sort(testdata, new AbstractKVStorableComparator());
         Assert.assertArrayEquals(testdata, result);
-        
+
         List<DummyKVStorable> selectedData2 = table.read(1, 5, 10);
         DummyKVStorable[] result2 = selectedData2.toArray(new DummyKVStorable[selectedData2.size()]);
         Arrays.sort(testdata, new AbstractKVStorableComparator());
-        Assert.assertArrayEquals(Arrays.copyOfRange(testdata,5,10), result2);
+        Assert.assertArrayEquals(Arrays.copyOfRange(testdata, 5, 10), result2);
     }
-
 
     /** Add test data of different ranges to the DRUM and read the corresponding buckets. */
     @Test
@@ -255,17 +253,17 @@ public class DRUMSTest {
         Assert.assertArrayEquals(secondRange, readThirdBucket.toArray(new DummyKVStorable[readThirdBucket.size()]));
         Assert.assertArrayEquals(thirdRange, readFourthBucket.toArray(new DummyKVStorable[readFourthBucket.size()]));
     }
-    
+
     /** Add test data of different ranges to the DRUM and read the corresponding buckets. */
     @Test
     public void testMergeOfOneElement() throws Exception {
-        DummyKVStorable date1 = TestUtils.createDummyData(KeyUtils.convert(5), 1, 0.5);
-        DummyKVStorable[] completeTestdata = new DummyKVStorable[]{date1};
-        
+        DummyKVStorable date1 = TestUtils.createDummyData(Bytes.toBytes(5l), 1, 0.5);
+        DummyKVStorable[] completeTestdata = new DummyKVStorable[] { date1 };
+
         DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(completeTestdata);
         table.close();
-        
+
         table = DRUMSInstantiator.createOrOpenTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(completeTestdata);
         table.close();

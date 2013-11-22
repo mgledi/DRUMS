@@ -28,6 +28,7 @@ import com.unister.semweb.drums.TestUtils;
 import com.unister.semweb.drums.storable.DummyKVStorable;
 import com.unister.semweb.drums.synchronizer.UpdateOnlySynchronizer;
 import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
+import com.unister.semweb.drums.utils.Bytes;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -47,7 +48,7 @@ public class UpdateOnlySynchronizerTest {
         DummyKVStorable[] linkDataList = new DummyKVStorable[204000];
         for (int i = 0; i < linkDataList.length; i++) {
             linkDataList[i] = DummyKVStorable.getInstance();
-            linkDataList[i].setKey(KeyUtils.transformFromLong(i * 1 + 1, TestUtils.gp.keySize));
+            linkDataList[i].setKey(Bytes.toBytes(i * 1 + 1l));
         }
         TestUtils.createFile(dbFileName, linkDataList);
         Assert.assertTrue(TestUtils.checkContentFile(dbFileName, linkDataList));

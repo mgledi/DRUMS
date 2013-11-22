@@ -152,13 +152,13 @@ public class Synchronizer<Data extends AbstractKVStorable> {
             int keyLength = prototype.getKey().length;
 
             // handle all AbstractKVStorable (update or insert)
-            byte compare;
+            int compare;
             for (indexOfToAdd = 0; indexOfToAdd < toAdd.length && dateFromDisk != null;) {
                 AbstractKVStorable dateFromBucket = toAdd[indexOfToAdd];
                 compare = KeyUtils.compareKey(dateFromBucket.key, dateFromDisk, keyLength);
 
                 /* insert element from bucket */
-                if (compare == -1) {
+                if (compare < 0) {
                     write(dateFromBucket.toByteBuffer().array(), false); // write date
                     indexOfToAdd++;// next dateFromBucket
 
@@ -183,7 +183,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
                 }
 
                 /* insert element from disk (pendingElements) */
-                if (compare == 1) {
+                if (compare > 0 ) {
                     prototype.initFromByteBuffer(ByteBuffer.wrap(dateFromDisk));
                     // if the dateFromDisk was marked as deleted
                     if (!prototype.isMarkedAsDeleted()) {

@@ -21,7 +21,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
-import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
  * Utility class for handling {@link RangeHashFunction} easier.
@@ -41,7 +40,7 @@ public class RangeHashFunctionTestUtils {
         byte[][] ranges = new byte[numberOfRanges][];
         String[] filenames = new String[numberOfRanges];
         for (int i = 0; i < numberOfRanges; i++) {
-            byte[] oneLine = KeyUtils.transformFromLong((i + 1) * rangeWidth, keySize);
+            byte[] oneLine = Bytes.toBytes((long)(i + 1) * rangeWidth);
             ranges[i] = oneLine;
             filenames[i] = i + ".db";
         }

@@ -33,6 +33,7 @@ import com.unister.semweb.drums.api.DRUMS.AccessMode;
 import com.unister.semweb.drums.bucket.BucketSplitter;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.drums.storable.DummyKVStorable;
+import com.unister.semweb.drums.utils.Bytes;
 import com.unister.semweb.drums.utils.KeyUtils;
 import com.unister.semweb.drums.utils.RangeHashFunctionTestUtils;
 
@@ -90,8 +91,8 @@ public class BucketSplitterTestNonLinear {
             Assert.assertEquals(testData[i + 5], secondBucketElements.get(i));
         }
 
-        byte[][] expectedRanges = new byte[][] { KeyUtils.transformFromLong(41, TestUtils.gp.keySize),
-                KeyUtils.transformFromLong(10000, TestUtils.gp.keySize) };
+        byte[][] expectedRanges = new byte[][] { Bytes.toBytes(41l),
+                Bytes.toBytes(10000l) };
         Assert.assertTrue(examineHashFunction(hashFunction, expectedRanges));
     }
 
@@ -130,8 +131,8 @@ public class BucketSplitterTestNonLinear {
             Assert.assertEquals(testData[i + 5], secondBucketElements.get(i));
         }
 
-        byte[][] expectedRanges = new byte[][] { KeyUtils.transformFromLong(401, TestUtils.gp.keySize),
-                KeyUtils.transformFromLong(10000, TestUtils.gp.keySize) };
+        byte[][] expectedRanges = new byte[][] { Bytes.toBytes(401l),
+                Bytes.toBytes(10000l) };
         Assert.assertTrue(examineHashFunction(hashFunction, expectedRanges));
     }
 
@@ -171,8 +172,9 @@ public class BucketSplitterTestNonLinear {
             Assert.assertEquals(testData[i + 2500], secondBucketElements.get(i));
         }
 
-        byte[][] expectedRanges = new byte[][] { KeyUtils.transformFromLong(249901, TestUtils.gp.keySize),
-                KeyUtils.transformFromLong(500000, TestUtils.gp.keySize) };
+        byte[][] expectedRanges = new byte[][] { 
+                Bytes.toBytes(249901l),
+                Bytes.toBytes(500000l) };
         Assert.assertTrue(examineHashFunction(hashFunction, expectedRanges));
     }
 
@@ -224,10 +226,10 @@ public class BucketSplitterTestNonLinear {
             Assert.assertEquals(testData[i + 3750], fourthBucketElements.get(i));
         }
 
-        byte[][] expectedRanges = new byte[][] { KeyUtils.transformFromLong(124901, TestUtils.gp.keySize),
-                KeyUtils.transformFromLong(249901, TestUtils.gp.keySize),
-                KeyUtils.transformFromLong(374901, TestUtils.gp.keySize),
-                KeyUtils.transformFromLong(500000, TestUtils.gp.keySize) };
+        byte[][] expectedRanges = new byte[][] { Bytes.toBytes(124901l),
+                Bytes.toBytes(249901l),
+                Bytes.toBytes(374901l),
+                Bytes.toBytes(500000l) };
         Assert.assertTrue(examineHashFunction(hashFunction, expectedRanges));
     }
 

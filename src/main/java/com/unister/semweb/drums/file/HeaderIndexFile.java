@@ -113,10 +113,13 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
      * {@link AccessMode}.
      * 
-     * @param <b>String</b> fileName, the filename of the underlying OSfile.
-     * @param <b>AccessMode</b> mode, the mode the file should be accessed. READ_ONLY or READ_WRITE
-     * @param <b>int</b> max_retries_connect, the number of retries to open a channel, if the file is locked
-     * @param TODO
+     * @param fileName
+     *            the filename of the underlying OSfile.
+     * @param mode
+     *            the mode the file should be accessed. READ_ONLY or READ_WRITE
+     * @param max_retries_connect
+     *            the number of retries to open a channel, if the file is locked
+     * @param gp
      * @throws FileLockException
      *             if the <code>max_retries_connect</code> is exceeded
      * @throws IOException
@@ -136,15 +139,16 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         if (closedSoftly == 0) {
             logger.warn("File {} was not closed correctly and might be corrupted", osFile.getName());
         }
-        System.out.println("channel opened after init()");
     }
 
     /**
      * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
      * {@link AccessMode}. This is a weak constructor and therefore you can only have read-access.
      * 
-     * @param <b>String</b> fileName, the filename of the underlying OSfile.
-     * @param <b>int</b> max_retries_connect, the number of retries to open a channel, if the file is locked
+     * @param fileName
+     *            the filename of the underlying OSfile.
+     * @param max_retries_connect
+     *            the number of retries to open a channel, if the file is locked
      * @throws FileLockException
      *             if the <code>max_retries_connect</code> is exceeded
      * @throws IOException
@@ -177,7 +181,6 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
                     "The readChunkSize ({}) is not a multiple of elementsize ({}). This might lead to a wrong index",
                     chunkSize, elementSize);
         }
-        System.out.println("channel opened at init()");
     }
 
     /**
@@ -199,9 +202,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * writes the bytes from the given ByteBuffer to the file beginning at offset. The size of the HEADER will be
      * respected automatically.
      * 
-     * @param long offset
-     * @param ByteBuffer
-     *            sourceBuffer
+     * @param offset
+     * @param sourceBuffer
      * @throws IOException
      */
     @Override
@@ -235,8 +237,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * writes the bytes from the given Byte-array to the file beginning at offset. The size of the HEADER will be
      * respected automatically.
      * 
-     * @param long offset
-     * @param byte[] sourceBuffer
+     * @param offset
+     * @param sourceBuffer
      * @throws IOException
      */
     @Override
@@ -247,7 +249,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     /**
      * appends the given sourceBuffer to the file
      * 
-     * @param byte[] sourceBuffer
+     * @param sourceBuffer
      * @throws IOException
      */
     @Override
@@ -274,7 +276,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * capacity of the buffer and the remaining written bytes in the file. The size of the HEADER will be respected
      * automatically. The position is set to the number of read bytes.
      * 
-     * @param long offset
+     * @param offset
      * @param ByteBuffer
      *            destBuffer
      * @throws IOException
@@ -303,7 +305,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * Reads x bytes from the file to the given ByteBuffer, where x is the minimum of the capacity of the buffer and the
      * remaining written bytes in the file. The size of the HEADER will be respected automatically.
      * 
-     * @param long offset
+     * @param offset
      * @param ByteBuffer
      *            destBuffer
      * @throws IOException
@@ -324,8 +326,10 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Optionally reads the header. and
      * the index
      * 
-     * @param boolean - should the header be read
-     * @param boolean - should the index be read
+     * @param should
+     *            the header be read
+     * @param should
+     *            the index be read
      * @throws IOException
      */
     protected void openChannel(boolean readHeader, boolean readIndex) throws FileLockException, IOException {
@@ -346,7 +350,8 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Optionally reads the header. Reads
      * the index. This may overwrite previous set parameters.
      * 
-     * @param boolean - should the header be read
+     * @param should
+     *            the header be read
      * @throws IOException
      */
     protected void openChannel(boolean readHeader) throws FileLockException, IOException {
@@ -458,12 +463,10 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         while (offset < this.getFilledUpFromContentStart()) {
             this.read(offset, ByteBuffer.wrap(b));
             byte[] key = Arrays.copyOfRange(b, 0, keySize);
-            if (oldKey != null) {
-                if (KeyUtils.compareKey(key, oldKey) != 1) {
-                    logger.error("File is not consistent at record {}. {} not larger than {}", new Object[] { i,
-                            KeyUtils.transform(key), KeyUtils.transform(oldKey) });
-                    return false;
-                }
+            if (oldKey != null && KeyUtils.compareKey(key, oldKey) != 1) {
+                logger.error("File is not consistent at record {}. {} not larger than {}", new Object[] { i,
+                        KeyUtils.toStringUnsignedInt(key), KeyUtils.toStringUnsignedInt(oldKey) });
+                return false;
             }
             oldKey = Arrays.copyOf(key, keySize);
             offset += elementSize;
@@ -540,8 +543,9 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     /**
      * calculates the index of the belonging readChunk in the files content
      * 
-     * @param long offset, the byteOffset in the content
-     * @return
+     * @param offset
+     *            the byteOffset in the content
+     * @return the determined index
      */
     public int getChunkIndex(long offset) {
         return (int) offset / this.chunkSize;

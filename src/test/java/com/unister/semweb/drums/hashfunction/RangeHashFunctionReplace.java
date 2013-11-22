@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.drums.utils.Bytes;
 import com.unister.semweb.drums.utils.KeyUtils;
 import com.unister.semweb.drums.utils.RangeHashFunctionTestUtils;
 
@@ -62,10 +63,10 @@ public class RangeHashFunctionReplace {
         RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(1, 0,
                 rangeHashFunctionFilename, KEY_SIZE);
 
-        byte[] newLine1 = KeyUtils.transformFromLong(0, KEY_SIZE);
-        byte[] newLine2 = KeyUtils.transformFromLong(100, KEY_SIZE);
-        byte[] newLine3 = KeyUtils.transformFromLong(1000, KEY_SIZE);
-        byte[] newLine4 = KeyUtils.transformFromLong(10000, KEY_SIZE);
+        byte[] newLine1 = Bytes.toBytes(0l);
+        byte[] newLine2 = Bytes.toBytes(100l);
+        byte[] newLine3 = Bytes.toBytes(1000l);
+        byte[] newLine4 = Bytes.toBytes(10000l);
 
         byte[][] newLines = new byte[][] { newLine1, newLine2, newLine3, newLine4 };
 
@@ -90,12 +91,12 @@ public class RangeHashFunctionReplace {
     @Test
     public void severalLinesLastFourLines() {
         RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100,
-                rangeHashFunctionFilename, 8);
+                rangeHashFunctionFilename, KEY_SIZE);
 
-        byte[] newLine1 = KeyUtils.transformFromLong(1000, 8);
-        byte[] newLine2 = KeyUtils.transformFromLong(2000, 8);
-        byte[] newLine3 = KeyUtils.transformFromLong(3000, 8);
-        byte[] newLine4 = KeyUtils.transformFromLong(4000, 8);
+        byte[] newLine1 = Bytes.toBytes(1000l);
+        byte[] newLine2 = Bytes.toBytes(2000l);
+        byte[] newLine3 = Bytes.toBytes(3000l);
+        byte[] newLine4 = Bytes.toBytes(4000l);
 
         byte[][] newLines = new byte[][] { newLine1, newLine2, newLine3, newLine4 };
 
@@ -115,10 +116,10 @@ public class RangeHashFunctionReplace {
         RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100,
                 rangeHashFunctionFilename, KEY_SIZE);
 
-        byte[] newLine1 = KeyUtils.transformFromLong(300, KEY_SIZE);
-        byte[] newLine2 = KeyUtils.transformFromLong(325, KEY_SIZE);
-        byte[] newLine3 = KeyUtils.transformFromLong(350, KEY_SIZE);
-        byte[] newLine4 = KeyUtils.transformFromLong(375, KEY_SIZE);
+        byte[] newLine1 = Bytes.toBytes(300l);
+        byte[] newLine2 = Bytes.toBytes(325l);
+        byte[] newLine3 = Bytes.toBytes(350l);
+        byte[] newLine4 = Bytes.toBytes(375l);
 
         byte[][] newLines = new byte[][] { newLine1, newLine2, newLine3, newLine4 };
 
@@ -138,7 +139,7 @@ public class RangeHashFunctionReplace {
         RangeHashFunction testFunction = RangeHashFunctionTestUtils.createTestFunction(10, 100,
                 rangeHashFunctionFilename, KEY_SIZE);
 
-        byte[] newLine1 = KeyUtils.transformFromLong(300, KEY_SIZE);
+        byte[] newLine1 = Bytes.toBytes(300l);
         byte[][] newLines = new byte[][] { newLine1 };
 
         testFunction.replace(100, newLines);

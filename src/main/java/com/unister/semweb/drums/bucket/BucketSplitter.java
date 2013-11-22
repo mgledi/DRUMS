@@ -17,6 +17,7 @@ package com.unister.semweb.drums.bucket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import com.carrotsearch.hppc.IntArrayList;
 import com.unister.semweb.drums.GlobalParameters;
@@ -28,13 +29,11 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
  * This class manages the splitting of a bucket. It would be possible to implement all functionality of this class in a
- * static context. But for reasons of inheritance, the implementation is done in the classic way. The splitting should
- * be done by the following steps<br>
+ * static context. But for reasons of inheritance, the implementation is done this way. The splitting should be done by
+ * the following steps<br>
  * 
- * <li>determine new maxRangeValues <br> 
- * <li>adapt HashFunction or generate a new one <br> 
- * <li>generate files and move elements according to the old and new HashFunction <br> 
- * <li>store the HashFunction
+ * <li>determine new maxRangeValues <br> <li>adapt HashFunction or generate a new one <br> <li>generate files and move
+ * elements according to the old and new HashFunction <br> <li>store the HashFunction
  * 
  * @author Martin Nettling
  */
@@ -79,7 +78,6 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
 
         // determine new thresholds
         byte[][] keysToInsert = determineNewLargestElements(numberOfPartitions);
-
         // We replace the last threshold with the original value. So the theoretical border of the bucket remains.
         byte[] lastKey = hashFunction.getMaxRange(bucketId);
         keysToInsert[keysToInsert.length - 1] = lastKey;

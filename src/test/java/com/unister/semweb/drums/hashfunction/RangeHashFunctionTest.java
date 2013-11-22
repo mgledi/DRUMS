@@ -53,7 +53,7 @@ public class RangeHashFunctionTest {
     public void correctHashDistribution() {
         System.out.println("############ correctHashDistribution()");
         long[] ranges = new long[] { 5, 10, 20, 30, 40 };
-        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
+        byte[][] bRanges = KeyUtils.toByteArray(ranges);
         String[] filenames = new String[] { "0", "1", "2", "3", "1" };
 
         RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null);
@@ -94,7 +94,7 @@ public class RangeHashFunctionTest {
         int numberOfKeysToSearchFor = 1000000;
 
         long[] ranges = generateUniqueRanges(numberOfRanges);
-        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
+        byte[][] bRanges = KeyUtils.toByteArray(ranges);
         String[] filenames = generateUniqueFilenames(numberOfRanges);
 
         long overallTime = 0;
@@ -132,7 +132,7 @@ public class RangeHashFunctionTest {
     @Test
     public void testSearchForBucketIdIndex() throws Exception {
         long[] rangeValues = new long[] { 1, 2, 3, 4, 5 };
-        byte[][] bRanges = KeyUtils.transformToByteArray(rangeValues);
+        byte[][] bRanges = KeyUtils.toByteArray(rangeValues);
         String[] filenames = new String[] { "f1", "f2", "f3", "f4", "f5" };
 
         RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null);
@@ -152,7 +152,7 @@ public class RangeHashFunctionTest {
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void testSearchForBucketIdIndexInvalid() throws Exception {
         long[] rangeValues = new long[] { 1, 2, 3, 4, 5 };
-        byte[][] bRanges = KeyUtils.transformToByteArray(rangeValues);
+        byte[][] bRanges = KeyUtils.toByteArray(rangeValues);
         String[] filenames = new String[] { "f1", "f2", "f3", "f4", "f5" };
 
         RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null);

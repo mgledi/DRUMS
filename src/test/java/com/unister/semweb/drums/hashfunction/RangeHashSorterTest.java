@@ -37,7 +37,7 @@ public class RangeHashSorterTest {
     public void rightOrderBeforeSearch() {
         System.out.println("################### Preordered Sorting test");
         long ranges[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
+        byte[][] bRanges = KeyUtils.toByteArray(ranges);
         String filenames[] = createFilenames(10);
 
         RangeHashSorter sorting = new RangeHashSorter(bRanges, filenames);
@@ -47,7 +47,7 @@ public class RangeHashSorterTest {
         String sortFilenames[] = sorting.getFilenames();
 
         long expectedRanges[] = createRanges(10);
-        byte[][] bExpectedRanges = KeyUtils.transformToByteArray(expectedRanges);
+        byte[][] bExpectedRanges = KeyUtils.toByteArray(expectedRanges);
         String expectedFilenames[] = createFilenames(10);
 
         for (int i = 0; i < sortRanges.length; i++) {
@@ -61,14 +61,14 @@ public class RangeHashSorterTest {
     public void randomOrderBeforeSearch() {
         System.out.println("################### Random order Sorting test");
         long ranges[] = new long[] { 34, 5, 81, 1, 199, 726384 };
-        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
+        byte[][] bRanges = KeyUtils.toByteArray(ranges);
         String filenames[] = new String[] { "f1", "f2", "f3", "f4", "f5", "f6" };
 
         RangeHashSorter sorting = new RangeHashSorter(bRanges, filenames);
         sorting.quickSort();
 
         long[] expectedRanges = new long[] { 1, 5, 34, 81, 199, 726384 };
-        byte[][] bExpectedRanges = KeyUtils.transformToByteArray(expectedRanges);
+        byte[][] bExpectedRanges = KeyUtils.toByteArray(expectedRanges);
         String[] expectedFilenames = new String[] { "f4", "f2", "f1", "f3", "f5", "f6" };
 
         Assert.assertArrayEquals(bExpectedRanges, sorting.getRanges());

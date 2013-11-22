@@ -24,6 +24,8 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.unister.semweb.drums.utils.Bytes;
+
 /**
  * This class is - as the name suggests - a general storable for DRUMS. To use instances of this class you first have to
  * build the structure of a {@link GeneralStorable}. You can do this by using the methods <code>addValuePart</code> and
@@ -40,10 +42,10 @@ import org.slf4j.LoggerFactory;
 public class GeneralStorable extends AbstractKVStorable {
     static Logger logger = LoggerFactory.getLogger(GeneralStorable.class);
     private static final long serialVersionUID = 3853444781559739538L;
-    
+
     /** A pointer to the underlying structure. All cloned elements should point to the same structure. */
     protected GeneralStructure structure;
-    
+
     /**
      * Basic constructor. Should only be used, when the structure of the
      */
@@ -69,10 +71,10 @@ public class GeneralStorable extends AbstractKVStorable {
         this.value = new byte[valueSize];
         structure.INSTANCE_EXISITS = true;
     }
-    
+
     @Override
     public void initFromByteBuffer(ByteBuffer bb) {
-        if(bb.remaining() < key.length + value.length) {
+        if (bb.remaining() < key.length + value.length) {
             bb.rewind();
         }
         bb.get(key).get(value);
@@ -89,11 +91,11 @@ public class GeneralStorable extends AbstractKVStorable {
     public ByteBuffer toByteBuffer() {
         return ByteBuffer.allocate(key.length + value.length).put(key).put(value);
     }
+
     @Override
     public GeneralStorable clone() {
         return this.fromByteBuffer(toByteBuffer());
     }
-
 
     @Override
     public AbstractKVStorable merge(AbstractKVStorable element) {
@@ -110,7 +112,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
      * @throws IOException
      */
     public void setValue(String field, byte[] value) throws IOException {
@@ -126,7 +127,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
      * @throws IOException
      */
     public void setValue(int index, byte[] value) throws IOException {
@@ -138,7 +138,7 @@ public class GeneralStorable extends AbstractKVStorable {
             throw new IOException("The length of the given value is not equal to the expected one. (" + value.length
                     + "!=" + length + ")");
         }
-        ByteBuffer.wrap(this.value, structure.valueByteOffsets.get(index), length).put(value);
+        Bytes.putBytes(this.value, structure.valueByteOffsets.get(index), value, 0, value.length);
     }
 
     /**
@@ -147,7 +147,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(String field, int value) throws IOException {
@@ -161,19 +160,13 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(int index, int value) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (4 != length) {
-            throw new IOException("The length of the given value is not equal to the expected one. (" + 4 + "!="
-                    + length + ")");
-        }
-        ByteBuffer.wrap(this.value, structure.valueByteOffsets.get(index), length).putInt(value);
+        Bytes.putInt(this.value, structure.valueByteOffsets.get(index), value);
     }
 
     /**
@@ -182,7 +175,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(String field, float value) throws IOException {
@@ -196,19 +188,13 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(int index, float value) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (4 != length) {
-            throw new IOException("The length of the given value is not equal to the expected one. (" + 4 + "!="
-                    + length + ")");
-        }
-        ByteBuffer.wrap(this.value, structure.valueByteOffsets.get(index), length).putFloat(value);
+        Bytes.putFloat(this.value, structure.valueByteOffsets.get(index), value);
     }
 
     /**
@@ -217,7 +203,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(String field, long value) throws IOException {
@@ -231,19 +216,13 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(int index, long value) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (8 != length) {
-            throw new IOException("The length of the given value is not equal to the expected one. (" + 8 + "!="
-                    + length + ")");
-        }
-        ByteBuffer.wrap(this.value, structure.valueByteOffsets.get(index), length).putLong(value);
+        Bytes.putLong(this.value, structure.valueByteOffsets.get(index), value);
     }
 
     /**
@@ -252,7 +231,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(String field, double value) throws IOException {
@@ -266,19 +244,13 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(int index, double value) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (8 != length) {
-            throw new IOException("The length of the given value is not equal to the expected one. (" + 8 + "!="
-                    + length + ")");
-        }
-        ByteBuffer.wrap(this.value, structure.valueByteOffsets.get(index), length).putDouble(value);
+        Bytes.putDouble(this.value, structure.valueByteOffsets.get(index), value);
     }
 
     /**
@@ -287,7 +259,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(String field, char value) throws IOException {
@@ -301,19 +272,13 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(int index, char value) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (2 != length) {
-            throw new IOException("The length of the given value is not equal to the expected one. (" + 2 + "!="
-                    + length + ")");
-        }
-        ByteBuffer.wrap(this.value, structure.valueByteOffsets.get(index), length).putChar(value);
+        Bytes.putChar(this.value, structure.valueByteOffsets.get(index), value);
     }
 
     /**
@@ -322,7 +287,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(String field, byte value) throws IOException {
@@ -336,19 +300,13 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param value
-     * @return
      * @throws IOException
      */
     public void setValue(int index, byte value) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (1 != length) {
-            throw new IOException("The length of the given value is not equal to the expected one. (" + 1 + "!="
-                    + length + ")");
-        }
-        ByteBuffer.wrap(this.value, structure.valueByteOffsets.get(index), length).put(value);
+        this.value[structure.valueByteOffsets.get(index)] = value;
     }
 
     /**
@@ -356,7 +314,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public ByteBuffer getValue(String field) throws IOException {
@@ -369,7 +327,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public ByteBuffer getValue(int index) throws IOException {
@@ -385,20 +343,14 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public int getValueAsInt(int index) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (length != 4) {
-            throw new IOException("The length of the requested value-part is not equal to the one of Integer. ("
-                    + length
-                    + "!=" + 4 + ")");
-        }
-        return ByteBuffer.wrap(value, structure.valueByteOffsets.get(index), length).getInt();
+        return Bytes.toInt(value, structure.valueByteOffsets.get(index));
     }
 
     /**
@@ -406,20 +358,20 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public int getValueAsInt(String field) throws IOException {
         int hash = Arrays.hashCode(field.getBytes());
         return getValueAsInt(structure.valueHash2Index.get(hash));
     }
-    
+
     /**
      * Returns the value belonging to the given field as int
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public float getValueAsFloat(String field) throws IOException {
@@ -432,20 +384,14 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public float getValueAsFloat(int index) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (length != 4) {
-            throw new IOException("The length of the requested value-part is not equal to the one of Float. ("
-                    + length
-                    + "!=" + 4 + ")");
-        }
-        return ByteBuffer.wrap(value, structure.valueByteOffsets.get(index), length).getFloat();
+        return Bytes.toFloat(value, structure.valueByteOffsets.get(index));
     }
 
     /**
@@ -453,19 +399,14 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public double getValueAsDouble(int index) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (length != 8) {
-            throw new IOException("The length of the requested value-part is not equal to the one of Double. (" + length
-                    + "!=" + 8 + ")");
-        }
-        return ByteBuffer.wrap(value, structure.valueByteOffsets.get(index), length).getDouble();
+        return Bytes.toDouble(value, structure.valueByteOffsets.get(index));
     }
 
     /**
@@ -473,32 +414,27 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public double getValueAsDouble(String field) throws IOException {
         int hash = Arrays.hashCode(field.getBytes());
         return getValueAsDouble(structure.valueHash2Index.get(hash));
     }
-    
+
     /**
      * Returns the value belonging to the given field as long
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public long getValueAsLong(int index) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (length != 8) {
-            throw new IOException("The length of the requested value-part is not equal to the one of Long. (" + length
-                    + "!=" + 8 + ")");
-        }
-        return ByteBuffer.wrap(value, structure.valueByteOffsets.get(index), length).getLong();
+        return Bytes.toLong(value, structure.valueByteOffsets.get(index));
     }
 
     /**
@@ -506,7 +442,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public long getValueAsLong(String field) throws IOException {
@@ -519,20 +455,14 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public char getValueAsChar(int index) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (length != 2) {
-            throw new IOException("The length of the requested value-part is not equal to the one of Character. ("
-                    + length
-                    + "!=" + 2 + ")");
-        }
-        return ByteBuffer.wrap(value, structure.valueByteOffsets.get(index), length).getChar();
+        return Bytes.toChar(value, structure.valueByteOffsets.get(index));
     }
 
     /**
@@ -540,7 +470,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public char getValueAsChar(String field) throws IOException {
@@ -553,7 +483,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public byte getValueAsByte(String field) throws IOException {
@@ -566,19 +496,14 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public byte getValueAsByte(int index) throws IOException {
         if (index >= structure.valueSizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.valueSizes.get(index);
-        if (length != 1) {
-            throw new IOException("The length of the requested value-part is not equal to the one of Character. ("
-                    + length + "!=" + 1 + ")");
-        }
-        return ByteBuffer.wrap(value, structure.valueByteOffsets.get(index), length).get();
+        return value[index];
     }
 
     /**
@@ -586,7 +511,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
      * @throws IOException
      */
     public void setKey(String field, byte[] key) throws IOException {
@@ -599,7 +523,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
      * @throws IOException
      */
     public void setKey(int index, byte[] key) throws IOException {
@@ -611,7 +534,7 @@ public class GeneralStorable extends AbstractKVStorable {
             throw new IOException("The length of the given key is not equal to the expected one. (" + key.length
                     + "!=" + length + ")");
         }
-        ByteBuffer.wrap(this.key, structure.keyByteOffsets.get(index), length).put(key);
+        Bytes.putBytes(this.key, structure.keyByteOffsets.get(index), key, 0, key.length);
     }
 
     /**
@@ -620,7 +543,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(String field, int key) throws IOException {
@@ -634,7 +556,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(int index, int key) throws IOException {
@@ -646,16 +567,15 @@ public class GeneralStorable extends AbstractKVStorable {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 4 + "!="
                     + length + ")");
         }
-        ByteBuffer.wrap(this.key, structure.keyByteOffsets.get(index), length).putInt(key);
+        Bytes.putInt(this.key, structure.keyByteOffsets.get(index), key);
     }
-    
+
     /**
      * Sets the key belonging to the given field.
      * 
      * @param index
      *            the index of the requested field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(int index, float key) throws IOException {
@@ -667,7 +587,7 @@ public class GeneralStorable extends AbstractKVStorable {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 4 + "!="
                     + length + ")");
         }
-        ByteBuffer.wrap(this.key, structure.keyByteOffsets.get(index), length).putFloat(key);
+        Bytes.putFloat(this.key, structure.keyByteOffsets.get(index), key);
     }
 
     /**
@@ -676,7 +596,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(String field, float key) throws IOException {
@@ -690,7 +609,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(String field, double key) throws IOException {
@@ -704,7 +622,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(int index, double key) throws IOException {
@@ -716,7 +633,7 @@ public class GeneralStorable extends AbstractKVStorable {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 8 + "!="
                     + length + ")");
         }
-        ByteBuffer.wrap(this.key, structure.keyByteOffsets.get(index), length).putDouble(key);
+        Bytes.putDouble(this.key, structure.keyByteOffsets.get(index), key);
     }
 
     /**
@@ -725,7 +642,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(String field, long key) throws IOException {
@@ -739,7 +655,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(int index, long key) throws IOException {
@@ -751,7 +666,7 @@ public class GeneralStorable extends AbstractKVStorable {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 8 + "!="
                     + length + ")");
         }
-        ByteBuffer.wrap(this.key, structure.keyByteOffsets.get(index), length).putLong(key);
+        Bytes.putLong(this.key, structure.keyByteOffsets.get(index), key);
     }
 
     /**
@@ -760,7 +675,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(String field, char key) throws IOException {
@@ -774,7 +688,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(int index, char key) throws IOException {
@@ -786,7 +699,7 @@ public class GeneralStorable extends AbstractKVStorable {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 2 + "!="
                     + length + ")");
         }
-        ByteBuffer.wrap(this.key, structure.keyByteOffsets.get(index), length).putChar(key);
+        Bytes.putChar(this.key, structure.keyByteOffsets.get(index), key);
     }
 
     /**
@@ -795,7 +708,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param field
      *            the name of the field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(String field, byte key) throws IOException {
@@ -809,7 +721,6 @@ public class GeneralStorable extends AbstractKVStorable {
      * @param index
      *            the index of the requested field
      * @param key
-     * @return
      * @throws IOException
      */
     public void setKey(int index, byte key) throws IOException {
@@ -821,7 +732,7 @@ public class GeneralStorable extends AbstractKVStorable {
             throw new IOException("The length of the given key is not equal to the expected one. (" + 1 + "!="
                     + length + ")");
         }
-        ByteBuffer.wrap(this.key, structure.keyByteOffsets.get(index), length).put(key);
+        this.key[structure.keyByteOffsets.get(index)] = key;
     }
 
     /**
@@ -829,7 +740,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public ByteBuffer getKey(String field) throws IOException {
@@ -842,7 +753,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public ByteBuffer getKey(int index) throws IOException {
@@ -858,19 +769,14 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public int getKeyAsInt(int index) throws IOException {
         if (index >= structure.keySizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.keySizes.get(index);
-        if (length != 4) {
-            throw new IOException("The length of the requested key-part is not equal to the one of Integer. (" + length
-                    + "!=" + 4 + ")");
-        }
-        return ByteBuffer.wrap(key, structure.keyByteOffsets.get(index), length).getInt();
+        return Bytes.toInt(key, structure.keyByteOffsets.get(index));
     }
 
     /**
@@ -878,7 +784,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public int getKeyAsInt(String field) throws IOException {
@@ -891,19 +797,15 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public float getKeyAsFloat(int index) throws IOException {
         if (index >= structure.keySizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.keySizes.get(index);
-        if (length != 4) {
-            throw new IOException("The length of the requested key-part is not equal to the one of Float. (" + length
-                    + "!=" + 4 + ")");
-        }
-        return ByteBuffer.wrap(key, structure.keyByteOffsets.get(index), length).getFloat();
+
+        return Bytes.toFloat(key, structure.keyByteOffsets.get(index));
     }
 
     /**
@@ -911,32 +813,27 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public float getKeyAsFloat(String field) throws IOException {
         int hash = Arrays.hashCode(field.getBytes());
         return getKeyAsFloat(structure.keyHash2Index.get(hash));
     }
-    
+
     /**
      * Returns the key belonging to the given field as long
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public long getKeyAsLong(int index) throws IOException {
         if (index >= structure.keySizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.keySizes.get(index);
-        if (length != 8) {
-            throw new IOException("The length of the requested key-part is not equal to the one of Long. (" + length
-                    + "!=" + 8 + ")");
-        }
-        return ByteBuffer.wrap(key, structure.keyByteOffsets.get(index), length).getLong();
+        return Bytes.toLong(key, structure.keyByteOffsets.get(index));
     }
 
     /**
@@ -944,32 +841,28 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public long getKeyAsLong(String field) throws IOException {
         int hash = Arrays.hashCode(field.getBytes());
         return getKeyAsLong(structure.keyHash2Index.get(hash));
     }
-    
+
     /**
      * Returns the key belonging to the given field as long
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public double getKeyAsDouble(int index) throws IOException {
         if (index >= structure.keySizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.keySizes.get(index);
-        if (length != 8) {
-            throw new IOException("The length of the requested key-part is not equal to the one of Double. (" + length
-                    + "!=" + 8 + ")");
-        }
-        return ByteBuffer.wrap(key, structure.keyByteOffsets.get(index), length).getDouble();
+
+        return Bytes.toDouble(key, structure.keyByteOffsets.get(index));
     }
 
     /**
@@ -977,34 +870,28 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public double getKeyAsDouble(String field) throws IOException {
         int hash = Arrays.hashCode(field.getBytes());
         return getKeyAsDouble(structure.keyHash2Index.get(hash));
     }
-    
-    
+
     /**
      * Returns the key belonging to the given field as char
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public char getKeyAsChar(int index) throws IOException {
         if (index >= structure.keySizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.keySizes.get(index);
-        if (length != 2) {
-            throw new IOException("The length of the requested key-part is not equal to the one of Character. ("
-                    + length
-                    + "!=" + 2 + ")");
-        }
-        return ByteBuffer.wrap(key, structure.keyByteOffsets.get(index), length).getChar();
+
+        return Bytes.toChar(key, structure.keyByteOffsets.get(index));
     }
 
     /**
@@ -1012,7 +899,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public char getKeyAsChar(String field) throws IOException {
@@ -1025,20 +912,14 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public byte getKeyAsByte(int index) throws IOException {
         if (index >= structure.keySizes.size()) {
             throw new IOException("Index " + index + " is out of range.");
         }
-        int length = structure.keySizes.get(index);
-        if (length != 1) {
-            throw new IOException("The length of the requested key-part is not equal to the one of Character. ("
-                    + length
-                    + "!=" + 1 + ")");
-        }
-        return ByteBuffer.wrap(key, structure.keyByteOffsets.get(index), length).get();
+        return key[structure.keyByteOffsets.get(index)];
     }
 
     /**
@@ -1046,7 +927,7 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
-     * @return
+     * @return the requested value
      * @throws IOException
      */
     public byte getKeyAsByte(String field) throws IOException {

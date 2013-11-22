@@ -197,7 +197,7 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
      * @throws IOException
      */
     public List<Data> get(long... keys) throws DRUMSException, IOException {
-        return this.get(KeyUtils.transformToByteArray(keys));
+        return this.get(KeyUtils.toByteArray(keys));
     }
 
     /**

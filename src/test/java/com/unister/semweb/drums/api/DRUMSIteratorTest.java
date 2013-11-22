@@ -48,7 +48,7 @@ public class DRUMSIteratorTest {
     public void initialise() throws Exception {
         new File(TestUtils.gp.databaseDirectory).mkdirs();
         long[] ranges = new long[] { 0, 10, 20, 30 };
-        byte[][] bRanges = KeyUtils.transformToByteArray(ranges);
+        byte[][] bRanges = KeyUtils.toByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2", "3.db", "4.db" };
         FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
         this.hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");

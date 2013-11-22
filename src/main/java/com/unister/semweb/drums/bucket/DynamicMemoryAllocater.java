@@ -29,13 +29,17 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * doesn't really allocate memory. It just allows to manage virtual memory. An object which wants to be controlled
  * easily asks for memory. This object also must give a report, when it doesn't need this memory anymore.
  * 
- * 
  * @author Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 // TODO: share the same memory instead of having all its own memory
 public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
     private static Logger logger = LoggerFactory.getLogger(DynamicMemoryAllocater.class);
 
+    /**
+     * An array, containing all instances of {@link DynamicMemoryAllocater}. Each DRUMS-table has its own.
+     */
     @SuppressWarnings("rawtypes")
     public static DynamicMemoryAllocater[] INSTANCES = new DynamicMemoryAllocater[0];
 
@@ -78,8 +82,7 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      * This method tries to mark memory as allocated. It allocates as much bytes as defined in <code>MEMORY_CHUNK</code>
      * and returns the number of bytes marked as allocated. This method doesn't really allocate memory.
      * 
-     * @return int
-     * @throws InterruptedException
+     * @return the size of the allocated chunk
      */
     public synchronized int allocateNextChunk() {
         if ((used_bytes.longValue() + (long) mem_chunksize) > max_allowed_bytes) {
@@ -94,22 +97,23 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      * Marks the given amount of memory as free to use.
      * 
      * @param size
+     *            the size of memory (in bytes) to free
      */
     public void freeMemory(long size) {
         used_bytes.set(used_bytes.longValue() - size);
     }
 
-    /** Returns the number of used bytes, allocated by this {@link DynamicMemoryAllocater} */
+    /** @return the number of used bytes, allocated by this {@link DynamicMemoryAllocater} */
     public long getUsedMemory() {
         return used_bytes.get();
     }
 
-    /** Returns the maximal allowed bytes to be used by this {@link DynamicMemoryAllocater} */
+    /** @return the maximal allowed bytes to be used by this {@link DynamicMemoryAllocater} */
     public long getMaxMemory() {
         return max_allowed_bytes;
     }
 
-    /** Returns the number of bytes not allocated by the {@link DynamicMemoryAllocater} */
+    /** @return the number of bytes not allocated by the {@link DynamicMemoryAllocater} */
     public long getFreeMemory() {
         return max_allowed_bytes - used_bytes.longValue();
     }

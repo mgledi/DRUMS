@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.file;
 
 import java.io.File;
@@ -380,17 +378,6 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         readIndex(); // index should be empty
     }
 
-    public void close() {
-        super.close();
-        if (this.index != null) {
-            index = null;
-        }
-        if (indexBuffer != null) {
-            indexBuffer.force();
-            indexBuffer = null;
-        }
-    }
-
     public long getFreeSpace() {
         return size - filledUpTo;
     }
@@ -504,21 +491,6 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * 
      * @throws IOException
      */
-    // public void repairIndex() throws IOException {
-    // byte[] b = new byte[keySize];
-    // long offset = 0;
-    // int maxChunk = getChunkIndex(getFilledUpFromContentStart());
-    // for (int i = 1; i <= maxChunk; i++) {
-    // offset = i * getChunkSize() - elementSize;
-    // read(offset, ByteBuffer.wrap(b));
-    // getIndex().setLargestKey(i - 1, b);
-    // if (KeyUtils.compareKey(getIndex().maxKeyPerChunk[i - 1], b) != 0) {
-    // logger.info("Index is not consistent to data. Expected {}, but found {}.",
-    // Arrays.toString(getIndex().maxKeyPerChunk[i - 1]), Arrays.toString(b));
-    // }
-    // }
-    // }
-
     public void repairIndex() throws IOException {
         byte[] currentLargestKey = new byte[keySize];
         int maxChunk = getChunkIndex(getFilledUpFromContentStart());
@@ -572,5 +544,17 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         }
         closedSoftly = (byte) (value ? 1 : 0);
         this.writeHeader();
+    }
+    
+    public void close() {
+        if (this.index != null) {
+            index.indexBuffer = null;
+            index = null;
+        }
+        if (indexBuffer != null) {
+            indexBuffer.force();
+            indexBuffer = null;
+        }
+        super.close();
     }
 }

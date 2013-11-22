@@ -34,6 +34,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * be inserted by another process.
  * 
  * @author Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<Data>, Closeable {
     private static Logger logger = LoggerFactory.getLogger(DRUMSIterator.class);

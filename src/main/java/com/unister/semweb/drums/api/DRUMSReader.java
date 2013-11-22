@@ -36,6 +36,8 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * Please use the factory-method {@link DRUMS#getReader()} get an instance of this class.
  * 
  * @author Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class DRUMSReader<Data extends AbstractKVStorable> {
     /** Marks if files are opened. Is set to avoid null-pointer exceptions */
@@ -78,7 +80,6 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
     /**
      * Opens all files used by the underlying HashFunction. The pointers are stored in <code>files</code>.
      * 
-     * @param path
      * @throws FileLockException
      * @throws IOException
      */
@@ -108,6 +109,12 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
 
     /**
      * Returns all elements between lowerKey and upperKey this function is still BUGGY
+     * TODO: fix this function
+     * 
+     * @param lowerKey
+     * @param upperKey
+     * @return a list containing all elements between lowerKey and upperKey
+     * @throws IOException
      */
     public List<Data> getRange(byte[] lowerKey, byte[] upperKey) throws IOException {
         if (!filesAreOpened) {
@@ -164,7 +171,7 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
      * Returns the element which has exact the key or is the next smallest element after this key
      * 
      * @param key
-     * @return
+     * @return the first element, which can be found before the given key
      * @throws IOException
      */
     public Data getPreviousElement(byte[] key) throws IOException {
@@ -178,7 +185,7 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
      * Returns the element which has exact the key or is the next largest element after this key
      * 
      * @param key
-     * @return
+     * @return the first element, which can be found after the given key
      * @throws IOException
      */
     public Data getNextElement(byte[] key) throws IOException {

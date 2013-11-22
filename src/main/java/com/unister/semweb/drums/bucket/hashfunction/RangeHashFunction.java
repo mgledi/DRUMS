@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket.hashfunction;
 
 import java.io.BufferedWriter;
@@ -35,7 +33,8 @@ import com.unister.semweb.drums.utils.ByteArrayComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
- * This hashFunction maps an element dependent on its range-bucket. It checks if given key falls in a specific range.
+ * This hashFunction maps an element to a specific range. The ranges are not overlapping. It is not needed, that the
+ * ranges are consecutive.
  * 
  * @author Martin Nettling
  */
@@ -60,10 +59,10 @@ public class RangeHashFunction extends AbstractHashFunction {
      *            the number of ranges
      * @param keySize
      *            the size in bytes of the key
-     * @param file
-     *            the file where to store the hashfunction
+     * @param filename
+     *            the filename of the file, where to store the hash-function
      */
-    public RangeHashFunction(int ranges, int keySize, String filename /* TODO: prototype */) {
+    public RangeHashFunction(int ranges, int keySize, String filename) {
         this.hashFunctionFile = filename;
         this.buckets = ranges;
         byte[] max = new byte[keySize], min = new byte[keySize];
@@ -77,7 +76,6 @@ public class RangeHashFunction extends AbstractHashFunction {
         for (int i = 0; i < ranges; i++) {
             filenames[i] = i + ".db";
         }
-        this.keySize = keySize;
         this.keyComposition = new int[keySize];
         Arrays.fill(keyComposition, 1);
         sort();
@@ -100,7 +98,6 @@ public class RangeHashFunction extends AbstractHashFunction {
         this.buckets = rangeValues.length;
         this.maxRangeValues = rangeValues;
         this.filenames = filenames;
-        this.keySize = rangeValues[0].length;
         this.keyComposition = new int[rangeValues[0].length];
         Arrays.fill(keyComposition, 1);
         sort();
@@ -117,6 +114,10 @@ public class RangeHashFunction extends AbstractHashFunction {
      * This method instantiates a new {@link RangeHashFunction} by the given {@link File}. The File contains some long
      * values, which describe the maximal allowed values for the buckets. The minimal value will be the direct successor
      * of the previous maximal value. Remember: the array will be handled circular.
+     * 
+     * @param file
+     *            the file, which contains the maximal keys
+     * @throws IOException
      */
     public RangeHashFunction(File file) throws IOException {
         FileReader fileReader = new FileReader(file);
@@ -125,12 +126,17 @@ public class RangeHashFunction extends AbstractHashFunction {
         this.hashFunctionFile = file.getAbsolutePath();
     }
 
-    /** Creates the RangeHashFunction with the content of the given {@link Reader}. */
+    /**
+     * Creates the RangeHashFunction with the content of the given {@link Reader}.
+     * 
+     * @param reader
+     * @throws IOException
+     */
     public RangeHashFunction(Reader reader) throws IOException {
         initialise(reader);
     }
 
-    /** Initializes the RangeHashFunction with the content of the {@link Reader}. */
+    /** Initializes the RangeHashFunction with the content of the given {@link Reader}. */
     private void initialise(Reader reader) throws IOException {
         List<String> readData = IOUtils.readLines(reader);
 
@@ -139,7 +145,7 @@ public class RangeHashFunction extends AbstractHashFunction {
 
         // analyze header
         String[] header = readData.get(0).split("\t");
-        keySize = 0;
+        int keySize = 0;
         keyComposition = new int[header.length - 1];
         for (int i = 0; i < keyComposition.length; i++) {
             int e = stringToByteCount(header[i]);
@@ -202,8 +208,11 @@ public class RangeHashFunction extends AbstractHashFunction {
         this.buckets = bucketIds.length;
     }
 
-    /** Returns the maximal key in the bucket with the given bucketId. */
-    public byte[] getMaxRange(int bucketId) {
+    /**
+     * @param bucketId
+     * @return the maximal key in the bucket with the given bucketId.
+     */
+    public byte[] getUpperBound(int bucketId) {
         return maxRangeValues[bucketId];
     }
 
@@ -247,6 +256,8 @@ public class RangeHashFunction extends AbstractHashFunction {
     /**
      * Writes the hash function, represented as tuples (range, filename) into the file that is linked with the
      * HashFunction. The content of the file is overwritten.
+     * 
+     * @throws IOException
      */
     public void writeToFile() throws IOException {
         FileWriter fileWriter = new FileWriter(hashFunctionFile);
@@ -292,7 +303,6 @@ public class RangeHashFunction extends AbstractHashFunction {
      * 
      * @param keysToInsert
      * @param bucketId
-     * @return
      */
     public void replace(int bucketId, byte[][] keysToInsert) {
         if (bucketId < 0 || bucketId >= maxRangeValues.length) {
@@ -306,7 +316,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         int k = 0;
         for (int i = 0; i < this.getNumberOfBuckets(); i++) {
             if (i != bucketId) {
-                newMaxRangeValues[k] = this.getMaxRange(i);
+                newMaxRangeValues[k] = this.getUpperBound(i);
                 newFileNames[k] = this.getFilename(i);
                 k++;
             }
@@ -324,9 +334,7 @@ public class RangeHashFunction extends AbstractHashFunction {
     }
 
     /**
-     * Returns the ranges of this hash function.
-     * 
-     * @return
+     * @return the ranges of this hash function.
      */
     public byte[][] getRanges() {
         return this.maxRangeValues;
@@ -369,6 +377,10 @@ public class RangeHashFunction extends AbstractHashFunction {
     /**
      * The header of could contain characters which are not numbers. Some of them can be translated into bytes. E.g.
      * char would be two byte.
+     * 
+     * @param code
+     *            the code to look for
+     * @return the size of the given code
      */
     public static int stringToByteCount(String code) {
         @SuppressWarnings("serial")

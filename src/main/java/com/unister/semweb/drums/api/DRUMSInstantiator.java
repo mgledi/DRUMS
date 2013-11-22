@@ -84,6 +84,9 @@ public class DRUMSInstantiator {
     /**
      * Opens an existing table.
      * 
+     * @param hashFunction
+     *            the hash-function to use
+     * 
      * @param accessMode
      *            the AccessMode, how to access the DRUMS
      * @param gp
@@ -109,7 +112,6 @@ public class DRUMSInstantiator {
      * @return a DRUMS instance
      * 
      * @throws IOException
-     * @throws ClassNotFoundException
      */
     public static <Data extends AbstractKVStorable> DRUMS<Data> createOrOpenTable(AbstractHashFunction hashFunction,
             GlobalParameters<Data> gp) throws IOException {

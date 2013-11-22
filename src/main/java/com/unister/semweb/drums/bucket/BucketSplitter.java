@@ -17,14 +17,13 @@ package com.unister.semweb.drums.bucket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import com.carrotsearch.hppc.IntArrayList;
 import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
-import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
@@ -36,6 +35,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * elements according to the old and new HashFunction <br> <li>store the HashFunction
  * 
  * @author Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 // TODO: remember KeyComposition in RangeHashFunction
 public class BucketSplitter<Data extends AbstractKVStorable> {
@@ -57,18 +58,21 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
     /**
      * Instantiates a new BucketSplitter
      * 
-     * @param databaseDir
      * @param hashFunction
      * @param gp
-     * @throws IOException
-     * @throws FileLockException
+     * 
      */
     public BucketSplitter(RangeHashFunction hashFunction, GlobalParameters<Data> gp) {
         this.gp = gp;
         this.hashFunction = hashFunction;
-        // this.newHashFunction = hashFunction.copy();
     }
 
+    /**
+     * @param bucketId
+     * @param numberOfPartitions
+     * @throws IOException
+     * @throws FileLockException
+     */
     public void splitAndStoreConfiguration(int bucketId, int numberOfPartitions) throws IOException, FileLockException {
         this.oldBucketId = bucketId;
         // open the file (READ_ONLY)
@@ -79,7 +83,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
         // determine new thresholds
         byte[][] keysToInsert = determineNewLargestElements(numberOfPartitions);
         // We replace the last threshold with the original value. So the theoretical border of the bucket remains.
-        byte[] lastKey = hashFunction.getMaxRange(bucketId);
+        byte[] lastKey = hashFunction.getUpperBound(bucketId);
         keysToInsert[keysToInsert.length - 1] = lastKey;
 
         // Replace the old bucket line with the new ones.
@@ -89,7 +93,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
         this.moveElements(sourceFile, hashFunction, gp.databaseDirectory);
         sourceFile.delete();
 
-        // store hashfunction
+        // store hash-function
         hashFunction.writeToFile();
     }
 
@@ -164,7 +168,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
                 offset = ((i + 1) * elementsPerPart - 1) * sourceFile.getElementSize();
             }
 
-            ByteBuffer keyBuffer = ByteBuffer.allocate(hashFunction.keySize);
+            ByteBuffer keyBuffer = ByteBuffer.allocate(gp.keySize);
             sourceFile.read(offset, keyBuffer);
             keyBuffer.position(0);
 

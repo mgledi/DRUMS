@@ -23,6 +23,7 @@ import java.util.Random;
 
 
 
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.drums.utils.Bytes;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -59,31 +61,31 @@ public class RangeHashFunctionTest {
         RangeHashFunction hashFunction = new RangeHashFunction(bRanges, filenames, null);
 
         int currentBucketId = -1;
-        currentBucketId = hashFunction.getBucketId(11);
+        currentBucketId = hashFunction.getBucketId(Bytes.toBytes((long)11));
         Assert.assertEquals(2, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(20);
+        currentBucketId = hashFunction.getBucketId(Bytes.toBytes((long)20));
         Assert.assertEquals(2, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(21);
+        currentBucketId = hashFunction.getBucketId(Bytes.toBytes((long)21));
         Assert.assertEquals(3, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(29);
+        currentBucketId = hashFunction.getBucketId(Bytes.toBytes((long)29));
         Assert.assertEquals(3, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(30);
+        currentBucketId = hashFunction.getBucketId(Bytes.toBytes((long)30));
         Assert.assertEquals(3, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(100);
+        currentBucketId = hashFunction.getBucketId(Bytes.toBytes((long)100));
         Assert.assertEquals(0, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(4);
+        currentBucketId = hashFunction.getBucketId(Bytes.toBytes((long)4));
         Assert.assertEquals(0, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(Long.MAX_VALUE);
+        currentBucketId = hashFunction.getBucketId(Bytes.toBytes((long)Long.MAX_VALUE));
         Assert.assertEquals(0, currentBucketId);
 
-        currentBucketId = hashFunction.getBucketId(Long.MIN_VALUE);
+        currentBucketId = hashFunction.getBucketId(Bytes.toBytes((long)Long.MIN_VALUE));
         Assert.assertEquals(0, currentBucketId);
     }
 
@@ -107,7 +109,7 @@ public class RangeHashFunctionTest {
 
             long startTime = System.currentTimeMillis();
             try {
-                hashFunction.getBucketId(randomKey);
+                hashFunction.getBucketId(Bytes.toBytes((long)randomKey));
             } catch (Throwable ex) {
                 log.error("An error occurred: {}", ex.getMessage());
                 log.error("Key to find: {}", randomKey);
@@ -166,10 +168,10 @@ public class RangeHashFunctionTest {
         File f = new File("src/test/resources/rangehash.hash");
         RangeHashFunction rhf = new RangeHashFunction(f);
         long l = 16L << 56;
-        Assert.assertEquals(0, rhf.getBucketId(l));
+        Assert.assertEquals(0, rhf.getBucketId(Bytes.toBytes((long)l)));
         l++;
-        Assert.assertEquals(1, rhf.getBucketId(l));
-        Assert.assertEquals(7, rhf.getBucketId(Long.MAX_VALUE));
+        Assert.assertEquals(1, rhf.getBucketId(Bytes.toBytes((long)l)));
+        Assert.assertEquals(7, rhf.getBucketId(Bytes.toBytes((long)Long.MAX_VALUE)));
     }
 
     /* ******************************************** Data generator methods ******************** */

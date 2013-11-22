@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket;
 
 import org.slf4j.Logger;
@@ -28,6 +26,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * {@link AbstractHashFunction}. It has an additional buffer to store elements, which belong to full buckets.
  * 
  * @author Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class BucketContainer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(BucketContainer.class);
@@ -56,15 +56,15 @@ public class BucketContainer<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Possibly add the given <code>Data</code>(s) to one of the {@link Bucket}s. If the corresponding {@link Bucket} is
-     * full, it will be added to <code>waitingElements</code>. If all {@link Bucket}s and the queue for
-     * <code>waitingElements</code> are full the method is blocking.
+     * Add the given records to the {@link Bucket}s, if possible. If all {@link Bucket}s are full the method is
+     * blocking.
      * 
-     * @param {@link Data} to add
-     * @return true if the insertion was successful, otherwise false
+     * @param toAdd
+     *            the data to add
      * @throws BucketContainerException
+     * @throws InterruptedException
      */
-    public void addToCache(Data ... toAdd) throws BucketContainerException, InterruptedException {
+    public void addToCache(Data... toAdd) throws BucketContainerException, InterruptedException {
         if (shutDownInitiated) {
             throw new BucketContainerException("Shutdown was already initiated. Could not add the given elements.");
         }
@@ -75,7 +75,7 @@ public class BucketContainer<Data extends AbstractKVStorable> {
             if (indexOfCache < buckets.length) {
                 Bucket<Data> bucket = buckets[indexOfCache];
                 // Blocking process, try to add element
-                while(!bucket.add(date)) {
+                while (!bucket.add(date)) {
                     Thread.sleep(1000);
                 }
             } else {
@@ -89,12 +89,15 @@ public class BucketContainer<Data extends AbstractKVStorable> {
         }
     }
 
-    /** returns the number of buckets */
+    /** @return the number of buckets */
     public int getNumberOfBuckets() {
         return hashFunction.getNumberOfBuckets();
     }
 
-    /** returns the bucket with the id bucketId */
+    /**
+     * @param bucketId
+     * @return the bucket with the given bucketId
+     */
     public Bucket<Data> getBucket(int bucketId) {
         return buckets[bucketId];
     }
@@ -111,11 +114,14 @@ public class BucketContainer<Data extends AbstractKVStorable> {
         buckets[bucket.getBucketId()] = bucket;
     }
 
-    /** Checks, if the given element is already in memory. */
+    /**
+     * @param element
+     * @return Checks, if an record with the key of the given element is already in memory.
+     */
     public boolean contains(Data element) {
-        return buckets[hashFunction.getBucketId(element)].contains(element);        
+        return buckets[hashFunction.getBucketId(element)].contains(element);
     }
-    
+
     /**
      * returns the {@link AbstractHashFunction} for mapping keys to {@link Bucket}s.
      * 
@@ -125,6 +131,7 @@ public class BucketContainer<Data extends AbstractKVStorable> {
         return this.hashFunction;
     }
 
+    /** This method initializes the shutdown of this BucketContainer. No records are accepted anymore. */
     public void shutdown() {
         this.shutDownInitiated = true;
         log.info("Shutting down the bucket container.");

@@ -48,7 +48,7 @@ public class RangeHashFunctionReplace {
 
         testFunction.replace(0, newLines);
 
-        byte[] functionLine = testFunction.getMaxRange(0);
+        byte[] functionLine = testFunction.getUpperBound(0);
         String functionFilename = testFunction.getFilename(0);
 
         Assert.assertEquals(0, KeyUtils.compareKey(newLine, functionLine));
@@ -75,7 +75,7 @@ public class RangeHashFunctionReplace {
         byte[][] functionLines = new byte[4][];
         String[] functionFilenames = new String[4];
         for (int i = 0; i < 4; i++) {
-            functionLines[i] = testFunction.getMaxRange(i);
+            functionLines[i] = testFunction.getUpperBound(i);
             functionFilenames[i] = testFunction.getFilename(i);
         }
 
@@ -103,7 +103,7 @@ public class RangeHashFunctionReplace {
         testFunction.replace(9, newLines);
 
         for (int i = 0; i < 4; i++) {
-            Assert.assertEquals(0, KeyUtils.compareKey(newLines[i], testFunction.getMaxRange(9 + i)));
+            Assert.assertEquals(0, KeyUtils.compareKey(newLines[i], testFunction.getUpperBound(9 + i)));
             Assert.assertEquals("9_" + i + ".db", testFunction.getFilename(9 + i));
         }
     }
@@ -126,7 +126,7 @@ public class RangeHashFunctionReplace {
         testFunction.replace(3, newLines);
 
         for (int i = 0; i < 4; i++) {
-            Assert.assertEquals(0, KeyUtils.compareKey(newLines[i], testFunction.getMaxRange(3 + i)));
+            Assert.assertEquals(0, KeyUtils.compareKey(newLines[i], testFunction.getUpperBound(3 + i)));
             Assert.assertEquals("3_" + i + ".db", testFunction.getFilename(3 + i));
         }
     }

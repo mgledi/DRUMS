@@ -31,6 +31,8 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * An instance of this class is a container of {@link AbstractKVStorable}s.
  * 
  * @author Martin Nettling, Nils Thieme
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class Bucket<Data extends AbstractKVStorable> {
 
@@ -79,6 +81,8 @@ public class Bucket<Data extends AbstractKVStorable> {
     /**
      * returns a new empty Bucket with the same properties of this bucket
      * 
+     * @return a new {@link Bucket} with the same {@link #bucketId}
+     * 
      * @throws IOException
      * @throws FileLockException
      */
@@ -88,9 +92,7 @@ public class Bucket<Data extends AbstractKVStorable> {
     }
 
     /**
-     * returns the id of the bucket. The id is in range 0 till numberOfBuckets (see {@link BucketContainer})
-     * 
-     * @return
+     * @return the id of the bucket. The id is value between 0 and numberOfBuckets (see {@link BucketContainer})
      */
     public int getBucketId() {
         return bucketId;
@@ -98,11 +100,11 @@ public class Bucket<Data extends AbstractKVStorable> {
 
     /**
      * Adds one {@link AbstractKVStorable}-object. This method have to be synchronized, because it is possible to access
-     * the <code>backend</code> in the same moment with the function <code>getBackend()</code>. The method returns
-     * <code>true</code> if the inseration was successful.
+     * the backend in the same moment with the function {@link #getBackend()}.
      * 
      * @param toAdd
      *            the Data to add
+     * @return true, if adding the element to the buffer was successful
      */
     public synchronized boolean add(AbstractKVStorable toAdd) {
         if (memorySizeInBytes >= gp.MAX_MEMORY_PER_BUCKET) {
@@ -131,9 +133,12 @@ public class Bucket<Data extends AbstractKVStorable> {
         return true;
     }
 
-    /* @param element the element to look for
+    /**
+     * @param element
+     *            the element to look for
      * 
-     * @return true, if this bucket, contains the given element */
+     * @return true, if this bucket, contains the given element
+     */
     public boolean contains(Data element) {
         boolean contains = false;
         byte[] dst = new byte[gp.elementSize];
@@ -186,11 +191,11 @@ public class Bucket<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Returns a ByteBuffer, which is pointing to the subarray, where the requested element is stored. The returned
-     * ByteBuffer is in read-only mode.
+     * @return a ByteBuffer containing the requested element. The returned ByteBuffer is in read-only mode.
      * 
      * @param index
-     * @return
+     *            the index of the element in the bucket
+     * 
      */
     public ByteBuffer getElementAt(int index) {
         if (index >= elementsInBucket) {
@@ -209,9 +214,9 @@ public class Bucket<Data extends AbstractKVStorable> {
      * @return {@link AbstractKVStorable}[] all {@link AbstractKVStorable}s ascending sorted
      */
     // TODO: handle backend internally as long byte-array
+    @SuppressWarnings("unchecked")
     public synchronized Data[] getBackend() {
         sort();
-
         AbstractKVStorable[] data = new AbstractKVStorable[elementsInBucket];
         byte[] dst = new byte[gp.elementSize];
         int i = 0;

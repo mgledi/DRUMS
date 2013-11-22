@@ -51,6 +51,8 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * with update management. <br>
  * 
  * @author Nils Thieme, Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class DRUMS<Data extends AbstractKVStorable> {
     private static final Logger logger = LoggerFactory.getLogger(DRUMS.class);
@@ -86,9 +88,12 @@ public class DRUMS<Data extends AbstractKVStorable> {
     /**
      * This constructor should only be called by factory methods from this package.
      * 
-     * @param databaseDirectory
      * @param hashFunction
+     *            a consistent hash-function
      * @param accessMode
+     *            can be read or read/write
+     * @param gp
+     *            contains all needed settings
      */
     protected DRUMS(AbstractHashFunction hashFunction, AccessMode accessMode, GlobalParameters<Data> gp) {
         this.prototype = gp.getPrototype();
@@ -124,7 +129,11 @@ public class DRUMS<Data extends AbstractKVStorable> {
         }
     }
 
-    /** Sets the {@link SynchronizerFactory}. */
+    /**
+     * Sets the {@link SynchronizerFactory}.
+     * 
+     * @param factory
+     */
     public void setSynchronizerFactory(ISynchronizerFactory<Data> factory) {
         this.synchronizerFactory = factory;
         this.syncManager.setSynchronizer(factory);
@@ -143,7 +152,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
     /**
      * Adds or merges the given data. If all memory buckets are full, this method is blocking the calling thread. <br>
      * <br>
-     * A merge calls the method {@link Data#merge(Data)}.
+     * A merge calls the method {@link Data#merge(AbstractKVStorable)}.
      * 
      * @param toPersist
      *            data to insert or update
@@ -166,16 +175,19 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * not already stored in the underlying DRUMS-table, they will be not taken into account during synchronization.<br>
      * <br>
      * This method uses the {@link UpdateOnlySynchronizer}, which by itself uses the Data's implemented update-function
-     * ({@link Data#update(Data)}) to update elements. If you want to merge objects, use {@link #insertOrMerge(Data ...)}
-     * instead.
+     * ({@link Data#update(AbstractKVStorable)}) to update elements. If you want to merge objects, use
+     * {@link #insertOrMerge(Data ...)} instead.
+     * 
+     * @param records
+     *            the data to update
      * 
      * @throws IOException
      */
-    public void update(Data... toMerge) throws IOException {
+    public void update(Data... records) throws IOException {
         // ############ reorder data
         IntObjectOpenHashMap<ArrayList<Data>> bucketDataMapping = new IntObjectOpenHashMap<ArrayList<Data>>();
         int bucketId;
-        for (Data d : toMerge) {
+        for (Data d : records) {
             bucketId = hashFunction.getBucketId(d.key);
             if (!bucketDataMapping.containsKey(bucketId)) {
                 bucketDataMapping.put(bucketId, new ArrayList<Data>());
@@ -274,7 +286,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * 
      * @param keys
      *            the keys to search for
-     * @return a mapping from bucketid to a list of keys.
+     * @return a mapping from bucket-id to a list of keys.
      */
     protected IntObjectOpenHashMap<ArrayList<byte[]>> getBucketKeyMapping(byte[]... keys) {
         IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = new IntObjectOpenHashMap<ArrayList<byte[]>>();
@@ -300,6 +312,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * @param keys
      *            the keys to search for
      * @return an {@link ArrayList} which contains the found records. Can be less than the number of requested keys.
+     * @throws IOException
      */
     public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[]... keys) throws IOException {
         Arrays.sort(keys, new ByteArrayComparator());
@@ -435,12 +448,20 @@ public class DRUMS<Data extends AbstractKVStorable> {
         return reader_instance;
     }
 
-    /** Joins all the DRUMS-table. */
+    /**
+     * Joins all the DRUMS-table.
+     * 
+     * @throws InterruptedException
+     */
     public void join() throws InterruptedException {
         syncManager.join();
     }
 
-    /** Closes the DRUMS. */
+    /**
+     * Closes the DRUMS.
+     * 
+     * @throws InterruptedException
+     */
     public void close() throws InterruptedException {
         if (reader_instance != null) {
             reader_instance.closeFiles();
@@ -473,40 +494,43 @@ public class DRUMS<Data extends AbstractKVStorable> {
         syncManager.stopForceMode();
     }
 
-    /** Returns the size of one record to store in bytes */
+    /** @return the size of one record to store in bytes */
     public int getElementSize() {
         return gp.elementSize;
     }
 
-    /** Returns the size of the key of one record */
+    /** @return the size of the key of one record */
     public int getElementKeySize() {
         return gp.keySize;
     }
 
-    /** Returns the underlying hashfunction */
+    /** @return the underlying hash-function */
     public AbstractHashFunction getHashFunction() {
         return this.hashFunction;
     }
 
     /**
      * sets a new HashFunction. Be careful with this method. Overwriting the hashfunction, when elements are already
-     * inserted may cause missing elements
+     * inserted may cause, that you won't find those elements by select.
+     * 
+     * @param hashfunction
+     *            the hash-function to set
      */
-    public void setHashFunction(AbstractHashFunction hash) {
-        this.hashFunction = hash;
+    public void setHashFunction(AbstractHashFunction hashfunction) {
+        this.hashFunction = hashfunction;
     }
 
-    /** Returns the database-directory */
+    /** @return the database-directory */
     public String getDatabaseDirectory() {
         return gp.databaseDirectory;
     }
 
-    /** Returns a pointer to the prototype. This is not a clone. */
+    /** @return a pointer to the prototype. This is not a clone. */
     public Data getPrototype() {
         return prototype;
     }
 
-    /** Returns the {@link GlobalParameters} that are used within the {@link DRUMS} */
+    /** @return the {@link GlobalParameters} that are used within the {@link DRUMS} */
     public GlobalParameters<Data> getGlobalParameters() {
         return gp;
     }

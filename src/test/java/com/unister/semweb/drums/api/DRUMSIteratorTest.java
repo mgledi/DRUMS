@@ -21,19 +21,16 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.unister.semweb.drums.TestUtils;
-import com.unister.semweb.drums.api.DRUMSException;
-import com.unister.semweb.drums.api.DRUMS;
-import com.unister.semweb.drums.api.DRUMSInstantiator;
-import com.unister.semweb.drums.api.DRUMSIterator;
-import com.unister.semweb.drums.bucket.SortMachine;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.drums.storable.DummyKVStorable;
+import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -60,7 +57,7 @@ public class DRUMSIteratorTest {
         table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         // remember, the element with key 0 is ignored
         generatedData = TestUtils.createDummyData(1, 50);
-        SortMachine.quickSort(generatedData);
+        Arrays.sort(generatedData, new AbstractKVStorableComparator());
         table.insertOrMerge(generatedData);
         table.close();
     }

@@ -21,17 +21,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.BlockingQueue;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.unister.semweb.drums.bucket.Bucket;
-import com.unister.semweb.drums.bucket.SortMachine;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
@@ -39,6 +34,7 @@ import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.DummyKVStorable;
 import com.unister.semweb.drums.synchronizer.Synchronizer;
+import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 public class TestUtils {
@@ -99,7 +95,8 @@ public class TestUtils {
             DummyKVStorable oneEntry = TestUtils.createDummyData(KeyUtils.convert(i + 1), i + 1000, i - 0.05);
             result[i] = oneEntry;
         }
-        SortMachine.quickSort(result);
+
+        Arrays.sort(result, new AbstractKVStorableComparator());
         return result;
     }
 
@@ -121,7 +118,7 @@ public class TestUtils {
                     i - 0.05);
             result[i] = oneEntry;
         }
-        SortMachine.quickSort(result);
+        Arrays.sort(result, new AbstractKVStorableComparator());
         return result;
     }
 
@@ -188,7 +185,7 @@ public class TestUtils {
      * @throws IOException
      */
     public static void createFile(String dbFileName, DummyKVStorable[] linkDataList) throws IOException {
-        SortMachine.quickSort(linkDataList);
+        Arrays.sort(linkDataList, new AbstractKVStorableComparator());
         Synchronizer<DummyKVStorable> sync = new Synchronizer<DummyKVStorable>(dbFileName, TestUtils.gp);
         sync.upsert(linkDataList);
         sync.close();

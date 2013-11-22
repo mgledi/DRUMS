@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -31,7 +32,6 @@ import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.bucket.BucketContainer;
 import com.unister.semweb.drums.bucket.BucketContainerException;
 import com.unister.semweb.drums.bucket.DynamicMemoryAllocater;
-import com.unister.semweb.drums.bucket.SortMachine;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
@@ -41,6 +41,8 @@ import com.unister.semweb.drums.sync.SyncManager;
 import com.unister.semweb.drums.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.drums.synchronizer.SynchronizerFactory;
 import com.unister.semweb.drums.synchronizer.UpdateOnlySynchronizer;
+import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
+import com.unister.semweb.drums.utils.ByteArrayComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -133,7 +135,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         return this.bucketContainer;
     }
 
-    /* @return a pointer to the local {@link SyncManager} */
+    /** @return a pointer to the local {@link SyncManager} */
     public SyncManager<Data> getSyncManager() {
         return this.syncManager;
     }
@@ -186,7 +188,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
                     + hashFunction.getFilename(entry.key), gp);
             @SuppressWarnings("unchecked")
             Data[] toUpdate = (Data[]) entry.value.toArray(new AbstractKVStorable[entry.value.size()]);
-            SortMachine.quickSort(toUpdate);
+            Arrays.sort(toUpdate, new AbstractKVStorableComparator());
             synchronizer.upsert(toUpdate);
         }
     }
@@ -300,7 +302,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
      * @return an {@link ArrayList} which contains the found records. Can be less than the number of requested keys.
      */
     public List<Data> searchForData(HeaderIndexFile<Data> indexFile, byte[]... keys) throws IOException {
-        SortMachine.quickSort(keys);
+        Arrays.sort(keys, new ByteArrayComparator());
         List<Data> result = new ArrayList<Data>();
 
         IndexForHeaderIndexFile<Data> index = indexFile.getIndex(); // Pointer to the Index

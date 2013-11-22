@@ -21,8 +21,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
  * 
- * @author Chaos
- *
+ * @author Martin Nettling
+ * 
  */
 public class AbstractKVStorableComparator implements Comparator<AbstractKVStorable> {
     @Override

@@ -18,15 +18,16 @@
 package com.unister.semweb.drums.syncronizer;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.unister.semweb.drums.TestUtils;
-import com.unister.semweb.drums.bucket.SortMachine;
 import com.unister.semweb.drums.storable.DummyKVStorable;
 import com.unister.semweb.drums.synchronizer.UpdateOnlySynchronizer;
+import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -67,8 +68,7 @@ public class UpdateOnlySynchronizerTest {
         toUpdate[2] = linkDataList[11190];
         toUpdate[2].setValue("parentCount", 234567);
 
-        SortMachine.quickSort(toUpdate);
-
+        Arrays.sort(toUpdate, new AbstractKVStorableComparator());
         // ############### perform the update, this is the real test
         UpdateOnlySynchronizer<DummyKVStorable> updateSync = new UpdateOnlySynchronizer<DummyKVStorable>(dbFileName,
                 TestUtils.gp);

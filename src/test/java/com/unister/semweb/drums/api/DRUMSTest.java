@@ -33,12 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.drums.TestUtils;
-import com.unister.semweb.drums.api.DRUMS;
-import com.unister.semweb.drums.api.DRUMSInstantiator;
-import com.unister.semweb.drums.bucket.SortMachine;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.drums.storable.DummyKVStorable;
+import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /** Tests the DRUMS API. */
@@ -183,8 +181,8 @@ public class DRUMSTest {
         List<DummyKVStorable> selectedData = table.select(KeyUtils.convert(12), KeyUtils.convert(10), KeyUtils.convert(2));
         
         DummyKVStorable[] result = selectedData.toArray(new DummyKVStorable[selectedData.size()]);
-        SortMachine.quickSort(toAdd);
-        SortMachine.quickSort(result);
+        Arrays.sort(toAdd, new AbstractKVStorableComparator());
+        Arrays.sort(result, new AbstractKVStorableComparator());
         Assert.assertArrayEquals(toAdd, result);
     }
 
@@ -205,8 +203,8 @@ public class DRUMSTest {
         List<DummyKVStorable> selectedData = table.read(1, 0, 10);
         
         DummyKVStorable[] result = selectedData.toArray(new DummyKVStorable[selectedData.size()]);
-        SortMachine.quickSort(toAdd);
-        SortMachine.quickSort(result);
+        Arrays.sort(toAdd, new AbstractKVStorableComparator());
+        Arrays.sort(result, new AbstractKVStorableComparator());
         Assert.assertArrayEquals(toAdd, result);
     }
 
@@ -226,12 +224,12 @@ public class DRUMSTest {
         List<DummyKVStorable> selectedData = table.read(1, 0, 10);
 
         DummyKVStorable[] result = selectedData.toArray(new DummyKVStorable[selectedData.size()]);
-        SortMachine.quickSort(testdata);
+        Arrays.sort(testdata, new AbstractKVStorableComparator());
         Assert.assertArrayEquals(testdata, result);
         
         List<DummyKVStorable> selectedData2 = table.read(1, 5, 10);
         DummyKVStorable[] result2 = selectedData2.toArray(new DummyKVStorable[selectedData2.size()]);
-        SortMachine.quickSort(testdata);
+        Arrays.sort(testdata, new AbstractKVStorableComparator());
         Assert.assertArrayEquals(Arrays.copyOfRange(testdata,5,10), result2);
     }
 

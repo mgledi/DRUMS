@@ -15,43 +15,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket.hashfunction.util;
 
-import java.io.Serializable;
-
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
  * This class is able to perform an associative sort. It takes two arrays with the same number of elements. These arrays
  * correspond to each other, meaning that the value of the ith element of the first array corresponds of the ith element
- * of the second array. 
+ * of the second array.
  * 
  * @author Nils Thieme, Martin Nettling
  */
-public class RangeHashSorter implements Serializable {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 5586007520316814952L;
-
+public class RangeHashSorter {
     /** The ranges to sort for. */
     private byte[][] ranges;
 
     /** The file names. */
     private String[] filenames;
 
-    /** Creates a sorting machine with the three arrays. */
+    /**
+     * Creates a sorting machine with the three arrays.
+     * 
+     * @param ranges
+     *            the ranges to sort
+     * @param filenames
+     *            the filenames to sort depending on the ranges
+     */
     public RangeHashSorter(byte[][] ranges, String[] filenames) {
         this.ranges = ranges;
         this.filenames = filenames;
-    }
-
-    /** Get the ranges. After sorting the ranges are in sorted order. */
-    public byte[][] getRanges() {
-        return ranges;
-    }
-
-    /** Get the filename. After sorting, the ith filename corresponds with the ith filename. */
-    public String[] getFilenames() {
-        return filenames;
     }
 
     /**
@@ -141,7 +131,7 @@ public class RangeHashSorter implements Serializable {
     }
 
     /** Swaps the elements of the ith position with the elements of the jth position of all three arrays. */
-    public void swap(int i, int j) {
+    protected void swap(int i, int j) {
         byte[] ltemp = ranges[i];
         ranges[i] = ranges[j];
         ranges[j] = ltemp;

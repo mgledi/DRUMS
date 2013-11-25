@@ -15,10 +15,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.file;
 
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.util.Arrays;
 
-import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.utils.ByteArrayComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
@@ -36,7 +36,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * 
  * @author Martin Nettling
  */
-public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
+public class IndexForHeaderIndexFile {
 
     /** the interal ByteArrayComparator */
     private ByteArrayComparator comparator = new ByteArrayComparator();
@@ -51,7 +51,7 @@ public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
     protected int numberOfChunks;
 
     /** a {@link MappedByteBuffer}, maps to the corresponding byte-region in memory */
-    protected MappedByteBuffer indexBuffer;
+    protected ByteBuffer indexBuffer;
 
     /** reflects the largest initialized chunkIndex */
     private int filledUpTo;
@@ -64,13 +64,14 @@ public class IndexForHeaderIndexFile<Data extends AbstractKVStorable> {
      * 
      * @param numberOfChunks
      *            the expected or maximal number of chunks
+     * @param keySize
      * @param chunkSize
      *            the size of one chunk
-     * @param indexBufferthe
-     *            buffer were to write the indexinformations
+     * @param indexBuffer
+     *            the buffer were to write the indexinformations
      */
     public IndexForHeaderIndexFile(final int numberOfChunks, final int keySize, final int chunkSize,
-            final MappedByteBuffer indexBuffer) {
+            final ByteBuffer indexBuffer) {
         this.keySize = keySize;
         this.numberOfChunks = numberOfChunks;
         this.chunkSize = chunkSize;

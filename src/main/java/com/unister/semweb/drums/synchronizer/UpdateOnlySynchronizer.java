@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.synchronizer;
 
 import java.io.IOException;
@@ -38,6 +36,8 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * assumption is that the list of {@link AbstractKVStorable} and the entries in the file are sorted ascended.
  * 
  * @author Nils Thieme, Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     /** */
@@ -50,7 +50,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     protected HeaderIndexFile<Data> dataFile;
 
     /** the header of the bucket, something like an index */
-    private IndexForHeaderIndexFile<Data> header;
+    private IndexForHeaderIndexFile header;
 
     /** a prototype element of type Data */
     private Data prototype;
@@ -66,7 +66,8 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
      * given.
      * 
      * @param dataFilename
-     * @param header
+     * @param gp
+     * 
      */
     public UpdateOnlySynchronizer(final String dataFilename, final GlobalParameters<Data> gp) {
         this.gp = gp;
@@ -169,7 +170,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
                 byte[] b = new byte[gp.elementSize];
                 workingBuffer.get(b);
                 Data toUpdate = prototype.fromByteBuffer(ByteBuffer.wrap(b));
-                // update the old element and writ it
+                // update the old element and write it
                 toUpdate.update(data);
                 workingBuffer.position(indexInChunk);
                 workingBuffer.put(data.toByteBuffer());

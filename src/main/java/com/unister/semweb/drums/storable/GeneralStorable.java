@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.storable;
 
 import java.io.IOException;
@@ -48,6 +46,9 @@ public class GeneralStorable extends AbstractKVStorable {
 
     /**
      * Basic constructor. Should only be used, when the structure of the
+     * 
+     * @param s
+     *            the structure of this {@link GeneralStorable}.
      */
     public GeneralStorable(GeneralStructure s) {
         structure = s;
@@ -98,7 +99,7 @@ public class GeneralStorable extends AbstractKVStorable {
     }
 
     @Override
-    public AbstractKVStorable merge(AbstractKVStorable element) {
+    public <Data extends AbstractKVStorable> Data merge(Data element) {
         return element;
     }
 
@@ -112,6 +113,8 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
+     * @param value
+     *            the value to set
      * @throws IOException
      */
     public void setValue(String field, byte[] value) throws IOException {
@@ -127,6 +130,8 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
+     * @param value
+     *            the value to set
      * @throws IOException
      */
     public void setValue(int index, byte[] value) throws IOException {
@@ -511,6 +516,8 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param field
      *            the name of the field
+     * @param key
+     *            the key to set
      * @throws IOException
      */
     public void setKey(String field, byte[] key) throws IOException {
@@ -523,6 +530,8 @@ public class GeneralStorable extends AbstractKVStorable {
      * 
      * @param index
      *            the index of the requested field
+     * @param key
+     *            the key to set
      * @throws IOException
      */
     public void setKey(int index, byte[] key) throws IOException {

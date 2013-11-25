@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.file;
 
 import java.io.File;
@@ -105,13 +103,18 @@ public abstract class AbstractHeaderFile {
     /** writes all relevant informations to the header */
     protected abstract void writeHeader();
 
-    /** enlarges the file by the local <code>incrementSize</code> but at least to the given <code>size</code>. */
-    public abstract void enlargeFile(long minimumTargetSize) throws IOException;
+    /**
+     * enlarges the file by the given size
+     * 
+     * @param size
+     * @throws IOException
+     */
+    public abstract void enlargeFile(long size) throws IOException;
 
     /**
      * writes the bytes from the given ByteBuffer to the file beginning at offset.
      * 
-     * @param ffset
+     * @param offset
      * @param sourceBuffer
      * @throws IOException
      */
@@ -130,6 +133,7 @@ public abstract class AbstractHeaderFile {
      * appends the given sourceBuffer to the file and returns the file position of the appended entry
      * 
      * @param sourceBuffer
+     * @return the position in the file after inserting the given sourceBuffer
      * @throws IOException
      */
     public abstract long append(byte[] sourceBuffer) throws IOException;
@@ -137,8 +141,9 @@ public abstract class AbstractHeaderFile {
     /**
      * appends the given sourceBuffer to the file and returns the file position of the appended entry
      * 
-     * @param ByteBuffer
-     *            sourceBuffer
+     * @param sourceBuffer
+     * 
+     * @return the position in the file after inserting the given sourceBuffer
      * @throws IOException
      */
     public abstract long append(ByteBuffer sourceBuffer) throws IOException;
@@ -149,16 +154,18 @@ public abstract class AbstractHeaderFile {
      * 
      * @param offset
      * @param destBuffer
+     * @return the number of bytes read
      * @throws IOException
      */
     public abstract int read(long offset, ByteBuffer destBuffer) throws IOException;
 
     /**
-     * Reads x bytes from the file to the given ByteBuffer, where x is the minimum of the capacity of the buffer and the
-     * remaining written bytes in the file.
+     * Reads x bytes from the file to the given byte array, where x is the minimum of the size of the given byte array
+     * and the remaining written bytes in the file.
      * 
      * @param offset
      * @param destBuffer
+     * @return the number of bytes read
      * @throws IOException
      */
     public abstract int read(long offset, byte[] destBuffer) throws IOException;
@@ -179,17 +186,17 @@ public abstract class AbstractHeaderFile {
         filledUpTo = contentStart;
     }
 
-    /** returns the offset in bytes, to where the file is filled */
+    /** @return the offset in bytes, to where the file is filled */
     public long getFilledUpFromContentStart() {
         return filledUpTo - contentStart;
     }
 
-    /** returns the offset in bytes, to where the file is filled */
+    /** @return the offset in bytes, to where the file is filled */
     public long getFilledUpTo() {
         return filledUpTo;
     }
 
-    /** returns the number of available bytes */
+    /** @return the number of available bytes */
     public long getFreeSpace() {
         return size - filledUpTo;
     }
@@ -218,8 +225,9 @@ public abstract class AbstractHeaderFile {
     }
 
     /**
-     * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. And reads the header.
+     * opens the {@link RandomAccessFile} and the corresponding {@link FileChannel}. Reads the header.
      * 
+     * @throws FileLockException
      * @throws IOException
      */
     public void openChannel() throws FileLockException, IOException {
@@ -236,7 +244,11 @@ public abstract class AbstractHeaderFile {
         writeHeader();
     }
 
-    /** tries to unlock the file */
+    /**
+     * tries to unlock the file
+     * 
+     * @throws IOException
+     */
     public void unlock() throws IOException {
         System.runFinalization();
         if (fileLock != null) {
@@ -249,7 +261,12 @@ public abstract class AbstractHeaderFile {
         }
     }
 
-    /** tries to lock the file */
+    /**
+     * tries to lock the file
+     * 
+     * @throws FileLockException
+     * @throws IOException
+     */
     public void lock() throws FileLockException, IOException {
         if (mode == AccessMode.READ_ONLY) {
             return;
@@ -279,7 +296,7 @@ public abstract class AbstractHeaderFile {
         }
     }
 
-    /** true, if there is access to the file */
+    /** @return true, if there is access to the file */
     public boolean isOpen() {
         return accessFile != null;
     }
@@ -329,7 +346,11 @@ public abstract class AbstractHeaderFile {
         logger.debug("Closed accessFile and channel for file: " + osFile);
     }
 
-    /** tries to delete the file */
+    /**
+     * tries to delete the file
+     * 
+     * @throws IOException
+     */
     public void delete() throws IOException {
         close();
         if (osFile != null) {
@@ -347,7 +368,7 @@ public abstract class AbstractHeaderFile {
         }
     }
 
-    /** returns the name of the underlying OS-File */
+    /** @return the name of the underlying OS-File */
     public String getName() {
         return osFile.getName();
     }

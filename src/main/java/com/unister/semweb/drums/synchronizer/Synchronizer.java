@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.synchronizer;
 
 import java.io.IOException;
@@ -42,6 +40,8 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * file are sorted ascended.
  * 
  * @author Nils Thieme, Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class Synchronizer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(Synchronizer.class);
@@ -67,7 +67,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
     private ByteBuffer bufferedReader;
 
     /** the header of the bucket, something like an index */
-    private IndexForHeaderIndexFile<Data> header;
+    private IndexForHeaderIndexFile header;
 
     /** the largest key in the actual chunk for writing */
     private byte[] largestKeyInChunk;
@@ -99,8 +99,6 @@ public class Synchronizer<Data extends AbstractKVStorable> {
      *            the file, where to store the {@link AbstractKVStorable}
      * @param gp
      *            a pointer to the {@link GlobalParameters}
-     * @throws IllegalAccessException
-     * @throws InstantiationException
      */
     public Synchronizer(String dataFilename, GlobalParameters<Data> gp) {
         this.gp = gp;
@@ -183,7 +181,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
                 }
 
                 /* insert element from disk (pendingElements) */
-                if (compare > 0 ) {
+                if (compare > 0) {
                     prototype.initFromByteBuffer(ByteBuffer.wrap(dateFromDisk));
                     // if the dateFromDisk was marked as deleted
                     if (!prototype.isMarkedAsDeleted()) {
@@ -323,12 +321,12 @@ public class Synchronizer<Data extends AbstractKVStorable> {
     }
 
     /* Measurement methods */
-    /** Returns the number of entries that were inserted. */
+    /** @return the number of entries that were inserted. */
     public long getNumberOfInsertedEntries() {
         return numberOfInsertedEntries;
     }
 
-    /** Returns the number of entries that were updated in the file. */
+    /** @return the number of entries that were updated in the file. */
     public long getNumberOfUpdatedEntries() {
         return numberOfUpdateEntries;
     }

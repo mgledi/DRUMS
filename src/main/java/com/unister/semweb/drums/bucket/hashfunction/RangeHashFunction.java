@@ -49,7 +49,6 @@ public class RangeHashFunction extends AbstractHashFunction {
     private int[] bucketIds;
     private String[] filenames;
 
-    private RangeHashSorter sortMachine;
 
     /**
      * This constructor instantiates a new {@link RangeHashFunction} with the given number of ranges. It tries to size
@@ -105,6 +104,8 @@ public class RangeHashFunction extends AbstractHashFunction {
 
     /** Sorts the max range values corresponding to the file names and the bucket sizes. */
     private void sort() {
+
+        RangeHashSorter sortMachine;
         sortMachine = new RangeHashSorter(maxRangeValues, filenames);
         sortMachine.quickSort();
         generateBucketIds();
@@ -174,7 +175,8 @@ public class RangeHashFunction extends AbstractHashFunction {
             }
             filenames[i] = Aline[keyComposition.length];
         }
-        sortMachine = new RangeHashSorter(maxRangeValues, filenames);
+
+        RangeHashSorter sortMachine = new RangeHashSorter(maxRangeValues, filenames);
         sortMachine.quickSort();
         generateBucketIds();
 

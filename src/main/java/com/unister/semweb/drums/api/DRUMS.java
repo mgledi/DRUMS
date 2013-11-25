@@ -318,7 +318,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         Arrays.sort(keys, new ByteArrayComparator());
         List<Data> result = new ArrayList<Data>();
 
-        IndexForHeaderIndexFile<Data> index = indexFile.getIndex(); // Pointer to the Index
+        IndexForHeaderIndexFile index = indexFile.getIndex(); // Pointer to the Index
         int actualChunkIdx = 0, lastChunkIdx = -1;
         long actualChunkOffset = 0, oldChunkOffset = -1;
         int indexInChunk = 0;

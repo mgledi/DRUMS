@@ -15,17 +15,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket.hashfunction;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import com.unister.semweb.drums.file.FileLockException;
-import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
- * This abstract class reflects the usage of the hash-function. If the concrete implementation is correct, we just need
- * to know the possible range of the hashFunction (<code>getNumberOfBuckets</code>) and a mapping from a key to a
- * bucket-id (#getBucketId()).
+ * This abstract class reflects the usage of a consistent hash-function. To work properly, the number of buckets (
+ * {@link #getNumberOfBuckets()}) and a mapping of a key to a bucket-id ( {@link #getBucketId(byte[])}) is needed.
  * 
  * @author Martin Nettling
  */
@@ -49,7 +43,7 @@ public abstract class AbstractHashFunction {
     /**
      * @param key
      *            the element containing the key to map a bucket-id
-     * @return the bucket-id belonging to the given {@link KVStorable}
+     * @return the bucket-id belonging to the given {@link AbstractKVStorable}
      */
     public abstract int getBucketId(AbstractKVStorable key);
 

@@ -779,11 +779,9 @@ public class Bytes {
                 int offset1Adj = offset1 + BYTE_ARRAY_BASE_OFFSET;
                 int offset2Adj = offset2 + BYTE_ARRAY_BASE_OFFSET;
 
-                /*
-                 * Compare 8 bytes at a time. Benchmarking shows comparing 8 bytes at a
+                /* Compare 8 bytes at a time. Benchmarking shows comparing 8 bytes at a
                  * time is no slower than comparing 4 bytes at a time even on 32-bit.
-                 * On the other hand, it is substantially faster on 64-bit.
-                 */
+                 * On the other hand, it is substantially faster on 64-bit. */
                 for (int i = 0; i < minWords * SIZEOF_LONG; i += SIZEOF_LONG) {
                     long lw = theUnsafe.getLong(buffer1, offset1Adj + (long) i);
                     long rw = theUnsafe.getLong(buffer2, offset2Adj + (long) i);
@@ -862,14 +860,22 @@ public class Bytes {
     /**
      * @param left
      *            left operand
+     * @param leftOffset
+     *            offset in the left operand
+     * @param leftLen
+     *            length to read from offset in the left operand
      * @param right
      *            right operand
+     * @param rightOffset
+     *            offset in the right operand
+     * @param rightLen
+     *            length to read from offset in the right operand
      * @return True if equal
      */
     public static boolean equals(final byte[] left, int leftOffset, int leftLen,
             final byte[] right, int rightOffset, int rightLen) {
         // short circuit case
-        if (left == right &&  leftOffset == rightOffset && leftLen == rightLen) {
+        if (left == right && leftOffset == rightOffset && leftLen == rightLen) {
             return true;
         }
         // different lengths fast check
@@ -894,6 +900,10 @@ public class Bytes {
     /**
      * Return true if the byte array on the right is a prefix of the byte
      * array on the left.
+     * 
+     * @param bytes
+     * @param prefix
+     * @return true, if the given prefix is a prefix of the given bytes-array
      */
     public static boolean startsWith(byte[] bytes, byte[] prefix) {
         return bytes != null && prefix != null &&
@@ -1040,7 +1050,7 @@ public class Bytes {
     /**
      * Iterate over keys within the passed range, splitting at an [a,b) boundary.
      */
-    public static Iterable<byte[]> iterateOnSplits(final byte[] a,
+    protected static Iterable<byte[]> iterateOnSplits(final byte[] a,
             final byte[] b, final int num)
     {
         return iterateOnSplits(a, b, false, num);
@@ -1049,7 +1059,7 @@ public class Bytes {
     /**
      * Iterate over keys within the passed range.
      */
-    public static Iterable<byte[]> iterateOnSplits(
+    protected static Iterable<byte[]> iterateOnSplits(
             final byte[] a, final byte[] b, boolean inclusive, final int num)
     {
         byte[] aPadded;
@@ -1136,6 +1146,7 @@ public class Bytes {
      *            offset to start from
      * @param length
      *            length to hash
+     * @return the hashcode
      * */
     public static int hashCode(byte[] bytes, int offset, int length) {
         int hash = 1;

@@ -35,6 +35,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * {@link GlobalParameters} should be available in all internal Objects used by {@link DRUMS}.
  * 
  * @author Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class GlobalParameters<Data extends AbstractKVStorable> {
     /** My private Logger. */
@@ -67,8 +69,8 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
 
     /** the number of retries if a file is locked by another process */
     public int HEADER_FILE_LOCK_RETRY = 100;
-    
 
+    /** The number of bytes, which are read and written at once during synchronization */
     public long SYNC_CHUNK_SIZE;
     /** The size of one chunk in an {@link HeaderIndexFile} */
     public long FILE_CHUNK_SIZE;
@@ -89,7 +91,7 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     /** The prototype of the Data of this DRUMS. */
     private Data prototype;
 
-    /** The maximal time in ms a bucket is held in memory without synchronization attempt. */
+    /** The maximal time in milliseconds a bucket is held in memory without synchronization attempt. */
     public long MAX_BUCKET_STORAGE_TIME;
 
     /**
@@ -151,10 +153,11 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
         SYNC_CHUNK_SIZE = parseSize(props.getProperty("SYNC_CHUNK_SIZE", "2M"));
         FILE_CHUNK_SIZE = parseSize(props.getProperty("FILE_CHUNK_SIZE", "32K"));
         // determine exact index size
-        FILE_CHUNK_SIZE = FILE_CHUNK_SIZE - FILE_CHUNK_SIZE % prototype.getSize(); 
+        FILE_CHUNK_SIZE = FILE_CHUNK_SIZE - FILE_CHUNK_SIZE % prototype.getSize();
         NUMBER_OF_SYNCHRONIZER_THREADS = Integer.valueOf(props.getProperty("NUMBER_OF_SYNCHRONIZER_THREADS", "1"));
         MAX_BUCKET_STORAGE_TIME = Long.valueOf(props.getProperty("MAX_BUCKET_STORAGE_TIME", "84000000"));
-        MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = Integer.valueOf(props.getProperty("MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC", "1"));
+        MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = Integer
+                .valueOf(props.getProperty("MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC", "1"));
         HEADER_FILE_LOCK_RETRY = Integer.valueOf(props.getProperty("HEADER_FILE_LOCK_RETRY", "100"));
 
         INITIAL_FILE_SIZE = (int) parseSize(props.getProperty("INITIAL_FILE_SIZE", "16M"));
@@ -184,7 +187,8 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
      * This methods parses the given String, which should represent a size, to a long. 'K' is interpreted as 1024, 'M'
      * as 1024^2 and 'G' as 1024^3.
      * 
-     * @param
+     * @param s
+     *            the String to parse
      * @return size in byte. -1 if the String was not parsable.
      */
     public static long parseSize(String s) {

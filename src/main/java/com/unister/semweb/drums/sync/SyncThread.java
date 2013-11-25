@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.sync;
 
 import java.util.Set;
@@ -33,6 +31,8 @@ import com.unister.semweb.drums.synchronizer.Synchronizer;
  * An instance of a {@link SyncThread}. Synchronizes a {@link Bucket} with the file system.
  * 
  * @author Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(SyncThread.class);
@@ -58,16 +58,19 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     /**
      * Constructor. The given {@link Bucket} will be processed.
      * 
+     * @param syncManager
      * @param bucket
      *            the {@link Bucket} to synchronize to HDD
-     * @param actualProcessingBucketIds
-     *            pointer to a set of actual processed bucket-ids
+     * @param actualProcessingBuckets
+     *            pointer to a set of buckets in process
      * @param synchronizerFactory
-     *            a {@link ISynchronizerFactory} for instantiating a {@link Synchronizer}. The latter is responsible for
-     *            writing the {@link Bucket} to its corresponding file on HDD
+     *            an implementation of {@link ISynchronizerFactory}. This factory is used for instantiating a
+     *            {@link Synchronizer}. The latter is responsible for writing the {@link Bucket} to its corresponding
+     *            file to disk
+     * @param gp
      */
     public SyncThread(
-            SyncManager<Data> buffer,
+            SyncManager<Data> syncManager,
             Bucket<Data> bucket,
             Set<Bucket<Data>> actualProcessingBuckets,
             ISynchronizerFactory<Data> synchronizerFactory,
@@ -76,11 +79,11 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
         this.bucket = bucket;
         this.actualProcessingBuckets = actualProcessingBuckets;
         this.synchronizerFactory = synchronizerFactory;
-        this.buffer = buffer;
+        this.buffer = syncManager;
     }
 
     /**
-     * runs the processing of the {@link Bucket}
+     * runs synchronization of a particular {@link Bucket}
      */
     public void run() {
         AbstractKVStorable[] linkData = bucket.getBackend(); // get all LinkData
@@ -98,7 +101,7 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
             actualProcessingBuckets.remove(bucket);
             freeMemory(bucket);
             synchronizer.close();
-            log.debug("Synchronized {} objects in {} ms.", linkData.length, ((System.nanoTime() - startTime)/1e6));
+            log.debug("Synchronized {} objects in {} ms.", linkData.length, ((System.nanoTime() - startTime) / 1e6));
             /* update messages */
             buffer.sumUpInserted(synchronizer.getNumberOfInsertedEntries());
             buffer.sumUpUpdated(synchronizer.getNumberOfUpdatedEntries());
@@ -106,15 +109,15 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
             log.error("An error occurred during synchronizing. Synchronizing thread stopped! Some data was lost", ex);
             freeMemory(bucket);
             actualProcessingBuckets.remove(bucket);
-            
+
         }
     }
-    
+
     private void freeMemory(Bucket<Data> bucket) {
-        log.debug("Try to free memory from bucket {}.",bucket.getBucketId());
+        log.debug("Try to free memory from bucket {}.", bucket.getBucketId());
         long mem = bucket.freeMemory();
         DynamicMemoryAllocater.INSTANCES[gp.ID].freeMemory(mem);
-        log.debug("{} bytes are available now.",mem);
-        
+        log.debug("{} bytes are available now.", mem);
+
     }
 }

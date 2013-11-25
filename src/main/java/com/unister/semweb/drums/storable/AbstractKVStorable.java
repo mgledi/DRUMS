@@ -22,8 +22,8 @@ import java.util.Arrays;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
- * Abstract implementation of interface {@link KVStorable}. Extend this class to build your own objects, which have to
- * be storable.
+ * Abstract implementation of interface {@link AbstractKVStorable}. Extend this class to build your own storable
+ * objects.
  * 
  * @author Martin Nettling
  */
@@ -89,35 +89,44 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
     /**
      * Converts the object to a {@link ByteBuffer}
      * 
-     * @return
+     * @return the object as {@link ByteBuffer}
      */
     public abstract ByteBuffer toByteBuffer();
 
+    /**
+     * Initializes the object from the given {@link ByteBuffer}
+     * 
+     * @param bb
+     */
     public abstract void initFromByteBuffer(ByteBuffer bb);
 
+    /**
+     * Generates a new Object from the given {@link ByteBuffer}.
+     * 
+     * @param bb
+     * @return a new instances of this Class
+     */
     public abstract <Data extends AbstractKVStorable> Data fromByteBuffer(ByteBuffer bb);
 
     /**
-     * merges the given {@link AbstractKVStorable} with this one by your implementation and returns an
-     * {@link AbstractKVStorable}.
+     * Merges the given {@link AbstractKVStorable} with this one by your implementation.
      * 
      * @param element
-     * @return
+     * @return a pointer to an {@link AbstractKVStorable}.
      */
     public abstract <Data extends AbstractKVStorable> Data merge(Data element);
 
     /**
-     * updates the given {@link AbstractKVStorable} with values from this one by your implementation
+     * Updates the given {@link AbstractKVStorable} with values from this one.
      * 
      * @param element
-     * @return
      */
     public abstract <Data extends AbstractKVStorable> void update(Data element);
 
     /**
-     * This method returns true if this element is marked as deleted.
+     * This method returns false by default. This method must be overwritten in the concrete class,
      * 
-     * @return boolean
+     * @return true, if this element is marked as deleted
      */
     public boolean isMarkedAsDeleted() {
         return false;
@@ -136,21 +145,25 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
     }
 
     /**
-     * This method merges {@link AbstractKVStorable}s in the given array, which have the same key.
+     * This method merges all {@link AbstractKVStorable}s in the given array with same keys. The array must been sorted.
      * 
-     * @param {@link AbstractKVStorable}[] toAdd, the {@link AbstractKVStorable}s to merge. Expected sorted.
-     * @return {@link AbstractKVStorable}[], the merged {@link AbstractKVStorable}s. Returned sorted.
+     * @param toAdd
+     *            this array might contain duplicate entries concerning the key, which must be merged.
+     * 
+     * @return a new array containing unique {@link AbstractKVStorable}s. The array is sorted.
      */
     @SuppressWarnings("unchecked")
     public static <Data extends AbstractKVStorable> Data[] merge(Data[] toAdd) {
         if (toAdd.length == 1) {
             return toAdd;
         }
-        // estimate number of uniques
+        // estimate the number of unique elements and check the precondition, that the array must been sorted
         int count = 1;
         for (int i = 0; i < toAdd.length - 1; i++) {
-            if (KeyUtils.compareKey(toAdd[i].key, toAdd[i + 1].key) != 0) {
+            if (KeyUtils.compareKey(toAdd[i].key, toAdd[i + 1].key) <= 0) {
                 count++;
+            } else {
+                throw new RuntimeException("The given array is not sorted.");
             }
         }
 

@@ -26,6 +26,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * The simplest implementation of a {@link ISynchronizerFactory}.
  * 
  * @author Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class SynchronizerFactory<Data extends AbstractKVStorable> implements ISynchronizerFactory<Data> {
     @Override

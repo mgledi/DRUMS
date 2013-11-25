@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.storable;
 
 import java.io.IOException;
@@ -39,9 +37,11 @@ public class GeneralStructure implements Serializable {
     static Logger logger = LoggerFactory.getLogger(GeneralStructure.class);
 
     /** All allowed basic types. */
+    @SuppressWarnings("javadoc")
     public static enum Basic_Field_Types {
         Byte(1), Boolean(1), Char(2), Short(2), ShortInt(2), Integer(4), Float(4), Double(8), Long(8);
 
+        /** The size in bytes */
         public int size;
 
         Basic_Field_Types(int byteSize) {
@@ -68,7 +68,7 @@ public class GeneralStructure implements Serializable {
 
     int keySize = 0;
     int valueSize = 0;
-    
+
     /**
      * Adds a new ValuePart
      * 
@@ -77,7 +77,7 @@ public class GeneralStructure implements Serializable {
      * @param size
      *            the size of the key part in bytes
      * @return true if adding the value part was successful
-     * @throws IOException 
+     * @throws IOException
      */
     public boolean addValuePart(String name, int size) throws IOException {
         if (INSTANCE_EXISITS) {
@@ -106,7 +106,7 @@ public class GeneralStructure implements Serializable {
      * @param type
      *            the type of the key part.
      * @return true if adding the value part was successful
-     * @throws IOException 
+     * @throws IOException
      */
     public boolean addValuePart(String name, Basic_Field_Types type) throws IOException {
         return addValuePart(name, type.size);
@@ -120,7 +120,7 @@ public class GeneralStructure implements Serializable {
      * @param size
      *            the size of the key part in bytes
      * @return true if adding the key part was successful
-     * @throws IOException 
+     * @throws IOException
      */
     public boolean addKeyPart(String name, int size) throws IOException {
         if (INSTANCE_EXISITS) {
@@ -149,7 +149,7 @@ public class GeneralStructure implements Serializable {
      * @param type
      *            the type of the key part.
      * @return true if adding the key part was successful
-     * @throws IOException 
+     * @throws IOException
      */
     public boolean addKeyPart(String name, Basic_Field_Types type) throws IOException {
         return addKeyPart(name, type.size);

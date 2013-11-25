@@ -28,6 +28,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * {@link Bucket} in some way.
  * 
  * @author Martin Nettling
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public interface ISynchronizerFactory<Data extends AbstractKVStorable> {
     /**

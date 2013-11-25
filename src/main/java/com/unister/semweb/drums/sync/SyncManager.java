@@ -36,20 +36,22 @@ import com.unister.semweb.drums.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.drums.synchronizer.Synchronizer;
 
 /**
- * An instance of a {@link SyncManager} is a thread, that handels the synchronization of {@link Bucket}s with their
- * corresponding parts on HDD. The policy for synchronizing is the following one:<br>
+ * An instance of a {@link SyncManager} is a thread, that handles the synchronization of {@link Bucket}s with their
+ * corresponding parts on disk. The policy for synchronizing is as following:<br>
  * <li>get the bucket with the most elements and synchronize it, if there are still resources<br> <li>try to synchronize
- * the next full bucket<br>
+ * the next full bucket</li><br>
  * <br>
- * For synchronizing the {@link SyncManager} instantiates new {@link SyncThread}s (each use special {@link Synchronizer}
- * s to move data from cache to HDD).
+ * The {@link SyncManager} instantiates new {@link SyncThread}s. Each {@link SyncThread} uses a special
+ * {@link Synchronizer} to move data from cache to disk.
  * 
- * @author Nils Thieme, Martin Nettling
+ * @author Martin Nettling, Nils Thieme
+ * @param <Data>
+ *            an implementation of AbstarctKVStorable
  */
 public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     private static final Logger log = LoggerFactory.getLogger(SyncManager.class);
 
-    /** at least this * allowedElementsPerBucket Elements have to be in a bucket, before synchronizing the bucket */
+    /** at least this fill level of a bucket must been reached, before synchronizing for this bucket is started */
     public static final double MINFILL_BEFORE_SYNC = 0.3;
 
     /** Contains the buckets. */
@@ -128,7 +130,8 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
         // this.actualProcessingBucketIds = Collections.synchronizedSet(tmpSet);
         this.actualProcessingBuckets = Collections.synchronizedSet(tmpSet);
         this.pathToDbFiles = gp.databaseDirectory;
-        this.setMaxBucketStorageTime(gp.MAX_BUCKET_STORAGE_TIME);;
+        this.setMaxBucketStorageTime(gp.MAX_BUCKET_STORAGE_TIME);
+        ;
         this.synchronizerFactory = synchronizerFactory;
         this.allowedBucketsInBuffer = gp.NUMBER_OF_SYNCHRONIZER_THREADS * 4;
         this.numberOfBuckets = bucketContainer.getNumberOfBuckets();
@@ -375,15 +378,13 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
         shutDownInitiated = true;
     }
 
-    /** Returns the directory of the database files. */
+    /** @return the directory of the database files. */
     public String getPathToDbFiles() {
         return pathToDbFiles;
     }
 
     /**
-     * Returns the current maximal time that a bucket can linger within the BucketContainer.
-     * 
-     * @return
+     * @return the current maximal time that a bucket can linger within the BucketContainer.
      */
     public long getMaxBucketStorageTime() {
         return maxBucketStorageTime;
@@ -398,12 +399,12 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
         this.maxBucketStorageTime = maxBucketStorageTime;
     }
 
-    /** Returns a set of the buckets that are currently processed. */
+    /** @return a set of buckets which are currently in a synchronization process. */
     public Set<Bucket<Data>> getActualProcessingBuckets() {
         return this.actualProcessingBuckets;
     }
 
-    /** Returns the {@link BucketContainer}. */
+    /** @return the {@link BucketContainer}. */
     public BucketContainer<Data> getBucketContainer() {
         return bucketContainer;
     }
@@ -413,32 +414,40 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     // #########################################################################################
     /* Monitoring methods */
 
-    /** Returns the number of buffer threads that are currently active. */
+    /** @return the number of buffer threads that are currently active. */
     public int getNumberOfActiveThreads() {
         return bufferThreads.getActiveCount();
     }
 
-    /** Returns the maximal number of buffer threads that are possible. */
+    /** @return the maximal number of buffer threads that are allowed. */
     public int getNumberOfMaximalThreads() {
         return bufferThreads.getMaximumPoolSize();
     }
 
-    /** Adds the specific number to the number of inserted entries. */
+    /**
+     * Sums the number of inserted elements.
+     * 
+     * @param toSumUp
+     */
     public void sumUpInserted(long toSumUp) {
         numberOfElementsInserted.addAndGet(toSumUp);
     }
 
-    /** Adds the specific number to the number of updated entries. */
+    /**
+     * Sums the number of updated elements.
+     * 
+     * @param toSumUp
+     */
     public void sumUpUpdated(long toSumUp) {
         numberOfElementsUpdated.addAndGet(toSumUp);
     }
 
-    /** Returns the overall number of inserted elements to the file storage. */
+    /** @return the overall number of inserted elements to the file storage. */
     public long getNumberOfElementsInserted() {
         return numberOfElementsInserted.get();
     }
 
-    /** Returns the overall number of updated elements of the file storage. */
+    /** @return the overall number of updated elements of the file storage. */
     public long getNumberOfElementsUpdated() {
         return numberOfElementsUpdated.get();
     }

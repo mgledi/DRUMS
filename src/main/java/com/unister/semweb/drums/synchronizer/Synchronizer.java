@@ -153,7 +153,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
             int compare;
             for (indexOfToAdd = 0; indexOfToAdd < toAdd.length && dateFromDisk != null;) {
                 AbstractKVStorable dateFromBucket = toAdd[indexOfToAdd];
-                compare = KeyUtils.compareKey(dateFromBucket.key, dateFromDisk, keyLength);
+                compare = KeyUtils.compareKey(dateFromBucket.getKey(), dateFromDisk, keyLength);
 
                 /* insert element from bucket */
                 if (compare < 0) {
@@ -231,7 +231,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
      */
     protected boolean write(byte[] newData, boolean alreadyExist) throws IOException {
         // If the data is invalid.
-        if (KeyUtils.isNull(newData, prototype.key.length)) {
+        if (KeyUtils.isNull(newData, prototype.getKey().length)) {
             // if(alreadyExist) System.err.println("invalid from disk");
             return false;
         }
@@ -240,7 +240,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
         long positionOfToAddInFile = writeOffset + bufferedWriter.position();
         bufferedWriter.put(toAdd);
 
-        largestKeyInChunk = Arrays.copyOfRange(newData, 0, prototype.key.length); // elements are stored ordered so we
+        largestKeyInChunk = Arrays.copyOfRange(newData, 0, prototype.getKey().length); // elements are stored ordered so we
                                                                                   // can easily remember the largest key
         int chunkId = dataFile.getChunkIndex(positionOfToAddInFile);
         header.setLargestKey(chunkId, largestKeyInChunk);

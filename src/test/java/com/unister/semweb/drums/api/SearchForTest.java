@@ -126,7 +126,7 @@ public class SearchForTest {
         for (int i = 0; i < numberOfTestdata; i++) {
             byte[] key = convert(beginKey + i, globalParameters.keySize);
             TestStorable newStorable = new TestStorable();
-            newStorable.key = key;
+            newStorable.setKey(key);
             result[i] = newStorable;
         }
         return result;
@@ -156,7 +156,7 @@ public class SearchForTest {
     private byte[][] extractKeys(TestStorable[] toExtractFrom) {
         byte[][] result = new byte[toExtractFrom.length][];
         for (int i = 0; i < toExtractFrom.length; i++) {
-            result[i] = toExtractFrom[i].key;
+            result[i] = toExtractFrom[i].getKey();
         }
         return result;
     }
@@ -173,7 +173,7 @@ public class SearchForTest {
         for (TestStorable arrayEntry : array) {
             boolean isFound = false;
             for (TestStorable listEntry : list) {
-                if (Arrays.equals(arrayEntry.key, listEntry.key)) {
+                if (Arrays.equals(arrayEntry.getKey(), listEntry.getKey())) {
                     isFound = true;
                     break;
                 }

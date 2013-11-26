@@ -34,12 +34,12 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
      * key of the object. This key is very important for storing the objects in ascending order. It have to be coded in
      * the first bytes in the byte representation. The key is public for fast access.
      */
-    public byte[] key;
+    protected byte[] key;
 
     /**
      * value of the object. Storing all values in one byte-array reduces the memory amount of a materialized object
      */
-    public byte[] value;
+    protected byte[] value;
 
     /**
      * Sets the value of this object. The given array is not copied, only a pointer will be set

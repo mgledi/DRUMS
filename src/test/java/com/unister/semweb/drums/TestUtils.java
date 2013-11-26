@@ -168,7 +168,7 @@ public class TestUtils {
     public static DummyKVStorable searchFor(DummyKVStorable[] toSearchIn, byte[] idToSearch) {
         DummyKVStorable result = null;
         for (DummyKVStorable oneDate : toSearchIn) {
-            if (KeyUtils.compareKey(oneDate.key, idToSearch) == 0) {
+            if (KeyUtils.compareKey(oneDate.getKey(), idToSearch) == 0) {
                 result = oneDate;
                 break;
             }

@@ -104,7 +104,7 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
      */
     public GlobalParameters(String paramFile, Data prototype) {
         this.PARAMETER_FILE = paramFile;
-        this.keySize = prototype.key.length;
+        this.keySize = prototype.getKey().length;
         this.elementSize = prototype.getSize();
         this.prototype = prototype;
         this.ID = GlobalParameters.INSTANCE_COUNT.getAndIncrement();

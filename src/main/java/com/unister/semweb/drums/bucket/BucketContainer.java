@@ -70,7 +70,7 @@ public class BucketContainer<Data extends AbstractKVStorable> {
         }
         int throwBucketException = -1;
         for (AbstractKVStorable date : toAdd) {
-            int indexOfCache = hashFunction.getBucketId(date.key);
+            int indexOfCache = hashFunction.getBucketId(date.getKey());
             // safety first, check if the bucket exists. If not, try to move on. Throw exception at the end
             if (indexOfCache < buckets.length) {
                 Bucket<Data> bucket = buckets[indexOfCache];

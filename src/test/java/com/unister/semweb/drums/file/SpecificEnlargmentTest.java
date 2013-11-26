@@ -105,7 +105,7 @@ public class SpecificEnlargmentTest {
         for (int i = 0; i < numberOfStorables; i++) {
             byte[] newKey = generatePseudoKey(globalParameters.keySize);
             TestStorable newElement = new TestStorable();
-            newElement.key = newKey;
+            newElement.setKey(newKey);
             result.add(newElement);
         }
         return result;

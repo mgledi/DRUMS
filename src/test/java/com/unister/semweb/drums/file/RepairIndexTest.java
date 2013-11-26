@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.file;
 
 import java.io.File;
@@ -111,7 +109,7 @@ public class RepairIndexTest {
         for (int i = 0; i < numberOfTestdata; i++) {
             byte[] currentKey = transform(i + 1, globalParameters.keySize);
             TestStorable newData = new TestStorable();
-            newData.key = currentKey;
+            newData.setKey(currentKey);
             result[i] = newData;
         }
         return result;
@@ -142,7 +140,7 @@ public class RepairIndexTest {
         for (int i = 0; i < TestStorable.length; i++) {
             int expectedChunkId = i / elementsPerChunk;
             TestStorable oneTestStorable = TestStorable[i];
-            int chunkId = file.getIndex().getChunkId(oneTestStorable.key);
+            int chunkId = file.getIndex().getChunkId(oneTestStorable.getKey());
             if (chunkId != expectedChunkId) {
                 System.out.println("Expected chunk id: " + expectedChunkId + " <-> Read chunk id: " + chunkId);
                 return false;
@@ -154,7 +152,7 @@ public class RepairIndexTest {
     /** Examines whether all given <code>elements</code> are not indexed. */
     private boolean allElementNotInIndex(TestStorable[] elements, HeaderIndexFile<TestStorable> file) {
         for (TestStorable oneTestStorable : elements) {
-            int currentChunkId = file.getIndex().getChunkId(oneTestStorable.key);
+            int currentChunkId = file.getIndex().getChunkId(oneTestStorable.getKey());
             if (currentChunkId != -1) {
                 return false;
             }

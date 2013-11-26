@@ -153,10 +153,10 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
                     destBuffer.get(tmpB); // get the element
                     @SuppressWarnings("unchecked")
                     Data record = (Data) prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
-                    if (KeyUtils.compareKey(record.key, lowerKey) >= 0 &&
-                            KeyUtils.compareKey(record.key, upperKey) <= 0) {
+                    if (KeyUtils.compareKey(record.getKey(), lowerKey) >= 0 &&
+                            KeyUtils.compareKey(record.getKey(), upperKey) <= 0) {
                         elements.add(record);
-                    } else if (KeyUtils.compareKey(record.key, upperKey) == 1) {
+                    } else if (KeyUtils.compareKey(record.getKey(), upperKey) == 1) {
                         // we have read all relevant elements
                     }
                 }

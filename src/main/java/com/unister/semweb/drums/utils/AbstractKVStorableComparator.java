@@ -27,6 +27,6 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
 public class AbstractKVStorableComparator implements Comparator<AbstractKVStorable> {
     @Override
     public int compare(AbstractKVStorable o1, AbstractKVStorable o2) {
-        return KeyUtils.compareKey(o1.key, o2.key);
+        return KeyUtils.compareKey(o1.getKey(), o2.getKey());
     }
 }

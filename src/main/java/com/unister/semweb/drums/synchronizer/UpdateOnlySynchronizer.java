@@ -103,12 +103,12 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
             // special case
             for (int i = 0; i < toUpdate.length; i++) {
                 // get actual chunkIndex
-                actualChunkIdx = header.getChunkId(toUpdate[i].key);
+                actualChunkIdx = header.getChunkId(toUpdate[i].getKey());
                 actualChunkOffset = header.getStartOffsetOfChunk(actualChunkIdx);
 
                 if (actualChunkOffset > dataFile.getFilledUpFromContentStart()) {
                     log.warn("Element with key {} was not found. Chunk {} does not exist.", actualChunkIdx,
-                            toUpdate[i].key);
+                            toUpdate[i].getKey());
                     continue;
                 }
 
@@ -128,7 +128,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
                 if (indexInChunk == -1) {
                     log.warn(
                             "Element with key {} was not found and therefore not updated. File: {}, Chunk: {}, Index for searching in buffer: {}, Index after update: {}",
-                            new Object[] { toUpdate[i].key, this.dataFilename, actualChunkIdx, oldIndexInChunk,
+                            new Object[] { toUpdate[i].getKey(), this.dataFilename, actualChunkIdx, oldIndexInChunk,
                                     indexInChunk });
                     indexInChunk = 0;
                 }
@@ -152,7 +152,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
         workingBuffer.position(indexInChunk);
         int minElement = indexInChunk / gp.elementSize;
         int numberOfEntries = workingBuffer.limit() / gp.elementSize;
-        byte[] actualKey = data.key;
+        byte[] actualKey = data.getKey();
         // binary search
         int maxElement = numberOfEntries - 1;
         int midElement;

@@ -188,7 +188,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         IntObjectOpenHashMap<ArrayList<Data>> bucketDataMapping = new IntObjectOpenHashMap<ArrayList<Data>>();
         int bucketId;
         for (Data d : records) {
-            bucketId = hashFunction.getBucketId(d.key);
+            bucketId = hashFunction.getBucketId(d.getKey());
             if (!bucketDataMapping.containsKey(bucketId)) {
                 bucketDataMapping.put(bucketId, new ArrayList<Data>());
             }

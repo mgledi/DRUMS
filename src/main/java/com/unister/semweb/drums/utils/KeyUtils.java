@@ -1,23 +1,25 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.utils;
 
 import java.util.Arrays;
+
+import org.w3c.dom.ranges.RangeException;
+
+import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 
 /**
  * Some very important and useful functions for the keys (byte-arrays) in DRUMS.
@@ -29,7 +31,7 @@ public class KeyUtils {
     public static byte[][] toByteArray(long[] l) {
         byte[][] b = new byte[l.length][];
         for (int i = 0; i < b.length; i++) {
-           b[i] = Bytes.toBytes(l[i]);
+            b[i] = Bytes.toBytes(l[i]);
         }
         return b;
     }
@@ -102,18 +104,33 @@ public class KeyUtils {
         return Bytes.compareTo(key1, 0, length, key2, 0, length);
     }
 
-    /** Generates a hashfunction */
-    public static String generateHashFunction(byte[] min, byte[] max, int buckets, String suffix,
-            String prefix) throws Exception {
+    /**
+     * Generates a {@link RangeHashFunction}.
+     * 
+     * @param min
+     *            the minimal value to expect
+     * @param max
+     *            the maximal value to expect
+     * @param buckets
+     *            the number of buckets
+     * @param suffix
+     *            the suffix for all files
+     * @param prefix
+     *            a prefix for all files
+     * @return String representation of the the RangeHashFunction
+     * @throws Exception
+     */
+    public static String generateHashFunction(byte[] min, byte[] max, int buckets, String suffix, String prefix)
+            throws Exception {
         String[] Sbuckets = new String[buckets];
         for (int i = 0; i < buckets; i++) {
             Sbuckets[i] = i + "";
         }
-        return generateHashFunction(min, max, Sbuckets, suffix, prefix);
+        return generateRangeHashFunction(min, max, Sbuckets, suffix, prefix);
     }
 
     /**
-     * Generates a long based range HashFunction
+     * Generates a {@link RangeHashFunction}.
      * 
      * @param min
      *            the minimal value to expect
@@ -122,10 +139,13 @@ public class KeyUtils {
      * @param buckets
      *            an array with the names of the buckets
      * @param suffix
+     *            the suffix for all files
      * @param prefix
+     *            a prefix for all files
+     * @return String representation of the the RangeHashFunction
      * @throws Exception
      */
-    public static String generateHashFunction(byte[] min, byte[] max, String[] buckets, String suffix,
+    public static String generateRangeHashFunction(byte[] min, byte[] max, String[] buckets, String suffix,
             String prefix) throws Exception {
         if (compareKey(min, max) > 0) {
             throw new Exception("The given min is not larger than the max. Buckets could not be determined");
@@ -148,7 +168,7 @@ public class KeyUtils {
         }
         return sb.toString();
     }
-    
+
     /**
      * 
      * @param min
@@ -162,7 +182,7 @@ public class KeyUtils {
     public static byte[][] getMaxValsPerRange(byte[] min, byte[] max, int num) {
         return Arrays.copyOfRange(Bytes.split(min, max, false, num - 1), 1, num + 1);
     }
-    
+
     /**
      * Generates a string representation of the given key
      * 

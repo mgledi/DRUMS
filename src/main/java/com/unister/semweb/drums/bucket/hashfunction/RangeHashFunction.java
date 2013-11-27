@@ -254,7 +254,21 @@ public class RangeHashFunction extends AbstractHashFunction {
         return filenames[bucketId];
     }
 
-    // TODO Must be tested.
+    
+    @Override
+    public String toString() {
+        StringBuilder ret = new StringBuilder();
+        for (int i = 0; i < maxRangeValues[0].length; i++) {
+            ret.append('b').append('\t');
+        }
+        ret.append("filename").append('\t').append("\n");
+        for (int i = 0; i < maxRangeValues.length; i++) {
+            String oneCSVLine = makeOneLine(maxRangeValues[i], filenames[i]);
+            ret.append(oneCSVLine);
+        }
+        return ret.toString();
+    }
+    
     /**
      * Writes the hash function, represented as tuples (range, filename) into the file that is linked with the
      * HashFunction. The content of the file is overwritten.

@@ -94,8 +94,9 @@ public class DRUMS<Data extends AbstractKVStorable> {
      *            can be read or read/write
      * @param gp
      *            contains all needed settings
+     * @throws Exception 
      */
-    protected DRUMS(AbstractHashFunction hashFunction, AccessMode accessMode, GlobalParameters<Data> gp) {
+    protected DRUMS(AbstractHashFunction hashFunction, AccessMode accessMode, GlobalParameters<Data> gp) throws IOException {
         this.prototype = gp.getPrototype();
         this.hashFunction = hashFunction;
         this.gp = gp;
@@ -119,6 +120,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
                         logger.error("Can't create file {}, because file is locked by another process.", tmpFileName);
                     } catch (IOException e) {
                         logger.error("Can't create file {}. {}", tmpFileName, e);
+                        throw e;
                     }
                 }
             }

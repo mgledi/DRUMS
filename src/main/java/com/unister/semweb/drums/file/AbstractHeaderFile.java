@@ -342,7 +342,6 @@ public abstract class AbstractHeaderFile {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.gc();
         logger.debug("Closed accessFile and channel for file: " + osFile);
     }
 

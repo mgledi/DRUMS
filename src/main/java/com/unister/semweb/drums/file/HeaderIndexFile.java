@@ -366,7 +366,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
         chunkSize = (int) gp.FILE_CHUNK_SIZE;
         openChannel(false, false);
         setSoftlyClosed(true);
-        // have to reset the informations cause in openchannel the empty header was read
+        // have to reset the informations, because in #openchannel the empty header was read
         accessFile.setLength(gp.INITIAL_FILE_SIZE);
         writeHeader();
         readIndex(); // index should be empty

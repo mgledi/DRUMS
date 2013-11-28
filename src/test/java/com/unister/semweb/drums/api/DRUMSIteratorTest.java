@@ -20,6 +20,7 @@ package com.unister.semweb.drums.api;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -63,7 +64,7 @@ public class DRUMSIteratorTest {
     }
 
     @Test
-    public void iteratorTest() throws DRUMSException, InterruptedException {
+    public void iteratorTest() throws DRUMSException, InterruptedException, IOException {
         table = DRUMSInstantiator.openTable(hashFunction, DRUMS.AccessMode.READ_ONLY, TestUtils.gp);
         DRUMSIterator<DummyKVStorable> it = table.getIterator();
         ArrayList<DummyKVStorable> elements = new ArrayList<DummyKVStorable>();

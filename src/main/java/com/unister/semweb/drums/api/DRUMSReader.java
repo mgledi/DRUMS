@@ -120,30 +120,27 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
         if (!filesAreOpened) {
             throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
         }
-        // estimate bounds
+        // estimate first and last bucket
         int lowerBucket = drums.getHashFunction().getBucketId(lowerKey);
-        int upperBucket = drums.getHashFunction().getBucketId(lowerKey);
+        int upperBucket = drums.getHashFunction().getBucketId(upperKey);
+
+        // estimate first chunk in the first file
         long lowerChunkOffset = files[lowerBucket].getIndex().getStartOffsetOfChunkByKey(lowerKey);
+        // estimate last chunk in the last file
         long upperChunkOffset = files[lowerBucket].getIndex().getStartOffsetOfChunkByKey(upperKey);
         long filesize, startOffset, endOffset;
         byte[] tmpB = new byte[elementSize];
 
         ArrayList<Data> elements = new ArrayList<Data>();
         // run over all files
-        for (int i = lowerBucket; i <= upperBucket; i++) {
+        OUTER: for (int i = lowerBucket; i <= upperBucket; i++) {
             HeaderIndexFile<Data> aktFile = files[i];
             filesize = aktFile.getFilledUpFromContentStart();
-            startOffset = 0;
-            endOffset = filesize;
-            // set the startOffset when we iterate the first file
-            if (i == lowerBucket) {
-                startOffset = lowerChunkOffset;
-            }
 
-            // set the startOffset when we iterate the last file
-            if (i == upperBucket) {
-                endOffset = Math.max(upperChunkOffset + aktFile.getChunkSize(), filesize);
-            }
+            // start reading at lowerChunkOffset in first file, else start reading from beginning
+            startOffset = i == lowerBucket ? lowerChunkOffset : 0;
+            // stop reading at upperChunkOffset in last file, else read till end fo file
+            endOffset = i == upperBucket ? Math.max(upperChunkOffset + aktFile.getChunkSize(), filesize) : filesize;
 
             while (startOffset < endOffset) {
                 destBuffer.clear();
@@ -156,13 +153,13 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
                     if (KeyUtils.compareKey(record.getKey(), lowerKey) >= 0 &&
                             KeyUtils.compareKey(record.getKey(), upperKey) <= 0) {
                         elements.add(record);
-                    } else if (KeyUtils.compareKey(record.getKey(), upperKey) == 1) {
+                    } else if (KeyUtils.compareKey(record.getKey(), upperKey) > 0) {
                         // we have read all relevant elements
+                        break OUTER;
                     }
                 }
                 startOffset += destBuffer.limit();
             }
-
         }
         return elements;
     }

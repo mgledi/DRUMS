@@ -44,9 +44,8 @@ public class DRUMSInstantiator {
      *            the hash function, decides where to store/search elements
      * @param gp
      *            pointer to the {@link GlobalParameters} used by the {@link DRUMS} to open
-     * @throws IOException
-     *             is thrown if an error occurs or if the DRUMS already exists
      * @return new {@link DRUMS}-object
+     * @throws IOException 
      */
     public static <Data extends AbstractKVStorable> DRUMS<Data> createTable(AbstractHashFunction hashFunction,
             GlobalParameters<Data> gp) throws IOException {
@@ -92,9 +91,10 @@ public class DRUMSInstantiator {
      * @param gp
      *            pointer to the {@link GlobalParameters} used by the {@link DRUMS} to open
      * @return the table
+     * @throws IOException 
      */
     public static <Data extends AbstractKVStorable> DRUMS<Data> openTable(AbstractHashFunction hashFunction,
-            AccessMode accessMode, GlobalParameters<Data> gp) {
+            AccessMode accessMode, GlobalParameters<Data> gp) throws IOException {
         return new DRUMS<Data>(hashFunction, accessMode, gp);
     }
 

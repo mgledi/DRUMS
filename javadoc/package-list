@@ -1,1 +1,10 @@
+com.unister.semweb.drums
+com.unister.semweb.drums.api
+com.unister.semweb.drums.bucket
+com.unister.semweb.drums.bucket.hashfunction
+com.unister.semweb.drums.bucket.hashfunction.util
+com.unister.semweb.drums.file
+com.unister.semweb.drums.storable
+com.unister.semweb.drums.sync
+com.unister.semweb.drums.sync.synchronizer
 com.unister.semweb.drums.util

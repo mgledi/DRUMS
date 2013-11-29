@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
  * This class manages the dynamic distribution of memory for the Buckets. It should be used as Singelton. This class
@@ -31,7 +32,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 // TODO: share the same memory instead of having all its own memory
 public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {

@@ -20,9 +20,10 @@ import java.util.Comparator;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
+ * This is a {@link Comparator} for {@link AbstractKVStorable}s. Objects of this class are compared by comparinge their
+ * keys: {@link AbstractKVStorable#getKey()}.
  * 
  * @author Martin Nettling
- * 
  */
 public class AbstractKVStorableComparator implements Comparator<AbstractKVStorable> {
     @Override

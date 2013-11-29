@@ -19,9 +19,9 @@ package com.unister.semweb.drums.utils;
 import java.util.Comparator;
 
 /**
+ * This is a {@link Comparator} for byte-arrays
  * 
  * @author Martin Nettling
- * 
  */
 public class ByteArrayComparator implements Comparator<byte[]> {
     @Override

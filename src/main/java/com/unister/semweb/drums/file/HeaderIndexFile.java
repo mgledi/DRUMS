@@ -25,6 +25,7 @@ import java.util.Arrays;
 
 import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -64,7 +65,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHeaderFile implements IWritableIndexFile {
 

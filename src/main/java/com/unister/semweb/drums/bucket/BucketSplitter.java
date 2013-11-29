@@ -25,6 +25,7 @@ import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
  * This class manages the splitting of a bucket. It would be possible to implement all functionality of this class in a
@@ -36,7 +37,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 // TODO: remember KeyComposition in RangeHashFunction
 public class BucketSplitter<Data extends AbstractKVStorable> {

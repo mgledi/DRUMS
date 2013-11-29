@@ -17,8 +17,6 @@ package com.unister.semweb.drums.utils;
 
 import java.util.Arrays;
 
-import org.w3c.dom.ranges.RangeException;
-
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 
 /**
@@ -27,7 +25,13 @@ import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
  * @author Martin Nettling
  */
 public class KeyUtils {
-    /** transforms the given array of longs to an array of byte-arrays */
+    /**
+     * transforms the given array of longs to an array of byte-arrays
+     * 
+     * @param l
+     *            the longs to transform
+     * @return the to l corresponding array of byte-arrays
+     */
     public static byte[][] toByteArray(long[] l) {
         byte[][] b = new byte[l.length][];
         for (int i = 0; i < b.length; i++) {

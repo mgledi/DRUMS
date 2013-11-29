@@ -24,6 +24,7 @@ import com.unister.semweb.drums.api.DRUMS;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
 import com.unister.semweb.drums.utils.KeyUtils;
 
@@ -32,7 +33,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * 
  * @author Martin Nettling, Nils Thieme
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public class Bucket<Data extends AbstractKVStorable> {
 

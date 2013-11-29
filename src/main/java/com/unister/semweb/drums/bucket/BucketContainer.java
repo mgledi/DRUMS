@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
  * This class is responsible for adding {@link AbstractKVStorable}-objects to the correct buckets dependent on its
@@ -27,7 +28,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public class BucketContainer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(BucketContainer.class);

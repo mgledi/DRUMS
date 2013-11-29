@@ -28,6 +28,7 @@ import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
  * An instance of this class provides a Read-Only-Iterator for a given DRUMS-table. During iteration, no elements should
@@ -35,7 +36,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<Data>, Closeable {
     private static Logger logger = LoggerFactory.getLogger(DRUMSIterator.class);

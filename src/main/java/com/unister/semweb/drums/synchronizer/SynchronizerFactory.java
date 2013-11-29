@@ -21,13 +21,14 @@ import java.io.IOException;
 
 import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
  * The simplest implementation of a {@link ISynchronizerFactory}.
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public class SynchronizerFactory<Data extends AbstractKVStorable> implements ISynchronizerFactory<Data> {
     @Override

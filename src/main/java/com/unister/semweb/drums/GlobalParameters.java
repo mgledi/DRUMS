@@ -29,14 +29,15 @@ import org.slf4j.LoggerFactory;
 import com.unister.semweb.drums.api.DRUMS;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
- * This class represents a bunch of parameters, which are used globally in one DRUMS-Instance. The instance of
- * {@link GlobalParameters} should be available in all internal Objects used by {@link DRUMS}.
+ * This class represents all parameters, which are used globally in a DRUMS-Instance. The instance of
+ * {@link GlobalParameters} should be available in all internal Objects used by {@link DRUMS}. 
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public class GlobalParameters<Data extends AbstractKVStorable> {
     /** My private Logger. */

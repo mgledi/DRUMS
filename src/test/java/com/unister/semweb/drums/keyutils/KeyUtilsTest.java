@@ -23,8 +23,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.unister.semweb.drums.utils.Bytes;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.Bytes;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * This method tests the {@link KeyUtils}. Those static methods are often used in DRUMS

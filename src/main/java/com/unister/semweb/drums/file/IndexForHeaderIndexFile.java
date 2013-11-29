@@ -19,8 +19,8 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.util.Arrays;
 
-import com.unister.semweb.drums.utils.ByteArrayComparator;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.ByteArrayComparator;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * This class represents a sparse index for one {@link HeaderIndexFile}. It writes its updates to the given

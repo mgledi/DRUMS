@@ -25,8 +25,8 @@ import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
-import com.unister.semweb.drums.synchronizer.ISynchronizerFactory;
-import com.unister.semweb.drums.synchronizer.Synchronizer;
+import com.unister.semweb.drums.sync.synchronizer.ISynchronizerFactory;
+import com.unister.semweb.drums.sync.synchronizer.Synchronizer;
 
 /**
  * An instance of a {@link SyncThread}. Synchronizes a {@link Bucket} with the file system.

@@ -33,8 +33,8 @@ import com.unister.semweb.drums.bucket.BucketContainer;
 import com.unister.semweb.drums.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
-import com.unister.semweb.drums.synchronizer.ISynchronizerFactory;
-import com.unister.semweb.drums.synchronizer.Synchronizer;
+import com.unister.semweb.drums.sync.synchronizer.ISynchronizerFactory;
+import com.unister.semweb.drums.sync.synchronizer.Synchronizer;
 
 /**
  * An instance of a {@link SyncManager} is a thread, that handles the synchronization of {@link Bucket}s with their

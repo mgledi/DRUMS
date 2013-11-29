@@ -27,7 +27,7 @@ import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * This class represents an efficient direct access reader. It holds all files opened for reading. Only use this Reader,

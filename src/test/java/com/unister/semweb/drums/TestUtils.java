@@ -33,10 +33,10 @@ import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.DummyKVStorable;
-import com.unister.semweb.drums.synchronizer.Synchronizer;
-import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
-import com.unister.semweb.drums.utils.Bytes;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.sync.synchronizer.Synchronizer;
+import com.unister.semweb.drums.util.AbstractKVStorableComparator;
+import com.unister.semweb.drums.util.Bytes;
+import com.unister.semweb.drums.util.KeyUtils;
 
 public class TestUtils {
     public static Random randomGenerator = new Random(System.currentTimeMillis());

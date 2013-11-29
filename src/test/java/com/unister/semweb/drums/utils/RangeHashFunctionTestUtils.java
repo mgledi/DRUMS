@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.drums.util.Bytes;
 
 /**
  * Utility class for handling {@link RangeHashFunction} easier.

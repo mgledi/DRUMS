@@ -39,12 +39,12 @@ import com.unister.semweb.drums.file.IndexForHeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
 import com.unister.semweb.drums.sync.SyncManager;
-import com.unister.semweb.drums.synchronizer.ISynchronizerFactory;
-import com.unister.semweb.drums.synchronizer.SynchronizerFactory;
-import com.unister.semweb.drums.synchronizer.UpdateOnlySynchronizer;
-import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
-import com.unister.semweb.drums.utils.ByteArrayComparator;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.sync.synchronizer.ISynchronizerFactory;
+import com.unister.semweb.drums.sync.synchronizer.SynchronizerFactory;
+import com.unister.semweb.drums.sync.synchronizer.UpdateOnlySynchronizer;
+import com.unister.semweb.drums.util.AbstractKVStorableComparator;
+import com.unister.semweb.drums.util.ByteArrayComparator;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * This class provides the interface for managing the storage of {@link AbstractKVStorable}s. Use the static methods in

@@ -31,8 +31,8 @@ import org.junit.Test;
 import com.unister.semweb.drums.TestUtils;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.drums.storable.DummyKVStorable;
-import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.AbstractKVStorableComparator;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * This class tests the {@link DRUMSIterator}.

@@ -15,7 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket.hashfunction.util;
 
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * This class is able to perform an associative sort. It takes two arrays with the same number of elements. These arrays

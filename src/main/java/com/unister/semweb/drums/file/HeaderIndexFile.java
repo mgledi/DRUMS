@@ -26,7 +26,7 @@ import java.util.Arrays;
 import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * This class represents a file, which contains a bunch of datasets. The file also contains a header with some

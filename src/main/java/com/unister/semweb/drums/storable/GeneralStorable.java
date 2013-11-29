@@ -22,7 +22,7 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.drums.utils.Bytes;
+import com.unister.semweb.drums.util.Bytes;
 
 /**
  * This class is - as the name suggests - a general storable for DRUMS. To use instances of this class you first have to

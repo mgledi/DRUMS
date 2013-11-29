@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * Abstract implementation of interface {@link AbstractKVStorable}. Extend this class to build your own storable

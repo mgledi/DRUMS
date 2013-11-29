@@ -25,8 +25,8 @@ import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
-import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.AbstractKVStorableComparator;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * An instance of this class is a container of {@link AbstractKVStorable}s.

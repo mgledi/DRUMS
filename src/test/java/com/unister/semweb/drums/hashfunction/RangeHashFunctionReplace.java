@@ -21,8 +21,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
-import com.unister.semweb.drums.utils.Bytes;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.Bytes;
+import com.unister.semweb.drums.util.KeyUtils;
 import com.unister.semweb.drums.utils.RangeHashFunctionTestUtils;
 
 /**

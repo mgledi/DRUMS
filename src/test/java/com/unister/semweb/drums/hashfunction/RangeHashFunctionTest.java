@@ -24,6 +24,7 @@ import java.util.Random;
 
 
 
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -32,8 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
-import com.unister.semweb.drums.utils.Bytes;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.Bytes;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * Tests the the distribution of the {@link RangeHashFunction}, meaning that the key is mapped to the right bucket id.

@@ -1,4 +1,4 @@
-package com.unister.semweb.drums.utils;
+package com.unister.semweb.drums.util;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;

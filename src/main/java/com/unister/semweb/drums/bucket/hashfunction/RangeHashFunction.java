@@ -29,8 +29,8 @@ import org.apache.commons.io.IOUtils;
 
 import com.unister.semweb.drums.bucket.hashfunction.util.RangeHashSorter;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
-import com.unister.semweb.drums.utils.ByteArrayComparator;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.util.ByteArrayComparator;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * This hashFunction maps an element to a specific range. The ranges are not overlapping. It is not needed, that the

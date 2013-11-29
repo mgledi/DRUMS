@@ -26,10 +26,10 @@ import org.junit.Test;
 
 import com.unister.semweb.drums.TestUtils;
 import com.unister.semweb.drums.storable.DummyKVStorable;
-import com.unister.semweb.drums.synchronizer.UpdateOnlySynchronizer;
-import com.unister.semweb.drums.utils.AbstractKVStorableComparator;
-import com.unister.semweb.drums.utils.Bytes;
-import com.unister.semweb.drums.utils.KeyUtils;
+import com.unister.semweb.drums.sync.synchronizer.UpdateOnlySynchronizer;
+import com.unister.semweb.drums.util.AbstractKVStorableComparator;
+import com.unister.semweb.drums.util.Bytes;
+import com.unister.semweb.drums.util.KeyUtils;
 
 /**
  * Testing the UpdateOnlySynchronizer

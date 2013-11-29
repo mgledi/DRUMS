@@ -239,13 +239,13 @@ table {
 
 th {
   font-family: 'Lucida Grande', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  padding: 10px;
+  padding: 5px;
   background: #373737;
   color: #fff;
  }
 
 td {
-  padding: 10px;
+  padding: 5px;
   border: 1px solid #373737;
  }
 
@@ -354,14 +354,14 @@ Full-Width Styles
 #main_inner_nav_content {
   valign:middle;
   float:left;
-  max-width:100px;
+  max-width:160px;
   padding-top: 20px;
   margin-right:40px;
 }
 
 #main_inner_content {
   float:left;
-  max-width:680px;
+  max-width:600px;
 }
 
 #main_content_wrap {

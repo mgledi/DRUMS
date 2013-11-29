@@ -46,32 +46,36 @@
 			<!-- MAIN CONTENT -->
 			<div id="main_inner_content">
 				<section id="main_content" class="inner">
-					<p>DRUMS is a memory efficient key-value store, which is
-						optimized for:
-					<ol>
-						<li>fast bulk inserts,
-						<li>fast state dependent updates
-						<li>range selects
-					</ol>
-					DRUMS was first developed to store sequence related data, but it
-					can be easily adapted for other problems, e.g. product
-					informations, clickthrough data. To see example usages with
-					biological data please have a look at <a
-						href="https://github.com/mgledi/BioDRUMS/">BioDRUMS</a>.
-					</p>
-					<h2>Preconditions</h2>
+					<h1>Dependencies</h1>
 					<p>
-						To use DRUMS you must be able to define your records to be all of
-						equal size. It is not possible to store e.g. text records of
-						different length. Futher, it must be possible to define a
-						consistent hash function for your records, e.g. a
-						RangeHashFunction (an implementation is already included in this
-						project). <br>
-						<br> This project provides no out of the box API. You have to
-						integrate this project into your project. Then you can use the
-						provided java-API to create or open a DRUMS-table and to insert,
-						update or select records. Please find all methods described in the
-						<a href="/DRUMS/javadoc/index.html">JavaDoc</a>.
+					<table cellpadding="0" cellspacing="0" style="padding: 0px">
+						<thead>
+							<tr>
+								<th>Artifact Name</th>
+								<th>Version</th>
+							</tr>
+						</thead>
+						<tr>
+							<td>org.slf4j.slf4j-log4j12</td>
+							<td>1.75</td>
+						</tr>
+						<tr>
+							<td>com.carrotsearch.hppc</td>
+							<td>0.5.3
+						</tr>
+						<tr>
+							<td>(appache) commons-io</td>
+							<td>2.4
+						</tr>
+						<tr>
+							<td>org.appache.commons.commons-lang3</td>
+							<td>3.1
+						</tr>
+						<tr>
+							<td>junit (scope test)</td>
+							<td>4.11</td>
+						</tr>
+					</table>
 					</p>
 				</section>
 			</div>

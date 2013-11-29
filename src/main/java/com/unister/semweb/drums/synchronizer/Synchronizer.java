@@ -31,6 +31,7 @@ import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.file.IndexForHeaderIndexFile;
 import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 import com.unister.semweb.drums.sync.SyncThread;
 import com.unister.semweb.drums.utils.KeyUtils;
 
@@ -41,7 +42,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * 
  * @author Nils Thieme, Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public class Synchronizer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(Synchronizer.class);

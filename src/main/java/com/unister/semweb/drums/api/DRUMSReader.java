@@ -26,6 +26,7 @@ import com.carrotsearch.hppc.cursors.IntObjectCursor;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 import com.unister.semweb.drums.utils.KeyUtils;
 
 /**
@@ -37,7 +38,7 @@ import com.unister.semweb.drums.utils.KeyUtils;
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public class DRUMSReader<Data extends AbstractKVStorable> {
     /** Marks if files are opened. Is set to avoid null-pointer exceptions */

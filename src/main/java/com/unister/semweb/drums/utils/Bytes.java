@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import sun.misc.Unsafe;
 
 /**
- * Utility class that handles byte arrays.
+ * Utility class that handles byte arrays. 
  */
 @SuppressWarnings("restriction")
 public class Bytes {
@@ -34,7 +34,7 @@ public class Bytes {
     /** Size of float in bytes */
     public static final int SIZEOF_FLOAT = Float.SIZE / Byte.SIZE;
 
-    /** Size of int in bytes */
+    /** Size of integer in bytes */
     public static final int SIZEOF_INT = Integer.SIZE / Byte.SIZE;
 
     /** Size of long in bytes */

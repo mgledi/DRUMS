@@ -13,19 +13,30 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
-
-package com.unister.semweb.drums.utils;
-
-import java.util.Comparator;
+package com.unister.semweb.drums.api;
 
 /**
- * This is a {@link Comparator} for byte-arrays
+ * Is thrown when an error occurs within the file storage.
  * 
- * @author Martin Nettling
+ * @author Nils Thieme
+ * 
  */
-public class ByteArrayComparator implements Comparator<byte[]> {
-    @Override
-    public int compare(byte[] o1, byte[] o2) {
-        return KeyUtils.compareKey(o1, o2);
+public class DRUMSException extends Exception {
+    private static final long serialVersionUID = -6381038599235245823L;
+
+    public DRUMSException() {
+        super();
+    }
+
+    public DRUMSException(String message) {
+        super(message);
+    }
+
+    public DRUMSException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
+
+    public DRUMSException(Throwable throwable) {
+        super(throwable);
     }
 }

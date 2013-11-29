@@ -22,6 +22,7 @@ import java.io.IOException;
 import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
  * The interface for different {@link ISynchronizerFactory}s. Instantiates {@link Synchronizer}s, which synchronize a
@@ -29,7 +30,7 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public interface ISynchronizerFactory<Data extends AbstractKVStorable> {
     /**

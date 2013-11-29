@@ -24,6 +24,7 @@ import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
+import com.unister.semweb.drums.storable.GeneralStorable;
 import com.unister.semweb.drums.synchronizer.ISynchronizerFactory;
 import com.unister.semweb.drums.synchronizer.Synchronizer;
 
@@ -32,7 +33,7 @@ import com.unister.semweb.drums.synchronizer.Synchronizer;
  * 
  * @author Martin Nettling
  * @param <Data>
- *            an implementation of AbstarctKVStorable
+ *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
 public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(SyncThread.class);

@@ -23,7 +23,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
 import com.unister.semweb.drums.util.KeyUtils;
@@ -108,7 +108,7 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
     protected IndexForHeaderIndexFile index;
 
     /** A pointer to the GlobalParameters used by this DRUMS */
-    protected GlobalParameters<Data> gp;
+    protected DRUMSParameterSet<Data> gp;
 
     /**
      * This constructor instantiates a new {@link HeaderIndexFile} with the given <code>fileName</code> in the given
@@ -121,18 +121,18 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @param max_retries_connect
      *            the number of retries to open a channel, if the file is locked
      * @param gp
-     *            the {@link GlobalParameters}.
+     *            the {@link DRUMSParameterSet}.
      * @throws FileLockException
      *             if the <code>max_retries_connect</code> is exceeded
      * @throws IOException
      *             if another error with the file-access occured
      */
-    public HeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, GlobalParameters<Data> gp)
+    public HeaderIndexFile(String fileName, AccessMode mode, int max_retries_connect, DRUMSParameterSet<Data> gp)
             throws FileLockException, IOException {
         this.gp = gp;
         this.incrementSize = gp.INITIAL_INCREMENT_SIZE;
-        this.elementSize = gp.elementSize;
-        this.keySize = gp.keySize;
+        this.elementSize = gp.getElementSize();
+        this.keySize = gp.getKeySize();
         this.osFile = new File(fileName);
         this.mode = mode;
         this.max_retries_connect = max_retries_connect;
@@ -152,13 +152,13 @@ public class HeaderIndexFile<Data extends AbstractKVStorable> extends AbstractHe
      * @param max_retries_connect
      *            the number of retries to open a channel, if the file is locked
      * @param gp
-     *            the {@link GlobalParameters}.
+     *            the {@link DRUMSParameterSet}.
      * @throws FileLockException
      *             if the <code>max_retries_connect</code> is exceeded
      * @throws IOException
      *             if another error with the fileaccess occured
      */
-    public HeaderIndexFile(String fileName, int max_retries_connect, GlobalParameters<Data> gp)
+    public HeaderIndexFile(String fileName, int max_retries_connect, DRUMSParameterSet<Data> gp)
             throws FileLockException, IOException {
         this.osFile = new File(fileName);
         this.max_retries_connect = max_retries_connect;

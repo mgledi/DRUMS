@@ -40,8 +40,14 @@ import com.unister.semweb.drums.util.KeyUtils;
 
 public class TestUtils {
     public static Random randomGenerator = new Random(System.currentTimeMillis());
-    public static GlobalParameters<DummyKVStorable> gp =
-            new GlobalParameters<DummyKVStorable>(DummyKVStorable.getInstance());
+    public static DRUMSParameterSet<DummyKVStorable> gp;
+    static {
+        try {
+            gp = new DRUMSParameterSet<DummyKVStorable>(DummyKVStorable.getInstance());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Generates buckets. The size of the buckets, the number of the buckets and the elements that will be generated for
@@ -77,7 +83,7 @@ public class TestUtils {
      */
     public static List<Bucket<DummyKVStorable>> generateBucketList(int bucketSize, int numberOfBuckets,
             int numberOfDataPerBucket) {
-        AbstractHashFunction hashFunction = new RangeHashFunction(numberOfBuckets, gp.keySize,"");
+        AbstractHashFunction hashFunction = new RangeHashFunction(numberOfBuckets, gp.getKeySize(),"");
         List<Bucket<DummyKVStorable>> result = new ArrayList<Bucket<DummyKVStorable>>();
         for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
             Bucket<DummyKVStorable> newBucket = new Bucket<DummyKVStorable>(i, TestUtils.gp);
@@ -282,13 +288,13 @@ public class TestUtils {
     public static List<DummyKVStorable> readFrom(String filename, int numberOfElementsToRead) throws Exception {
         HeaderIndexFile<DummyKVStorable> file = new HeaderIndexFile<DummyKVStorable>(filename, AccessMode.READ_ONLY, 1,
                 TestUtils.gp);
-        ByteBuffer dataBuffer = ByteBuffer.allocate(numberOfElementsToRead * TestUtils.gp.elementSize);
+        ByteBuffer dataBuffer = ByteBuffer.allocate(numberOfElementsToRead * TestUtils.gp.getElementSize());
         file.read(0, dataBuffer);
         dataBuffer.flip();
 
         List<DummyKVStorable> readData = new ArrayList<DummyKVStorable>();
         while (dataBuffer.position() < dataBuffer.limit()) {
-            byte[] oneLinkData = new byte[TestUtils.gp.elementSize];
+            byte[] oneLinkData = new byte[TestUtils.gp.getElementSize()];
             dataBuffer.get(oneLinkData);
             DummyKVStorable oneDate = TestUtils.gp.getPrototype().fromByteBuffer(ByteBuffer.wrap(oneLinkData));
             readData.add(oneDate);

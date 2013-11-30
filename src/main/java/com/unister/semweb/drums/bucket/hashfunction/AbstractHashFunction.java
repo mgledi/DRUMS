@@ -15,6 +15,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket.hashfunction;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
@@ -23,8 +28,8 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
  * 
  * @author Martin Nettling
  */
-public abstract class AbstractHashFunction {
-
+public abstract class AbstractHashFunction implements Serializable {
+    private static final long serialVersionUID = -3139493910715670755L;
     /** the number of buckets */
     protected int buckets;
 
@@ -58,4 +63,20 @@ public abstract class AbstractHashFunction {
      * @return the bucket-id of the bucket belonging to the given filename.
      */
     public abstract int getBucketId(String dbFilename);
+
+    /**
+     * Writes this hashfunction to the given {@link OutputStream}
+     * 
+     * @param os
+     * @throws IOException
+     */
+    public abstract void store(OutputStream os) throws IOException;
+
+    /**
+     * Loads the hashfunction from the given {@link InputStream}
+     * 
+     * @param in
+     * @throws IOException
+     */
+    public abstract void load(InputStream in) throws IOException;
 }

@@ -20,7 +20,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.bucket.DynamicMemoryAllocater;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
@@ -54,7 +54,7 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     private SyncManager<Data> buffer;
 
     /** A Pointer to the GlobalParameters used by the DRUMS containing this SyncThread */
-    GlobalParameters<Data> gp;
+    DRUMSParameterSet<Data> gp;
 
     /**
      * Constructor. The given {@link Bucket} will be processed.
@@ -75,7 +75,7 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
             Bucket<Data> bucket,
             Set<Bucket<Data>> actualProcessingBuckets,
             ISynchronizerFactory<Data> synchronizerFactory,
-            GlobalParameters<Data> gp) {
+            DRUMSParameterSet<Data> gp) {
         this.gp = gp;
         this.bucket = bucket;
         this.actualProcessingBuckets = actualProcessingBuckets;
@@ -117,7 +117,7 @@ public class SyncThread<Data extends AbstractKVStorable> implements Runnable {
     private void freeMemory(Bucket<Data> bucket) {
         log.debug("Try to free memory from bucket {}.", bucket.getBucketId());
         long mem = bucket.freeMemory();
-        DynamicMemoryAllocater.INSTANCES[gp.ID].freeMemory(mem);
+        DynamicMemoryAllocater.INSTANCES[gp.instanceID].freeMemory(mem);
         log.debug("{} bytes are available now.", mem);
 
     }

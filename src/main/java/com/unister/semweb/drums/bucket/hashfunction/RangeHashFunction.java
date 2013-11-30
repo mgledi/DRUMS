@@ -15,12 +15,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket.hashfunction;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +39,8 @@ import com.unister.semweb.drums.util.KeyUtils;
  * @author Martin Nettling
  */
 public class RangeHashFunction extends AbstractHashFunction {
+    private static final long serialVersionUID = 4288827206276176844L;
+
     /** the file where the hashfunction is stored human-readable */
     private String hashFunctionFile;
 
@@ -111,7 +113,7 @@ public class RangeHashFunction extends AbstractHashFunction {
      * @param hashFunctionFilename
      *            the file name of the range hash function
      */
-    public RangeHashFunction(byte[][] rangeValues, String[] filenames, String hashFunctionFilename /* TODO: prototype */) {
+    public RangeHashFunction(byte[][] rangeValues, String[] filenames, String hashFunctionFilename) {
         this.hashFunctionFile = hashFunctionFilename;
         this.buckets = rangeValues.length;
         this.maxRangeValues = rangeValues;
@@ -123,7 +125,6 @@ public class RangeHashFunction extends AbstractHashFunction {
 
     /** Sorts the max range values corresponding to the file names and the bucket sizes. */
     private void sort() {
-
         RangeHashSorter sortMachine;
         sortMachine = new RangeHashSorter(maxRangeValues, filenames);
         sortMachine.quickSort();
@@ -140,65 +141,8 @@ public class RangeHashFunction extends AbstractHashFunction {
      * @throws IOException
      */
     public RangeHashFunction(File file) throws IOException {
-        FileReader fileReader = new FileReader(file);
-        initialise(fileReader);
-        IOUtils.closeQuietly(fileReader);
+        load(new FileInputStream(file));
         this.hashFunctionFile = file.getAbsolutePath();
-    }
-
-    /**
-     * Creates the RangeHashFunction with the content of the given {@link Reader}.
-     * 
-     * @param reader
-     * @throws IOException
-     */
-    public RangeHashFunction(Reader reader) throws IOException {
-        initialise(reader);
-    }
-
-    /** Initializes the RangeHashFunction with the content of the given {@link Reader}. */
-    private void initialise(Reader reader) throws IOException {
-        List<String> readData = IOUtils.readLines(reader);
-
-        maxRangeValues = new byte[readData.size() - 1][];
-        filenames = new String[readData.size() - 1];
-
-        // analyze header
-        String[] header = readData.get(0).split("\t");
-        int keySize = 0;
-        keyComposition = new int[header.length - 1];
-        for (int i = 0; i < keyComposition.length; i++) {
-            int e = stringToByteCount(header[i]);
-            if (e == 0) {
-                throw new IOException("Header could not be read. Could not decode " + header[i]);
-            }
-            keyComposition[i] = e;
-            keySize += e;
-        }
-        for (int i = 0; i < readData.size() - 1; i++) {
-            String[] Aline = readData.get(i + 1).split("\t");
-            // TODO: format exception
-            maxRangeValues[i] = new byte[keySize];
-            // we need an offset for the current part of the key
-            int keyPartOffset = -1;
-            for (int k = 0; k < keyComposition.length; k++) {
-                long tmp = Long.parseLong(Aline[k]);
-                // set the offset on the last byte of the current part of the key
-                keyPartOffset += keyComposition[k];
-                // start from the lowest bits of the read long value and use them for the last byte (= lowest byte) of
-                // the current part of the key. Than take the next bits and the second lowest byte
-                for (int b = 0; b < keyComposition[k]; b++) {
-                    maxRangeValues[i][keyPartOffset - b] = (byte) tmp;
-                    tmp = tmp >> 8;
-                }
-            }
-            filenames[i] = Aline[keyComposition.length];
-        }
-
-        RangeHashSorter sortMachine = new RangeHashSorter(maxRangeValues, filenames);
-        sortMachine.quickSort();
-        generateBucketIds();
-
     }
 
     /**
@@ -288,27 +232,6 @@ public class RangeHashFunction extends AbstractHashFunction {
     }
 
     /**
-     * Writes the hash function, represented as tuples (range, filename) into the file that is linked with the
-     * HashFunction. The content of the file is overwritten.
-     * 
-     * @throws IOException
-     */
-    public void writeToFile() throws IOException {
-        FileWriter fileWriter = new FileWriter(hashFunctionFile);
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        for (int i = 0; i < maxRangeValues[0].length; i++) {
-            bufferedWriter.append('b').append('\t');
-        }
-        bufferedWriter.append("filename").append('\t').append("\n");
-        for (int i = 0; i < maxRangeValues.length; i++) {
-            String oneCSVLine = makeOneLine(maxRangeValues[i], filenames[i]);
-            bufferedWriter.append(oneCSVLine);
-        }
-        bufferedWriter.flush();
-        bufferedWriter.close();
-    }
-
-    /**
      * Concatenates the given range value and the file name to one string. It is used to write the hash function file.
      */
     private String makeOneLine(byte[] value, String filename) {
@@ -316,7 +239,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         for (int i = 0; i < value.length; i++) {
             sb.append(value[i]).append('\t');
         }
-        sb.append(filename).append('\n');
+        sb.append(filename);
         return sb.toString();
     }
 
@@ -451,5 +374,76 @@ public class RangeHashFunction extends AbstractHashFunction {
         } else {
             return 0;
         }
+    }
+    
+
+    /**
+     * Writes the hash function, represented as tuples (range, filename) into the file that is linked with the
+     * HashFunction. The content of the file is overwritten.
+     * 
+     * @throws IOException
+     */
+    public void writeToFile() throws IOException {
+        FileOutputStream fos = new FileOutputStream(new File(this.hashFunctionFile));
+        store(fos);
+        fos.close();
+    }
+
+    @Override
+    public void store(OutputStream os) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < maxRangeValues[0].length; i++) {
+            sb.append("b").append("\t");
+        }
+        sb.append("filename\t").append("\n");
+        for (int i = 0; i < maxRangeValues.length; i++) {
+            sb.append(makeOneLine(maxRangeValues[i], filenames[i])).append("\n");
+        }
+        
+        os.write(sb.toString().getBytes());
+        os.close();
+    }
+
+    @Override
+    public void load(InputStream in) throws IOException {
+        List<String> readData = IOUtils.readLines(in);
+
+        maxRangeValues = new byte[readData.size() - 1][];
+        filenames = new String[readData.size() - 1];
+
+        // analyze header
+        String[] header = readData.get(0).split("\t");
+        int keySize = 0;
+        keyComposition = new int[header.length - 1];
+        for (int i = 0; i < keyComposition.length; i++) {
+            int e = stringToByteCount(header[i]);
+            if (e == 0) {
+                throw new IOException("Header could not be read. Could not decode " + header[i]);
+            }
+            keyComposition[i] = e;
+            keySize += e;
+        }
+        for (int i = 0; i < readData.size() - 1; i++) {
+            String[] Aline = readData.get(i + 1).split("\t");
+            // TODO: format exception
+            maxRangeValues[i] = new byte[keySize];
+            // we need an offset for the current part of the key
+            int keyPartOffset = -1;
+            for (int k = 0; k < keyComposition.length; k++) {
+                long tmp = Long.parseLong(Aline[k]);
+                // set the offset on the last byte of the current part of the key
+                keyPartOffset += keyComposition[k];
+                // start from the lowest bits of the read long value and use them for the last byte (= lowest byte) of
+                // the current part of the key. Than take the next bits and the second lowest byte
+                for (int b = 0; b < keyComposition[k]; b++) {
+                    maxRangeValues[i][keyPartOffset - b] = (byte) tmp;
+                    tmp = tmp >> 8;
+                }
+            }
+            filenames[i] = Aline[keyComposition.length];
+        }
+        this.sort();
+        generateBucketIds();
+        
     }
 }

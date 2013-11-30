@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.api.DRUMS;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.file.FileLockException;
@@ -59,8 +59,8 @@ public class Bucket<Data extends AbstractKVStorable> {
     /** Stores the creation time of this bucket. */
     private long creationTime;
 
-    /** A pointer to the {@link GlobalParameters} used by this {@link DRUMS} */
-    private GlobalParameters<Data> gp;
+    /** A pointer to the {@link DRUMSParameterSet} used by this {@link DRUMS} */
+    private DRUMSParameterSet<Data> gp;
 
     /**
      * Constructor. Needs to know the id of the {@link Bucket} and the maximum size of the {@link Bucket}.
@@ -68,9 +68,9 @@ public class Bucket<Data extends AbstractKVStorable> {
      * @param bucketId
      *            the identification number of this bucket. Used in {@link BucketContainer} and other classes
      * @param gp
-     *            a pointer to the {@link GlobalParameters}
+     *            a pointer to the {@link DRUMSParameterSet}
      */
-    public Bucket(final int bucketId, GlobalParameters<Data> gp) {
+    public Bucket(final int bucketId, DRUMSParameterSet<Data> gp) {
         this.bucketId = bucketId;
         this.memory = new byte[0][];
         this.elementsInBucket = 0;
@@ -142,7 +142,7 @@ public class Bucket<Data extends AbstractKVStorable> {
      */
     public boolean contains(Data element) {
         boolean contains = false;
-        byte[] dst = new byte[gp.elementSize];
+        byte[] dst = new byte[gp.getElementSize()];
         for (int m = 0; m < memory.length; m++) {
             ByteBuffer bb = ByteBuffer.wrap(memory[m]);
             if (m == memory.length - 1) {
@@ -169,7 +169,7 @@ public class Bucket<Data extends AbstractKVStorable> {
      * @throws InterruptedException
      */
     private boolean enlargeMemory() throws InterruptedException {
-        int bytesAllocated = DynamicMemoryAllocater.INSTANCES[gp.ID].allocateNextChunk();
+        int bytesAllocated = DynamicMemoryAllocater.INSTANCES[gp.instanceID].allocateNextChunk();
         if (bytesAllocated > 0) {
 
             byte[] mem = new byte[bytesAllocated];
@@ -202,9 +202,9 @@ public class Bucket<Data extends AbstractKVStorable> {
         if (index >= elementsInBucket) {
             return null;
         } else {
-            int chunk = index * gp.elementSize / memory[0].length;
-            int offset = index * gp.elementSize % memory[0].length;
-            return ByteBuffer.wrap(memory[chunk], offset, gp.elementSize).asReadOnlyBuffer();
+            int chunk = index * gp.getElementSize() / memory[0].length;
+            int offset = index * gp.getElementSize() % memory[0].length;
+            return ByteBuffer.wrap(memory[chunk], offset, gp.getElementSize()).asReadOnlyBuffer();
         }
     }
 
@@ -219,7 +219,7 @@ public class Bucket<Data extends AbstractKVStorable> {
     public synchronized Data[] getBackend() {
         sort();
         AbstractKVStorable[] data = new AbstractKVStorable[elementsInBucket];
-        byte[] dst = new byte[gp.elementSize];
+        byte[] dst = new byte[gp.getElementSize()];
         int i = 0;
         for (int m = 0; m < memory.length; m++) {
             ByteBuffer bb = ByteBuffer.wrap(memory[m]);

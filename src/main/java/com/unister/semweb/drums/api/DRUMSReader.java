@@ -109,8 +109,8 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Returns all elements between lowerKey and upperKey this function is still BUGGY
-     * TODO: fix this function
+     * Returns all elements between lowerKey and upperKey this function is still BUGGY.<br><br>
+     * TODO: fix this function. @Nils Why is this function buggy?
      * 
      * @param lowerKey
      * @param upperKey

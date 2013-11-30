@@ -28,7 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.api.DRUMS;
 import com.unister.semweb.drums.api.DRUMSInstantiator;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
@@ -43,7 +43,7 @@ import com.unister.semweb.drums.utils.RangeHashFunctionTestUtils;
  */
 public class SearchForTest {
     private static final String databaseDirectory = "/tmp/db";
-    private GlobalParameters<TestStorable> globalParameters;
+    private DRUMSParameterSet<TestStorable> globalParameters;
 
     private String rangeHashFunctionFilename = "/tmp/rangeHashFunction.txt";
 
@@ -53,11 +53,11 @@ public class SearchForTest {
         FileUtils.deleteQuietly(new File(databaseDirectory));
         FileUtils.deleteQuietly(new File(rangeHashFunctionFilename));
 
-        globalParameters = new GlobalParameters<TestStorable>(new TestStorable());
-        globalParameters.databaseDirectory = databaseDirectory;
+        globalParameters = new DRUMSParameterSet<TestStorable>(new TestStorable());
+        globalParameters.DATABASE_DIRECTORY = databaseDirectory;
 
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(16, Integer.MAX_VALUE / 16,
-                rangeHashFunctionFilename, globalParameters.keySize);
+                rangeHashFunctionFilename, globalParameters.getKeySize());
         hashFunction.writeToFile();
     }
 
@@ -124,7 +124,7 @@ public class SearchForTest {
     private TestStorable[] generateTestdata(int numberOfTestdata, int beginKey) {
         TestStorable[] result = new TestStorable[numberOfTestdata];
         for (int i = 0; i < numberOfTestdata; i++) {
-            byte[] key = convert(beginKey + i, globalParameters.keySize);
+            byte[] key = convert(beginKey + i, globalParameters.getKeySize());
             TestStorable newStorable = new TestStorable();
             newStorable.setKey(key);
             result[i] = newStorable;
@@ -136,7 +136,7 @@ public class SearchForTest {
     private byte[][] generateKeys(int startKey, int numberOfKeys) {
         byte[][] result = new byte[numberOfKeys][];
         for (int i = 0; i < numberOfKeys; i++) {
-            result[i] = convert(i + startKey, globalParameters.keySize);
+            result[i] = convert(i + startKey, globalParameters.getKeySize());
         }
         return result;
     }

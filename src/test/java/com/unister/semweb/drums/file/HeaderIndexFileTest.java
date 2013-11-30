@@ -32,7 +32,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.storable.DummyKVStorable;
 
@@ -45,7 +45,7 @@ public class HeaderIndexFileTest {
     HeaderIndexFile<DummyKVStorable> file;
 
     /** The global Parameters to use */
-    GlobalParameters<DummyKVStorable> gp = new GlobalParameters<DummyKVStorable>(DummyKVStorable.getInstance());
+    DRUMSParameterSet<DummyKVStorable> gp;
     
     /** create static file access */
     @BeforeClass
@@ -58,6 +58,7 @@ public class HeaderIndexFileTest {
     /** create static file access */
     @Before
     public void createFile() throws IOException, FileLockException {
+        gp = new DRUMSParameterSet<DummyKVStorable>(DummyKVStorable.getInstance());
         file = new HeaderIndexFile<DummyKVStorable>("test.db", HeaderIndexFile.AccessMode.READ_WRITE, 1, gp);
     }
 

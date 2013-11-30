@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.bucket.BucketContainer;
 import com.unister.semweb.drums.bucket.DynamicMemoryAllocater;
@@ -109,11 +109,11 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     private AtomicLong numberOfElementsUpdated;
 
     /** A Pointer to the GlobalParameters used by the DRUMS containing this SyncManager */
-    GlobalParameters<Data> gp;
+    DRUMSParameterSet<Data> gp;
 
     /**
      * Instantiates a new {@link SyncManager} with an already instantiated {@link BucketContainer}. The defined number
-     * of Threads in {@link GlobalParameters} will show the number of allowed {@link SyncThread}s used to synchronize
+     * of Threads in {@link DRUMSParameterSet} will show the number of allowed {@link SyncThread}s used to synchronize
      * the {@link AbstractKVStorable}s from the {@link Bucket}s in {@link BucketContainer} to the HDD.
      * 
      * @param bucketContainer
@@ -123,14 +123,14 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
     public SyncManager(
             BucketContainer<Data> bucketContainer,
             ISynchronizerFactory<Data> synchronizerFactory,
-            GlobalParameters<Data> gp) {
+            DRUMSParameterSet<Data> gp) {
         this.gp = gp;
         this.bucketContainer = bucketContainer;
         // HashSet<Integer> tmpSet = new HashSet<Integer>();
         HashSet<Bucket<Data>> tmpSet = new HashSet<Bucket<Data>>();
         // this.actualProcessingBucketIds = Collections.synchronizedSet(tmpSet);
         this.actualProcessingBuckets = Collections.synchronizedSet(tmpSet);
-        this.pathToDbFiles = gp.databaseDirectory;
+        this.pathToDbFiles = gp.DATABASE_DIRECTORY;
         this.setMaxBucketStorageTime(gp.MAX_BUCKET_STORAGE_TIME);
         ;
         this.synchronizerFactory = synchronizerFactory;
@@ -221,7 +221,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
             }
 
             /* ***** TESTING PURPOSE ****** */
-            if (DynamicMemoryAllocater.INSTANCES[gp.ID].getFreeMemory() == 0) {
+            if (DynamicMemoryAllocater.INSTANCES[gp.instanceID].getFreeMemory() == 0) {
                 log.info("No memory free, theoretically I must force synchronization");
             }
             /* **************************** */
@@ -232,7 +232,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
             // At this point we prevent starvation of one bucket if it not filled for a long period of time.
             if (oldBucket.elementsInBucket >= gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
                     // TODO What do we do if more than one DynamicMemoryAllocator exist???
-                    DynamicMemoryAllocater.INSTANCES[gp.ID].getFreeMemory() == 0 ||
+                    DynamicMemoryAllocater.INSTANCES[gp.instanceID].getFreeMemory() == 0 ||
                     // DynamicMemoryAllocater.INSTANCE.getFreeMemory() == 0 ||
                     elapsedTime > maxBucketStorageTime ||
                     shutDownInitiated ||
@@ -253,7 +253,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
             if (bucketId != -1) {
                 Bucket<Data> pointer = bucketContainer.getBucket(bucketId);
                 boolean threadStarted = false;
-                if (DynamicMemoryAllocater.INSTANCES[gp.ID].getFreeMemory() == 0 ||
+                if (DynamicMemoryAllocater.INSTANCES[gp.instanceID].getFreeMemory() == 0 ||
                         pointer.elementsInBucket >= gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
                         forceInitiated) {
                     threadStarted = startNewThread(bucketId);

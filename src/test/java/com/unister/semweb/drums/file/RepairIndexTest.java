@@ -23,7 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.storable.TestStorable;
@@ -37,15 +37,15 @@ import com.unister.semweb.drums.storable.TestStorable;
 public class RepairIndexTest {
     private static final String filename = "/tmp/indexRestorer.db";
 
-    private GlobalParameters<TestStorable> globalParameters;
+    private DRUMSParameterSet<TestStorable> globalParameters;
     private int elementsPerChunk;
 
     /** Initialises the test by removing the test file. */
     @Before
     public void inititalise() throws Exception {
         FileUtils.deleteQuietly(new File(filename));
-        globalParameters = new GlobalParameters<TestStorable>(new TestStorable());
-        elementsPerChunk = (int) (globalParameters.FILE_CHUNK_SIZE / globalParameters.elementSize);
+        globalParameters = new DRUMSParameterSet<TestStorable>(new TestStorable());
+        elementsPerChunk = (int) (globalParameters.FILE_CHUNK_SIZE / globalParameters.getElementSize());
     }
 
     /** Only one element is written to the test file. */
@@ -107,7 +107,7 @@ public class RepairIndexTest {
     private TestStorable[] generateTestdata(int numberOfTestdata) {
         TestStorable[] result = new TestStorable[numberOfTestdata];
         for (int i = 0; i < numberOfTestdata; i++) {
-            byte[] currentKey = transform(i + 1, globalParameters.keySize);
+            byte[] currentKey = transform(i + 1, globalParameters.getKeySize());
             TestStorable newData = new TestStorable();
             newData.setKey(currentKey);
             result[i] = newData;
@@ -117,7 +117,7 @@ public class RepairIndexTest {
 
     /** Converts the given array of {@link TestStorable} to a consecutive {@link ByteBuffer}. */
     private ByteBuffer convert(TestStorable[] toConvert) {
-        ByteBuffer converter = ByteBuffer.allocate(toConvert.length * globalParameters.elementSize);
+        ByteBuffer converter = ByteBuffer.allocate(toConvert.length * globalParameters.getElementSize());
         for (TestStorable oneTestStorable : toConvert) {
             converter.put(oneTestStorable.toByteBuffer());
         }

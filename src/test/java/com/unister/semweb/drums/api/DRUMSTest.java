@@ -52,7 +52,7 @@ public class DRUMSTest {
         byte[][] bRanges = KeyUtils.toByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
         // FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
-        FileUtils.forceDelete(new File(TestUtils.gp.databaseDirectory));
+        FileUtils.forceDelete(new File(TestUtils.gp.DATABASE_DIRECTORY));
         hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");
         System.gc();
     }
@@ -74,25 +74,25 @@ public class DRUMSTest {
         d2.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 2 });
         DummyKVStorable d3 = DummyKVStorable.getInstance();
         d3.setKey(new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 });
-        ByteBuffer bb = ByteBuffer.allocate(3 * TestUtils.gp.elementSize);
+        ByteBuffer bb = ByteBuffer.allocate(3 * TestUtils.gp.getElementSize());
         bb.put(d1.toByteBuffer().array());
         bb.put(d2.toByteBuffer().array());
         bb.put(d3.toByteBuffer().array());
 
         Assert.assertEquals(-1, table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }, 0));
         Assert.assertEquals(0, table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }, 0));
-        Assert.assertEquals(1 * TestUtils.gp.elementSize,
+        Assert.assertEquals(1 * TestUtils.gp.getElementSize(),
                 table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 2 }, 0));
-        Assert.assertEquals(2 * TestUtils.gp.elementSize,
+        Assert.assertEquals(2 * TestUtils.gp.getElementSize(),
                 table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, 0));
-        Assert.assertEquals(2 * TestUtils.gp.elementSize,
+        Assert.assertEquals(2 * TestUtils.gp.getElementSize(),
                 table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 },
-                        1 * TestUtils.gp.elementSize));
-        Assert.assertEquals(2 * TestUtils.gp.elementSize,
+                        1 * TestUtils.gp.getElementSize()));
+        Assert.assertEquals(2 * TestUtils.gp.getElementSize(),
                 table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 },
-                        2 * TestUtils.gp.elementSize));
+                        2 * TestUtils.gp.getElementSize()));
         Assert.assertEquals(-1, table.findElementInReadBuffer(bb, new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 },
-                3 * TestUtils.gp.elementSize));
+                3 * TestUtils.gp.getElementSize()));
     }
 
     /**
@@ -107,7 +107,7 @@ public class DRUMSTest {
         DRUMS<DummyKVStorable> table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         table.insertOrMerge(test);
         table.close();
-        List<DummyKVStorable> readData = TestUtils.readFrom(TestUtils.gp.databaseDirectory + "/2.db", 10);
+        List<DummyKVStorable> readData = TestUtils.readFrom(TestUtils.gp.DATABASE_DIRECTORY + "/2.db", 10);
         Assert.assertArrayEquals(test, readData.toArray(new DummyKVStorable[readData.size()]));
     }
 
@@ -130,8 +130,8 @@ public class DRUMSTest {
         table.insertOrMerge(toAdd);
         table.close();
 
-        List<DummyKVStorable> db2 = TestUtils.readFrom(TestUtils.gp.databaseDirectory + "/2.db", 1000);
-        List<DummyKVStorable> db4 = TestUtils.readFrom(TestUtils.gp.databaseDirectory + "/4.db", 1000);
+        List<DummyKVStorable> db2 = TestUtils.readFrom(TestUtils.gp.DATABASE_DIRECTORY + "/2.db", 1000);
+        List<DummyKVStorable> db4 = TestUtils.readFrom(TestUtils.gp.DATABASE_DIRECTORY + "/4.db", 1000);
 
         assertEquals(2, db2.size());
         assertEquals(bucket2_el1, db2.get(0));

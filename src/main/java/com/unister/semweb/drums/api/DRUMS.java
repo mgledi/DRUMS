@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.carrotsearch.hppc.IntObjectOpenHashMap;
 import com.carrotsearch.hppc.cursors.IntObjectCursor;
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.bucket.BucketContainer;
 import com.unister.semweb.drums.bucket.BucketContainerException;
@@ -87,8 +87,8 @@ public class DRUMS<Data extends AbstractKVStorable> {
     /** a prototype of the elements to store */
     private Data prototype;
 
-    /** A pointer to the {@link GlobalParameters} used by this {@link DRUMS} */
-    protected GlobalParameters<Data> gp;
+    /** A pointer to the {@link DRUMSParameterSet} used by this {@link DRUMS} */
+    protected DRUMSParameterSet<Data> gp;
 
     protected DRUMSReader<Data> reader_instance;
 
@@ -103,7 +103,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
      *            contains all needed settings
      * @throws Exception
      */
-    protected DRUMS(AbstractHashFunction hashFunction, AccessMode accessMode, GlobalParameters<Data> gp)
+    protected DRUMS(AbstractHashFunction hashFunction, AccessMode accessMode, DRUMSParameterSet<Data> gp)
             throws IOException {
         this.prototype = gp.getPrototype();
         this.hashFunction = hashFunction;
@@ -118,7 +118,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
             buckets = tmp;
             for (int i = 0; i < hashFunction.getNumberOfBuckets(); i++) {
                 buckets[i] = new Bucket<Data>(i, gp);
-                String tmpFileName = gp.databaseDirectory + "/" + hashFunction.getFilename(i);
+                String tmpFileName = gp.DATABASE_DIRECTORY + "/" + hashFunction.getFilename(i);
                 if (!new File(tmpFileName).exists()) {
                     HeaderIndexFile<Data> tmpFile;
                     try {
@@ -206,7 +206,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         }
 
         for (IntObjectCursor<ArrayList<Data>> entry : bucketDataMapping) {
-            UpdateOnlySynchronizer<Data> synchronizer = new UpdateOnlySynchronizer<Data>(gp.databaseDirectory + "/"
+            UpdateOnlySynchronizer<Data> synchronizer = new UpdateOnlySynchronizer<Data>(gp.DATABASE_DIRECTORY + "/"
                     + hashFunction.getFilename(entry.key), gp);
             @SuppressWarnings("unchecked")
             Data[] toUpdate = (Data[]) entry.value.toArray(new AbstractKVStorable[entry.value.size()]);
@@ -228,7 +228,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         IntObjectOpenHashMap<ArrayList<byte[]>> bucketKeyMapping = getBucketKeyMapping(keys);
         String filename;
         for (IntObjectCursor<ArrayList<byte[]>> entry : bucketKeyMapping) {
-            filename = gp.databaseDirectory + "/" + hashFunction.getFilename(entry.key);
+            filename = gp.DATABASE_DIRECTORY + "/" + hashFunction.getFilename(entry.key);
             HeaderIndexFile<Data> indexFile = null;
             try {
                 indexFile = new HeaderIndexFile<Data>(filename, HeaderIndexFile.AccessMode.READ_ONLY,
@@ -268,20 +268,20 @@ public class DRUMS<Data extends AbstractKVStorable> {
      */
 
     public List<Data> read(int bucketId, int elementOffset, int numberToRead) throws FileLockException, IOException {
-        String filename = gp.databaseDirectory + "/" + hashFunction.getFilename(bucketId);
+        String filename = gp.DATABASE_DIRECTORY + "/" + hashFunction.getFilename(bucketId);
         HeaderIndexFile<Data> indexFile = new HeaderIndexFile<Data>(filename, HeaderIndexFile.AccessMode.READ_ONLY,
                 gp.HEADER_FILE_LOCK_RETRY, gp);
 
         List<Data> result = new ArrayList<Data>();
         // where to start
-        long actualOffset = elementOffset * gp.elementSize;
+        long actualOffset = elementOffset * gp.getElementSize();
 
         // get the complete buffer
-        ByteBuffer dataBuffer = ByteBuffer.allocate(numberToRead * gp.elementSize);
+        ByteBuffer dataBuffer = ByteBuffer.allocate(numberToRead * gp.getElementSize());
         indexFile.read(actualOffset, dataBuffer);
         dataBuffer.flip();
 
-        byte[] dataArray = new byte[gp.elementSize];
+        byte[] dataArray = new byte[gp.getElementSize()];
         while (dataBuffer.position() < dataBuffer.limit()) {
             dataBuffer.get(dataArray);
             Data copy = prototype.fromByteBuffer(ByteBuffer.wrap(dataArray));
@@ -333,7 +333,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         long actualChunkOffset = 0, oldChunkOffset = -1;
         int indexInChunk = 0;
         ByteBuffer workingBuffer = ByteBuffer.allocate((int) indexFile.getChunkSize());
-        byte[] tmpB = new byte[gp.elementSize]; // stores temporarily the bytestream of an object
+        byte[] tmpB = new byte[gp.getElementSize()]; // stores temporarily the bytestream of an object
         for (byte[] key : keys) {
             // get actual chunkIndex
             actualChunkIdx = index.getChunkId(key);
@@ -379,9 +379,9 @@ public class DRUMS<Data extends AbstractKVStorable> {
     public long size() throws FileLockException, IOException {
         long size = 0L;
         for (int bucketId = 0; bucketId < hashFunction.getNumberOfBuckets(); bucketId++) {
-            HeaderIndexFile<Data> headerIndexFile = new HeaderIndexFile<Data>(gp.databaseDirectory + "/"
+            HeaderIndexFile<Data> headerIndexFile = new HeaderIndexFile<Data>(gp.DATABASE_DIRECTORY + "/"
                     + hashFunction.getFilename(bucketId), gp.HEADER_FILE_LOCK_RETRY, gp);
-            size += headerIndexFile.getFilledUpFromContentStart() / gp.elementSize;
+            size += headerIndexFile.getFilledUpFromContentStart() / gp.getElementSize();
             headerIndexFile.close();
         }
         return size;
@@ -402,23 +402,23 @@ public class DRUMS<Data extends AbstractKVStorable> {
      */
     public int findElementInReadBuffer(ByteBuffer workingBuffer, byte[] key, int indexInChunk) {
         workingBuffer.position(indexInChunk);
-        int minElement = indexInChunk / gp.elementSize;
-        int numberOfEntries = workingBuffer.limit() / gp.elementSize;
+        int minElement = indexInChunk / gp.getElementSize();
+        int numberOfEntries = workingBuffer.limit() / gp.getElementSize();
 
         // binary search
         int maxElement = numberOfEntries - 1;
         int midElement;
         int comp;
-        byte[] tempKey = new byte[gp.keySize];
+        byte[] tempKey = new byte[gp.getKeySize()];
 
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
-            indexInChunk = midElement * gp.elementSize;
+            indexInChunk = midElement * gp.getElementSize();
 
             workingBuffer.position(indexInChunk);
             workingBuffer.get(tempKey);
 
-            comp = KeyUtils.compareKey(key, tempKey, gp.keySize);
+            comp = KeyUtils.compareKey(key, tempKey, gp.getKeySize());
             if (comp == 0) {
                 return indexInChunk;
             } else if (comp < 0) {
@@ -506,12 +506,12 @@ public class DRUMS<Data extends AbstractKVStorable> {
 
     /** @return the size of one record to store in bytes */
     public int getElementSize() {
-        return gp.elementSize;
+        return gp.getElementSize();
     }
 
     /** @return the size of the key of one record */
     public int getElementKeySize() {
-        return gp.keySize;
+        return gp.getKeySize();
     }
 
     /** @return the underlying hash-function */
@@ -532,7 +532,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
 
     /** @return the database-directory */
     public String getDatabaseDirectory() {
-        return gp.databaseDirectory;
+        return gp.DATABASE_DIRECTORY;
     }
 
     /** @return a pointer to the prototype. This is not a clone. */
@@ -540,8 +540,8 @@ public class DRUMS<Data extends AbstractKVStorable> {
         return prototype;
     }
 
-    /** @return the {@link GlobalParameters} that are used within the {@link DRUMS} */
-    public GlobalParameters<Data> getGlobalParameters() {
+    /** @return the {@link DRUMSParameterSet} that are used within the {@link DRUMS} */
+    public DRUMSParameterSet<Data> getGlobalParameters() {
         return gp;
     }
 }

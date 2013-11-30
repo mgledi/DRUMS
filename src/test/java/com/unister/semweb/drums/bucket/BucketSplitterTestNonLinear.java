@@ -1,20 +1,18 @@
-/*
- * Copyright (C) 2012-2013 Unister GmbH
- *
+/* Copyright (C) 2012-2013 Unister GmbH
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums.bucket;
 
 import java.io.File;
@@ -47,8 +45,8 @@ public class BucketSplitterTestNonLinear {
 
     @Before
     public void initialise() throws IOException {
-        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
-        new File(TestUtils.gp.databaseDirectory).mkdirs();
+        FileUtils.deleteQuietly(new File(TestUtils.gp.DATABASE_DIRECTORY));
+        new File(TestUtils.gp.DATABASE_DIRECTORY).mkdirs();
     }
 
     /**
@@ -65,7 +63,7 @@ public class BucketSplitterTestNonLinear {
     @Test
     public void oneBucket2Split10Elements10Width() throws Exception {
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 10000, hashFunctionFilename,
-                TestUtils.gp.keySize);
+                TestUtils.gp.getKeySize());
         DummyKVStorable[] testData = createAndFillDRUMS(10, 10, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter =
@@ -73,7 +71,7 @@ public class BucketSplitterTestNonLinear {
         splitter.splitAndStoreConfiguration(0, 2);
 
         DRUMS<DummyKVStorable> drumsAfterSplitting =
-                DRUMSInstantiator.openTable(hashFunction, AccessMode.READ_ONLY, TestUtils.gp);
+                DRUMSInstantiator.openTable(AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         drumsAfterSplitting.setHashFunction(hashFunction);
 
@@ -106,13 +104,13 @@ public class BucketSplitterTestNonLinear {
     public void oneBucket2Split10Elements100Width() throws Exception {
         int numberOfElements = 10;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 10000, hashFunctionFilename,
-                TestUtils.gp.keySize);
+                TestUtils.gp.getKeySize());
         DummyKVStorable[] testData = createAndFillDRUMS(numberOfElements, 100, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction, TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 2);
 
-        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInstantiator.openTable(hashFunction, AccessMode.READ_ONLY,
+        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInstantiator.openTable(AccessMode.READ_ONLY,
                 TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         drumsAfterSplitting.setHashFunction(hashFunction);
@@ -146,15 +144,14 @@ public class BucketSplitterTestNonLinear {
     public void oneBucket2Split5000Elements100Width() throws Exception {
         int numberOfElements = 5000;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 500000,
-                hashFunctionFilename, TestUtils.gp.keySize);
+                hashFunctionFilename, TestUtils.gp.getKeySize());
         DummyKVStorable[] testData = createAndFillDRUMS(numberOfElements, 100, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction,
                 TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 2);
 
-        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInstantiator.openTable(hashFunction,
-                AccessMode.READ_ONLY, TestUtils.gp);
+        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInstantiator.openTable(AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         drumsAfterSplitting.setHashFunction(hashFunction);
 
@@ -172,7 +169,7 @@ public class BucketSplitterTestNonLinear {
             Assert.assertEquals(testData[i + 2500], secondBucketElements.get(i));
         }
 
-        byte[][] expectedRanges = new byte[][] { 
+        byte[][] expectedRanges = new byte[][] {
                 Bytes.toBytes(249901l),
                 Bytes.toBytes(500000l) };
         Assert.assertTrue(examineHashFunction(hashFunction, expectedRanges));
@@ -188,15 +185,14 @@ public class BucketSplitterTestNonLinear {
     public void oneBucket4Split5000Elements100Width() throws Exception {
         int numberOfElements = 5000;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 500000,
-                hashFunctionFilename, TestUtils.gp.keySize);
+                hashFunctionFilename, TestUtils.gp.getKeySize());
         DummyKVStorable[] testData = createAndFillDRUMS(numberOfElements, 100, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction,
                 TestUtils.gp);
         splitter.splitAndStoreConfiguration(0, 4);
 
-        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInstantiator.openTable(hashFunction,
-                AccessMode.READ_ONLY, TestUtils.gp);
+        DRUMS<DummyKVStorable> drumsAfterSplitting = DRUMSInstantiator.openTable(AccessMode.READ_ONLY, TestUtils.gp);
         // We must set the hash function because the hash function is loaded from the curious configuration file.
         drumsAfterSplitting.setHashFunction(hashFunction);
 

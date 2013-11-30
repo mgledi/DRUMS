@@ -47,11 +47,11 @@ public class DRUMSIteratorTest {
 
     @Before
     public void initialise() throws Exception {
-        new File(TestUtils.gp.databaseDirectory).mkdirs();
+        new File(TestUtils.gp.DATABASE_DIRECTORY).mkdirs();
         long[] ranges = new long[] { 0, 10, 20, 30 };
         byte[][] bRanges = KeyUtils.toByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2", "3.db", "4.db" };
-        FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
+        FileUtils.deleteQuietly(new File(TestUtils.gp.DATABASE_DIRECTORY));
         this.hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");
 
         // fill with data
@@ -65,7 +65,7 @@ public class DRUMSIteratorTest {
 
     @Test
     public void iteratorTest() throws DRUMSException, InterruptedException, IOException {
-        table = DRUMSInstantiator.openTable(hashFunction, DRUMS.AccessMode.READ_ONLY, TestUtils.gp);
+        table = DRUMSInstantiator.openTable(DRUMS.AccessMode.READ_ONLY, TestUtils.gp);
         DRUMSIterator<DummyKVStorable> it = table.getIterator();
         ArrayList<DummyKVStorable> elements = new ArrayList<DummyKVStorable>();
         while (it.hasNext()) {

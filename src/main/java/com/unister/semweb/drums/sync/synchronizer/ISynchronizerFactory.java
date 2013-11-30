@@ -19,7 +19,7 @@ package com.unister.semweb.drums.sync.synchronizer;
 
 import java.io.IOException;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
@@ -46,6 +46,6 @@ public interface ISynchronizerFactory<Data extends AbstractKVStorable> {
      * @throws IOException
      *             if some FileHandling fail
      */
-    Synchronizer<Data> createSynchronizer(String databaseFilename, GlobalParameters<Data> gp) throws IOException;
+    Synchronizer<Data> createSynchronizer(String databaseFilename, DRUMSParameterSet<Data> gp) throws IOException;
 
 }

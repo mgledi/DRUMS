@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
@@ -90,7 +90,7 @@ public class Synchronizer<Data extends AbstractKVStorable> {
     private int elementSize;
 
     /** A Pointer to the GlobalParameters used by the DRUMS containing this Synchronizer */
-    GlobalParameters<Data> gp;
+    DRUMSParameterSet<Data> gp;
 
     /**
      * This method constructs a {@link Synchronizer}. The name of the file were to write the elements to have to be
@@ -99,9 +99,9 @@ public class Synchronizer<Data extends AbstractKVStorable> {
      * @param dataFilename
      *            the file, where to store the {@link AbstractKVStorable}
      * @param gp
-     *            a pointer to the {@link GlobalParameters}
+     *            a pointer to the {@link DRUMSParameterSet}
      */
-    public Synchronizer(String dataFilename, GlobalParameters<Data> gp) {
+    public Synchronizer(String dataFilename, DRUMSParameterSet<Data> gp) {
         this.gp = gp;
         this.prototype = gp.getPrototype();
         this.dataFilename = dataFilename;

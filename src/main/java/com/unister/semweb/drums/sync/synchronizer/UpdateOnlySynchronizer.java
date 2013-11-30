@@ -22,7 +22,7 @@ import java.nio.channels.FileChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.bucket.Bucket;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
@@ -60,7 +60,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     private ByteBuffer workingBuffer;
 
     /** A pointer to the global Parameters */
-    private GlobalParameters<Data> gp;
+    private DRUMSParameterSet<Data> gp;
 
     /**
      * This method constructs a {@link Synchronizer}. The name of the file were to write the elements to have to be
@@ -70,7 +70,7 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
      * @param gp
      * 
      */
-    public UpdateOnlySynchronizer(final String dataFilename, final GlobalParameters<Data> gp) {
+    public UpdateOnlySynchronizer(final String dataFilename, final DRUMSParameterSet<Data> gp) {
         this.gp = gp;
         this.dataFilename = dataFilename;
         this.prototype = gp.getPrototype();
@@ -151,8 +151,8 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
     /** traverses the readBuffer */
     private int updateElementInReadBuffer(Data data, int indexInChunk) {
         workingBuffer.position(indexInChunk);
-        int minElement = indexInChunk / gp.elementSize;
-        int numberOfEntries = workingBuffer.limit() / gp.elementSize;
+        int minElement = indexInChunk / gp.getElementSize();
+        int numberOfEntries = workingBuffer.limit() / gp.getElementSize();
         byte[] actualKey = data.getKey();
         // binary search
         int maxElement = numberOfEntries - 1;
@@ -161,14 +161,14 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
         byte[] tmpKey = new byte[actualKey.length];
         while (minElement <= maxElement) {
             midElement = minElement + (maxElement - minElement) / 2;
-            indexInChunk = midElement * gp.elementSize;
+            indexInChunk = midElement * gp.getElementSize();
             workingBuffer.position(indexInChunk);
             workingBuffer.get(tmpKey);
             compare = KeyUtils.compareKey(actualKey, tmpKey);
             if (compare == 0) {
                 // first read the old element
                 workingBuffer.position(indexInChunk);
-                byte[] b = new byte[gp.elementSize];
+                byte[] b = new byte[gp.getElementSize()];
                 workingBuffer.get(b);
                 Data toUpdate = prototype.fromByteBuffer(ByteBuffer.wrap(b));
                 // update the old element and write it

@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.storable.TestStorable;
 
@@ -48,7 +48,7 @@ public class EnlargeFileTest {
     /** The test data fit into the begin file size and no enlargement takes place. */
     @Test
     public void noEnlargment() throws Exception {
-        GlobalParameters<TestStorable> globalParameters = new GlobalParameters<TestStorable>(new TestStorable());
+        DRUMSParameterSet<TestStorable> globalParameters = new DRUMSParameterSet<TestStorable>(new TestStorable());
         globalParameters.INITIAL_FILE_SIZE = HeaderIndexFile.HEADER_SIZE;
 
         List<TestStorable> testdata = generateTestdata(10);
@@ -67,7 +67,7 @@ public class EnlargeFileTest {
      */
     @Test
     public void bigEnlargment() throws Exception {
-        GlobalParameters<TestStorable> globalParameters = new GlobalParameters<TestStorable>(new TestStorable());
+        DRUMSParameterSet<TestStorable> globalParameters = new DRUMSParameterSet<TestStorable>(new TestStorable());
         globalParameters.INITIAL_INCREMENT_SIZE = 1000;
         globalParameters.INITIAL_FILE_SIZE = HeaderIndexFile.HEADER_SIZE;
         List<TestStorable> testdata = generateTestdata(50000);
@@ -88,7 +88,7 @@ public class EnlargeFileTest {
 
     @Test
     public void specialTest() throws Exception {
-        GlobalParameters<TestStorable> globalParameters = new GlobalParameters<TestStorable>(new TestStorable());
+        DRUMSParameterSet<TestStorable> globalParameters = new DRUMSParameterSet<TestStorable>(new TestStorable());
         globalParameters.INITIAL_INCREMENT_SIZE = 50;
         globalParameters.INITIAL_FILE_SIZE = (int) (HeaderIndexFile.HEADER_SIZE + HeaderIndexFile.MAX_INDEX_SIZE_IN_BYTES);
         List<TestStorable> testdata = generateTestdata(3);
@@ -111,7 +111,7 @@ public class EnlargeFileTest {
      * Writes the given test data to the test file. The <code>globalParameters</code> are used to control the increment
      * and the initial file size.
      */
-    private List<Long> writeData(List<TestStorable> toWrite, GlobalParameters<TestStorable> globalParameters)
+    private List<Long> writeData(List<TestStorable> toWrite, DRUMSParameterSet<TestStorable> globalParameters)
             throws Exception {
         HeaderIndexFile<TestStorable> file = new HeaderIndexFile<TestStorable>(testFilename, AccessMode.READ_WRITE, 1,
                 globalParameters);
@@ -132,7 +132,7 @@ public class EnlargeFileTest {
     }
 
     /** Reads the data given by the <code>filePositions</code>. */
-    private List<TestStorable> readFile(List<Long> filePositions, GlobalParameters<TestStorable> globalParameters)
+    private List<TestStorable> readFile(List<Long> filePositions, DRUMSParameterSet<TestStorable> globalParameters)
             throws Exception {
         HeaderIndexFile<TestStorable> file = new HeaderIndexFile<TestStorable>(testFilename, AccessMode.READ_ONLY, 1,
                 globalParameters);

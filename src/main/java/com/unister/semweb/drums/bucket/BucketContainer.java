@@ -18,7 +18,7 @@ package com.unister.semweb.drums.bucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
@@ -26,7 +26,7 @@ import com.unister.semweb.drums.storable.GeneralStorable;
 /**
  * This class handles {@link AbstractKVStorable}-objects in memory. Depending on the given {@link AbstractHashFunction},
  * the {@link BucketContainer} distributes incoming data to a defined number of {@link Bucket}s. This class is allowed
- * to use the by {@link GlobalParameters#BUCKET_MEMORY} defined amount of memory.
+ * to use the by {@link DRUMSParameterSet#BUCKET_MEMORY} defined amount of memory.
  * 
  * 
  * @author Martin Nettling

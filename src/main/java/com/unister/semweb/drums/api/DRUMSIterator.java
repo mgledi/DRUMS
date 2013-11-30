@@ -23,7 +23,7 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
@@ -68,7 +68,7 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
     private long countElementsRead = 0;
 
     /** A pointer to the GlobalParameters used by this DRUMS */
-    final protected GlobalParameters<Data> gp;
+    final protected DRUMSParameterSet<Data> gp;
 
     /**
      * Initializes the iterator with the hash function and the global parameters.
@@ -76,11 +76,11 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
      * @param hashFunction
      * @param globalparameters
      */
-    public DRUMSIterator(AbstractHashFunction hashFunction, GlobalParameters<Data> globalparameters) {
+    public DRUMSIterator(AbstractHashFunction hashFunction, DRUMSParameterSet<Data> globalparameters) {
         this.gp = globalparameters;
         this.prototype = globalparameters.getPrototype();
         this.hashFunction = hashFunction;
-        this.curDestBuffer = new byte[globalparameters.elementSize];
+        this.curDestBuffer = new byte[globalparameters.getElementSize()];
         this.numberOfBuckets = hashFunction.getNumberOfBuckets();
     }
 
@@ -160,7 +160,7 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
         String filename = null;
         // if we open the first file
         if (readBuffer == null) {
-            filename = gp.databaseDirectory + "/" + hashFunction.getFilename(actualBucketId);
+            filename = gp.DATABASE_DIRECTORY + "/" + hashFunction.getFilename(actualBucketId);
             actualFile = new HeaderIndexFile<Data>(filename, 1, gp);
             readBuffer = ByteBuffer.allocate((int) actualFile.getChunkSize());
             readBuffer.clear();
@@ -171,7 +171,7 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
             if (actualBucketId >= numberOfBuckets) {
                 return false;
             }
-            filename = gp.databaseDirectory + "/" + hashFunction.getFilename(actualBucketId);
+            filename = gp.DATABASE_DIRECTORY + "/" + hashFunction.getFilename(actualBucketId);
             actualFile = new HeaderIndexFile<Data>(filename, 1, gp);
             actualFileOffset = 0;
             readBuffer.clear();

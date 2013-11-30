@@ -28,7 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.storable.TestStorable;
@@ -49,13 +49,13 @@ public class SpecificEnlargmentTest {
     private static final int MB = 1024 * 1024;
     private static final String filename = "/tmp/dummyTest.db";
     private static final Random randomGenerator = new Random(1);
-    private GlobalParameters<TestStorable> globalParameters;
+    private DRUMSParameterSet<TestStorable> globalParameters;
 
-    /** Initialise the test by removing the test file and initialisation the {@link GlobalParameters}. */
+    /** Initialise the test by removing the test file and initialisation the {@link DRUMSParameterSet}. */
     @Before
     public void initialise() throws Exception {
         FileUtils.deleteQuietly(new File(filename));
-        globalParameters = new GlobalParameters<TestStorable>(new TestStorable());
+        globalParameters = new DRUMSParameterSet<TestStorable>(new TestStorable());
         globalParameters.INITIAL_FILE_SIZE = 1 * MB;
         globalParameters.INITIAL_INCREMENT_SIZE = 1 * KB;
     }
@@ -99,11 +99,11 @@ public class SpecificEnlargmentTest {
      * {@link TestStorable}.
      */
     private List<TestStorable> generateStorables(int maxBytes) {
-        int numberOfStorables = (int) Math.ceil((double) maxBytes / globalParameters.elementSize);
+        int numberOfStorables = (int) Math.ceil((double) maxBytes / globalParameters.getElementSize());
 
         List<TestStorable> result = new ArrayList<TestStorable>();
         for (int i = 0; i < numberOfStorables; i++) {
-            byte[] newKey = generatePseudoKey(globalParameters.keySize);
+            byte[] newKey = generatePseudoKey(globalParameters.getKeySize());
             TestStorable newElement = new TestStorable();
             newElement.setKey(newKey);
             result.add(newElement);
@@ -113,7 +113,7 @@ public class SpecificEnlargmentTest {
 
     /** Converts the given {@link List} of {@link TestStorable} to a {@link ByteBuffer}. */
     private ByteBuffer toByteBuffer(List<TestStorable> toConvert) {
-        ByteBuffer buffer = ByteBuffer.allocate(toConvert.size() * globalParameters.elementSize);
+        ByteBuffer buffer = ByteBuffer.allocate(toConvert.size() * globalParameters.getElementSize());
         for (TestStorable oneElement : toConvert) {
             buffer.put(oneElement.toByteBuffer());
         }

@@ -17,8 +17,12 @@ package com.unister.semweb.drums;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -35,30 +39,44 @@ import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
  * This class represents all parameters, which are used globally in a DRUMS-Instance. The instance of
- * {@link GlobalParameters} should be available in all internal Objects used by {@link DRUMS}.
+ * {@link DRUMSParameterSet} should be available in all internal Objects used by {@link DRUMS}.
  * 
  * @author Martin Nettling
  * @param <Data>
  *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
-public class GlobalParameters<Data extends AbstractKVStorable> {
+public class DRUMSParameterSet<Data extends AbstractKVStorable> {
     /** My private Logger. */
-    private static Logger logger = LoggerFactory.getLogger(GlobalParameters.class);
+    private static Logger logger = LoggerFactory.getLogger(DRUMSParameterSet.class);
+
+    private static final String PROTOTYPE_FILE = "prototype.dat";
+    private static final String PROPERTY_FILE = "drums.properties";
+
     /**
-     * A global count of all instances of {@link GlobalParameters}. This variable is needed if more than one DRUMS will
+     * A global count of all instances of {@link DRUMSParameterSet}. This variable is needed if more than one DRUMS will
      * run in one JVM.
      */
-    public static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
+    protected static AtomicInteger INSTANCE_COUNT = new AtomicInteger(0);
 
-    /** The database directory. All records are written to files in this directory. */
-    public String databaseDirectory;
-    /** The name of the underlying parameter file. */
-    public String PARAMETER_FILE;
     /**
      * a identification number of this parameter set. This variable is needed if more than one DRUMS is instantiated in
      * one JVM.
      */
-    public final int ID;
+    public final int instanceID;
+    /** File extension of the database files that store the {@link AbstractKVStorable}. */
+    public final String linkDataFileExtension = ".db";
+    /** The size of the key of the implementation of {@link AbstractKVStorable}. */
+    private final int keySize;
+    /** The number bytes needed by an instance of {@link AbstractKVStorable}. */
+    private final int elementSize;
+    /** The prototype of the Data of this DRUMS. */
+    private Data prototype;
+    /** The name of the underlying parameter file. */
+    public String parameterfile;
+
+    // ############################ Parameters which can be manipulated from extern #######################
+    /** The database directory. All records are written to files in this directory. */
+    public String DATABASE_DIRECTORY;
     /** The amount of bytes all buckets are allowed to use. */
     public long BUCKET_MEMORY;
     /**
@@ -66,13 +84,10 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
      * until it is synchronized to disk.
      */
     public long MAX_MEMORY_PER_BUCKET;
-
     /** the size of one chunk in memory */
     public int MEMORY_CHUNK;
-
     /** the number of retries if a file is locked by another process */
     public int HEADER_FILE_LOCK_RETRY = 100;
-
     /** The number of bytes, which are read and written at once during synchronization */
     public long SYNC_CHUNK_SIZE;
     /** The size of one chunk in an {@link HeaderIndexFile} */
@@ -81,19 +96,10 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     public int NUMBER_OF_SYNCHRONIZER_THREADS = 1;
     /** The minimal number of elements which must be in one bucket, before this bucket is allowed to be synchronized. */
     public int MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC = 1;
-    /** File extension of the database files that store the {@link AbstractKVStorable}. */
-    public String linkDataFileExtension = ".db";
     /** the initial size by which the file is enlarged, when no more records will fit into the file. */
     public int INITIAL_INCREMENT_SIZE;
     /** the initial size of a {@link HeaderIndexFile}. */
     public int INITIAL_FILE_SIZE;
-    /** The size of the key of the implementation of {@link AbstractKVStorable}. */
-    public final int keySize;
-    /** The number bytes needed by an instance of {@link AbstractKVStorable}. */
-    public final int elementSize;
-    /** The prototype of the Data of this DRUMS. */
-    private Data prototype;
-
     /** The maximal time in milliseconds a bucket is held in memory without synchronization attempt. */
     public long MAX_BUCKET_STORAGE_TIME;
 
@@ -104,13 +110,14 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
      *            The name of the parameter-file
      * @param prototype
      *            a prototype of the Data of this DRUMS
+     * @throws IOException
      */
-    public GlobalParameters(String paramFile, Data prototype) {
-        this.PARAMETER_FILE = paramFile;
+    public DRUMSParameterSet(String paramFile, Data prototype) throws IOException {
+        this.parameterfile = paramFile;
         this.keySize = prototype.getKey().length;
         this.elementSize = prototype.getSize();
         this.prototype = prototype;
-        this.ID = GlobalParameters.INSTANCE_COUNT.getAndIncrement();
+        this.instanceID = DRUMSParameterSet.INSTANCE_COUNT.getAndIncrement();
         initParameters();
     }
 
@@ -119,8 +126,9 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
      * 
      * @param prototype
      *            a prototype of the Data of this DRUMS
+     * @throws IOException
      */
-    public GlobalParameters(Data prototype) {
+    public DRUMSParameterSet(Data prototype) throws IOException {
         this("drums.properties", prototype);
     }
 
@@ -131,18 +139,29 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
      *            the directory, where all files can be found
      * @throws DRUMSException
      *             if the given folder is no folder
+     * @throws IOException
      */
-    public GlobalParameters(File folder) throws DRUMSException {
+    public DRUMSParameterSet(File folder) throws DRUMSException, IOException {
         if (!folder.isDirectory()) {
             throw new DRUMSException("The given FilePointer (" + folder
                     + ") is no folder. Please specify a folder, which contains a DRUMS-table.");
         }
-        keySize = 0;
-        elementSize = 0;
-        ID=0;
-        // TODO: implement
-        // load parameter file
+        DATABASE_DIRECTORY = folder.getAbsolutePath();
+
         // load prototype
+        try {
+            readPrototype();
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Could not load prototype from " + DATABASE_DIRECTORY + ".", e);
+        }
+        this.keySize = prototype.getKey().length;
+        this.elementSize = prototype.getSize();
+
+        // load parameter file
+        this.parameterfile = getPropertiesFilename();
+        this.initParameters();
+
+        this.instanceID = DRUMSParameterSet.INSTANCE_COUNT.getAndIncrement();
     }
 
     /**
@@ -158,19 +177,26 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
 
     /**
      * Initialises all Parameters.
+     * 
+     * @throws FileNotFoundException
      */
-    public void initParameters() {
-        InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(PARAMETER_FILE);
+    private void initParameters() throws FileNotFoundException {
+        InputStream fileStream;
+        if (new File(parameterfile).exists()) {
+            logger.info("Try reading properties directly from {}.", parameterfile);
+            fileStream = new FileInputStream(new File(parameterfile));
+        } else {
+            logger.info("Try reading properties from Resources");
+            fileStream = this.getClass().getClassLoader().getResourceAsStream(parameterfile);
+        }
+
         Properties props = new Properties();
         try {
             props.load(fileStream);
-            if (fileStream == null) {
-                fileStream = new FileInputStream(PARAMETER_FILE);
-            }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        databaseDirectory = props.getProperty("DATABASE_DIRECTORY");
+        DATABASE_DIRECTORY = props.getProperty("DATABASE_DIRECTORY");
         BUCKET_MEMORY = parseSize(props.getProperty("BUCKET_MEMORY", "1G"));
         MEMORY_CHUNK = (int) parseSize(props.getProperty("MEMORY_CHUNK", "10K"));
         MAX_MEMORY_PER_BUCKET = parseSize(props.getProperty("MAX_MEMORY_PER_BUCKET", "100M"));
@@ -205,7 +231,7 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
         logger.info("CHUNK_SIZE = {}", FILE_CHUNK_SIZE);
     }
 
-    private static Pattern p_mem = Pattern.compile("(\\d+)(K|M|G)");
+    private static Pattern p_mem = Pattern.compile("(\\d+)(K|M|G|)");
 
     /**
      * This methods parses the given String, which should represent a size, to a long. 'K' is interpreted as 1024, 'M'
@@ -218,8 +244,14 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
     public static long parseSize(String s) {
         Matcher m = p_mem.matcher(s);
         if (m.find()) {
-            int i = Integer.parseInt(m.group(1));
-            char multiplier = m.group(2).charAt(0);
+            long i = Long.parseLong(m.group(1));
+            char multiplier = 'B';
+            if (m.group(2) != null && m.group(2).length() == 1) {
+                multiplier = m.group(2).charAt(0);
+            }
+            if (multiplier == 'B') {
+                return (long) i;
+            }
             if (multiplier == 'K') {
                 return (long) i * 1024l;
             }
@@ -231,5 +263,83 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
             }
         }
         return -1;
+    }
+
+    /**
+     * @return the properties as {@link Properties}-object
+     */
+    public Properties getProperties() {
+        Properties props = new Properties();
+        props.setProperty("DATABASE_DIRECTORY", DATABASE_DIRECTORY + "");
+        props.setProperty("BUCKET_MEMORY", BUCKET_MEMORY + "");
+        props.setProperty("MEMORY_CHUNK", MEMORY_CHUNK + "");
+        props.setProperty("MAX_MEMORY_PER_BUCKET", MAX_MEMORY_PER_BUCKET + "");
+        props.setProperty("SYNC_CHUNK_SIZE", SYNC_CHUNK_SIZE + "");
+        props.setProperty("FILE_CHUNK_SIZE", FILE_CHUNK_SIZE + "");
+        props.setProperty("NUMBER_OF_SYNCHRONIZER_THREADS", NUMBER_OF_SYNCHRONIZER_THREADS + "");
+        props.setProperty("MAX_BUCKET_STORAGE_TIME", MAX_BUCKET_STORAGE_TIME + "");
+        props.setProperty("MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC", MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC + "");
+        props.setProperty("HEADER_FILE_LOCK_RETRY", HEADER_FILE_LOCK_RETRY + "");
+        props.setProperty("INITIAL_FILE_SIZE", INITIAL_FILE_SIZE + "");
+        props.setProperty("INITIAL_INCREMENT_SIZE", INITIAL_INCREMENT_SIZE + "");
+        return props;
+    }
+
+    /**
+     * @return the size of an element in bytes
+     */
+    public int getElementSize() {
+        return elementSize;
+    }
+
+    /**
+     * @return the size of the key of an element in bytes
+     */
+    public int getKeySize() {
+        return keySize;
+    }
+
+    /**
+     * This method stores this {@link DRUMSParameterSet}. Two file are generated. The first file contains the prototype.
+     * The second file contains all properties.
+     * 
+     * @throws IOException
+     *             if it was not possible to store all information
+     */
+    public void store() throws IOException {
+        this.storePrototype();
+        this.storeProperties();
+    }
+
+    private String getPrototypeFilename() {
+        return DATABASE_DIRECTORY + "/" + PROTOTYPE_FILE;
+    }
+
+    private String getPropertiesFilename() {
+        return DATABASE_DIRECTORY + "/" + PROPERTY_FILE;
+    }
+
+    private final void readPrototype() throws IOException, ClassNotFoundException {
+        FileInputStream fis = new FileInputStream(new File(getPrototypeFilename()));
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        @SuppressWarnings("unchecked")
+        Data tmp = (Data) ois.readObject();
+        this.prototype = tmp;
+        ois.close();
+        fis.close();
+    }
+
+    private void storePrototype() throws IOException {
+        FileOutputStream fos = new FileOutputStream(new File(getPrototypeFilename()));
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(getPrototype());
+        oos.close();
+        fos.close();
+    }
+
+    private void storeProperties() throws IOException {
+        FileOutputStream fos = new FileOutputStream(new File(getPropertiesFilename()));
+        getProperties().store(fos, "Parameters stored automatically after creating DRUMS.");
+        fos.close();
     }
 }

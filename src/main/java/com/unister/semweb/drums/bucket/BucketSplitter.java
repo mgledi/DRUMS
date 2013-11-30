@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import com.carrotsearch.hppc.IntArrayList;
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
 import com.unister.semweb.drums.file.AbstractHeaderFile.AccessMode;
 import com.unister.semweb.drums.file.FileLockException;
@@ -54,7 +54,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
     protected int oldBucketId;
 
     /** A pointer to the GlobalParameters of this DRUMS */
-    protected GlobalParameters<Data> gp;
+    protected DRUMSParameterSet<Data> gp;
 
     /**
      * Instantiates a new BucketSplitter
@@ -63,7 +63,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
      * @param gp
      * 
      */
-    public BucketSplitter(RangeHashFunction hashFunction, GlobalParameters<Data> gp) {
+    public BucketSplitter(RangeHashFunction hashFunction, DRUMSParameterSet<Data> gp) {
         this.gp = gp;
         this.hashFunction = hashFunction;
     }
@@ -78,7 +78,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
         this.oldBucketId = bucketId;
         // open the file (READ_ONLY)
         String fileName = hashFunction.getFilename(bucketId);
-        this.sourceFile = new HeaderIndexFile<Data>(gp.databaseDirectory + "/" + fileName, AccessMode.READ_WRITE, 100,
+        this.sourceFile = new HeaderIndexFile<Data>(gp.DATABASE_DIRECTORY + "/" + fileName, AccessMode.READ_WRITE, 100,
                 gp);
 
         // determine new thresholds
@@ -91,7 +91,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
         hashFunction.replace(bucketId, keysToInsert);
 
         // move elements to files
-        this.moveElements(sourceFile, hashFunction, gp.databaseDirectory);
+        this.moveElements(sourceFile, hashFunction, gp.DATABASE_DIRECTORY);
         sourceFile.delete();
 
         // store hash-function
@@ -113,7 +113,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
         HeaderIndexFile<Data> tmp = null;
         newBucketIds = new IntArrayList();
         long offset = 0;
-        byte[] key = new byte[gp.keySize];
+        byte[] key = new byte[gp.getKeySize()];
         int oldBucket = -1, newBucket;
         while (offset < source.getFilledUpFromContentStart()) {
             source.read(offset, elem);
@@ -169,7 +169,7 @@ public class BucketSplitter<Data extends AbstractKVStorable> {
                 offset = ((i + 1) * elementsPerPart - 1) * sourceFile.getElementSize();
             }
 
-            ByteBuffer keyBuffer = ByteBuffer.allocate(gp.keySize);
+            ByteBuffer keyBuffer = ByteBuffer.allocate(gp.getKeySize());
             sourceFile.read(offset, keyBuffer);
             keyBuffer.position(0);
 

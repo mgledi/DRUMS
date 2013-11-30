@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.unister.semweb.drums.GlobalParameters;
+import com.unister.semweb.drums.DRUMSParameterSet;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
 
@@ -60,9 +60,9 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      * @param gp
      *            a pointer to the GlobalParameters used by this DRUMS
      */
-    private DynamicMemoryAllocater(GlobalParameters<Data> gp) {
+    private DynamicMemoryAllocater(DRUMSParameterSet<Data> gp) {
         this.used_bytes = new AtomicLong(0);
-        this.mem_chunksize = gp.MEMORY_CHUNK - gp.MEMORY_CHUNK % gp.elementSize;
+        this.mem_chunksize = gp.MEMORY_CHUNK - gp.MEMORY_CHUNK % gp.getElementSize();
         this.max_allowed_bytes = gp.BUCKET_MEMORY - gp.BUCKET_MEMORY % this.mem_chunksize;
     }
 
@@ -72,10 +72,10 @@ public class DynamicMemoryAllocater<Data extends AbstractKVStorable> {
      * @param gp
      *            a pointer to the GlobalParameters used by this DRUMS
      */
-    public static <Data extends AbstractKVStorable> void instantiate(GlobalParameters<Data> gp) {
-        if (INSTANCES.length <= gp.ID) {
-            INSTANCES = Arrays.copyOf(INSTANCES, gp.ID + 1);
-            INSTANCES[gp.ID] = new DynamicMemoryAllocater<Data>(gp);
+    public static <Data extends AbstractKVStorable> void instantiate(DRUMSParameterSet<Data> gp) {
+        if (INSTANCES.length <= gp.instanceID) {
+            INSTANCES = Arrays.copyOf(INSTANCES, gp.instanceID + 1);
+            INSTANCES[gp.instanceID] = new DynamicMemoryAllocater<Data>(gp);
         }
     }
 

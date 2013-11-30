@@ -49,33 +49,52 @@ public class RangeHashFunction extends AbstractHashFunction {
     private int[] bucketIds;
     private String[] filenames;
 
+    /**
+     * This constructor instantiates a new {@link RangeHashFunction} with the given number of ranges. It tries to size
+     * all ranges equally between the smallest and the largest key.
+     * 
+     * @param minKey
+     *            the smallest expected key
+     * @param maxKey
+     *            the largest expected key
+     * 
+     * @param ranges
+     *            the number of ranges
+     * @param hashFunctionFilename
+     *            the filename of the file, where to store the hash-function
+     */
+    public RangeHashFunction(byte[] minKey, byte[] maxKey, int ranges, String hashFunctionFilename) {
+        this.hashFunctionFile = hashFunctionFilename;
+        this.buckets = ranges;
+        this.initHashFunction(minKey, maxKey, ranges);
+    }
 
     /**
      * This constructor instantiates a new {@link RangeHashFunction} with the given number of ranges. It tries to size
-     * all ranges equally.
+     * all ranges equally within the complete available space of numbers.
      * 
      * @param ranges
      *            the number of ranges
      * @param keySize
      *            the size in bytes of the key
-     * @param filename
+     * @param hashFunctionFilename
      *            the filename of the file, where to store the hash-function
      */
-    public RangeHashFunction(int ranges, int keySize, String filename) {
-        this.hashFunctionFile = filename;
+    public RangeHashFunction(int ranges, int keySize, String hashFunctionFilename) {
+        this.hashFunctionFile = hashFunctionFilename;
         this.buckets = ranges;
         byte[] max = new byte[keySize], min = new byte[keySize];
         Arrays.fill(max, (byte) -1);
-        try {
-            this.maxRangeValues = KeyUtils.getMaxValsPerRange(min, max, keySize);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.initHashFunction(min, max, ranges);
+    }
+
+    private void initHashFunction(byte[] minKey, byte[] maxKey, int ranges) {
+        this.maxRangeValues = KeyUtils.getMaxValsPerRange(minKey, maxKey, ranges);
         this.filenames = new String[ranges];
         for (int i = 0; i < ranges; i++) {
             filenames[i] = i + ".db";
         }
-        this.keyComposition = new int[keySize];
+        this.keyComposition = new int[minKey.length];
         Arrays.fill(keyComposition, 1);
         sort();
     }
@@ -254,7 +273,6 @@ public class RangeHashFunction extends AbstractHashFunction {
         return filenames[bucketId];
     }
 
-    
     @Override
     public String toString() {
         StringBuilder ret = new StringBuilder();
@@ -268,7 +286,7 @@ public class RangeHashFunction extends AbstractHashFunction {
         }
         return ret.toString();
     }
-    
+
     /**
      * Writes the hash function, represented as tuples (range, filename) into the file that is linked with the
      * HashFunction. The content of the file is overwritten.

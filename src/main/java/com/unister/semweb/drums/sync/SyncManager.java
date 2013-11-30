@@ -188,7 +188,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
      */
     private boolean bucketsEmpty() {
         for (int i = 0; i < numberOfBuckets; i++) {
-            if (bucketContainer.buckets[i].elementsInBucket > 0) {
+            if (bucketContainer.getBucket(i).elementsInBucket > 0) {
                 return false;
             }
         }
@@ -212,7 +212,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
         int synchronizedBuckets = 0;
         // run over all buckets
         for (int i = 0; i < numberOfBuckets; i++) {
-            Bucket<Data> oldBucket = bucketContainer.buckets[i];
+            Bucket<Data> oldBucket = bucketContainer.getBucket(i);
 
             // if the bucket is empty, then do nothing
             if (oldBucket.elementsInBucket == 0) {
@@ -251,7 +251,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
         if (bufferThreads.getQueue().size() < bufferThreads.getMaximumPoolSize()) {
             int bucketId = getLargestBucketId();
             if (bucketId != -1) {
-                Bucket<Data> pointer = bucketContainer.buckets[bucketId];
+                Bucket<Data> pointer = bucketContainer.getBucket(bucketId);
                 boolean threadStarted = false;
                 if (DynamicMemoryAllocater.INSTANCES[gp.ID].getFreeMemory() == 0 ||
                         pointer.elementsInBucket >= gp.MIN_ELEMENT_IN_BUCKET_BEFORE_SYNC ||
@@ -282,7 +282,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
                     bucketId);
             return false;
         }
-        Bucket<Data> oldBucket = bucketContainer.buckets[bucketId];
+        Bucket<Data> oldBucket = bucketContainer.getBucket(bucketId);
         // bucket is empty
         if (oldBucket.elementsInBucket == 0) {
             log.debug("Can't add BufferThread. Bucket {} is empty", bucketId);
@@ -332,7 +332,7 @@ public class SyncManager<Data extends AbstractKVStorable> extends Thread {
         int max = 0;
         int rememberId = -1;
         for (int i = 0; i < numberOfBuckets; i++) {
-            Bucket<Data> oldBucket = bucketContainer.buckets[i];
+            Bucket<Data> oldBucket = bucketContainer.getBucket(i);
             if (oldBucket.elementsInBucket > max) {
                 max = oldBucket.elementsInBucket;
                 rememberId = oldBucket.getBucketId();

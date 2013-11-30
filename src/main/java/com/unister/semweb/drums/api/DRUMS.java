@@ -47,12 +47,17 @@ import com.unister.semweb.drums.util.ByteArrayComparator;
 import com.unister.semweb.drums.util.KeyUtils;
 
 /**
- * This class provides the interface for managing the storage of {@link AbstractKVStorable}s. Use the static methods in
- * {@link DRUMSInstantiator} to get an instance of {@link DRUMS}. The name DRUMS is a acronym for sorted disk repository
- * with update management. <br>
+ * An instance of this class provides access to a DRUMS-table. The instance allows managing the storage of
+ * {@link AbstractKVStorable}s. Use the static methods in {@link DRUMSInstantiator} to get an instance of {@link DRUMS}.<br>
+ * <br>
+ * Use the method {@link #insertOrMerge(AbstractKVStorable...)} to insert or merge records.<br>
+ * To update records use the method {@link #update(AbstractKVStorable...)}.<br>
+ * Single selects can be performed by the method {@link #select(byte[])}.<br>
+ * To perform range selects, a {@link DRUMSReader} should be instantiated ({@link #getReader()}.<br>
+ * The whole table is scanned best, using an {@link DRUMSIterator} ({@link #getIterator()}.
  * 
  * @author Nils Thieme, Martin Nettling
-
+ * 
  * @param <Data>
  *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
  */
@@ -96,9 +101,10 @@ public class DRUMS<Data extends AbstractKVStorable> {
      *            can be read or read/write
      * @param gp
      *            contains all needed settings
-     * @throws Exception 
+     * @throws Exception
      */
-    protected DRUMS(AbstractHashFunction hashFunction, AccessMode accessMode, GlobalParameters<Data> gp) throws IOException {
+    protected DRUMS(AbstractHashFunction hashFunction, AccessMode accessMode, GlobalParameters<Data> gp)
+            throws IOException {
         this.prototype = gp.getPrototype();
         this.hashFunction = hashFunction;
         this.gp = gp;

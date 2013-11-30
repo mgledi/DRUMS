@@ -15,6 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 package com.unister.semweb.drums;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,13 +28,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.unister.semweb.drums.api.DRUMS;
+import com.unister.semweb.drums.api.DRUMSException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
  * This class represents all parameters, which are used globally in a DRUMS-Instance. The instance of
- * {@link GlobalParameters} should be available in all internal Objects used by {@link DRUMS}. 
+ * {@link GlobalParameters} should be available in all internal Objects used by {@link DRUMS}.
  * 
  * @author Martin Nettling
  * @param <Data>
@@ -120,6 +122,27 @@ public class GlobalParameters<Data extends AbstractKVStorable> {
      */
     public GlobalParameters(Data prototype) {
         this("drums.properties", prototype);
+    }
+
+    /**
+     * This constructor tries to load an already saved ParameterFile from an existing {@link DRUMS}-table.
+     * 
+     * @param folder
+     *            the directory, where all files can be found
+     * @throws DRUMSException
+     *             if the given folder is no folder
+     */
+    public GlobalParameters(File folder) throws DRUMSException {
+        if (!folder.isDirectory()) {
+            throw new DRUMSException("The given FilePointer (" + folder
+                    + ") is no folder. Please specify a folder, which contains a DRUMS-table.");
+        }
+        keySize = 0;
+        elementSize = 0;
+        ID=0;
+        // TODO: implement
+        // load parameter file
+        // load prototype
     }
 
     /**

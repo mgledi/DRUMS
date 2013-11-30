@@ -18,13 +18,16 @@ package com.unister.semweb.drums.bucket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.unister.semweb.drums.GlobalParameters;
 import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
- * This class is responsible for adding {@link AbstractKVStorable}-objects to the correct buckets dependent on its
- * {@link AbstractHashFunction}. It has an additional buffer to store elements, which belong to full buckets.
+ * This class handles {@link AbstractKVStorable}-objects in memory. Depending on the given {@link AbstractHashFunction},
+ * the {@link BucketContainer} distributes incoming data to a defined number of {@link Bucket}s. This class is allowed
+ * to use the by {@link GlobalParameters#BUCKET_MEMORY} defined amount of memory.
+ * 
  * 
  * @author Martin Nettling
  * @param <Data>
@@ -33,16 +36,15 @@ import com.unister.semweb.drums.storable.GeneralStorable;
 public class BucketContainer<Data extends AbstractKVStorable> {
     private static final Logger log = LoggerFactory.getLogger(BucketContainer.class);
     /**
-     * array containing all {@link Bucket}s. The index of the bucket in this array should also be the bucketId of the
-     * {@link Bucket}
+     * Array containing all {@link Bucket}s. The index of the bucket in this array should be the bucketId of the related
+     * {@link Bucket}.
      */
-    /* public for fast access in buffer */
-    public final Bucket<Data>[] buckets;
+    protected final Bucket<Data>[] buckets;
 
-    /** the HashFunction to calculate the bucket-id */
-    private final AbstractHashFunction hashFunction;
+    /** the HashFunction to determine the bucket-id */
+    protected final AbstractHashFunction hashFunction;
 
-    private boolean shutDownInitiated = false;
+    protected boolean shutDownInitiated = false;
 
     /**
      * @param buckets

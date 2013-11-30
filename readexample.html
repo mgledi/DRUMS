@@ -33,19 +33,33 @@
 		<div class="inner">
 			<!-- Navigation -->
 			<div id="main_inner_nav_content"">
-				<a href="/DRUMS/index.html">Introduction</a><br> 
-				<a href="/DRUMS/dependencies.html">Dependencies</a><br> 
-				<span>Example</span><br> 
-					<a style="padding-left:1em" href="/DRUMS/writeexample.html">Write Example</a><br> 
-					<a style="padding-left:1em" href="/DRUMS/readexample.html">Read Example</a><br> 
-				<a href="/DRUMS/javadoc/index.html" target="_New">JavaDocs</a>
+				<a href="/DRUMS/index.html">Introduction</a><br> <a href="/DRUMS/dependencies.html">Dependencies</a><br> <span>Example</span><br>
+				<a style="padding-left: 1em" href="/DRUMS/writeexample.html">Write Example</a><br> <a style="padding-left: 1em"
+					href="/DRUMS/readexample.html">Read Example</a><br> <a href="/DRUMS/javadoc/index.html" target="_New">JavaDocs</a>
 			</div>
 			<!-- MAIN CONTENT -->
 			<div id="main_inner_content">
 				<section id="main_content" class="inner">
 					<h1>Read Example</h1>
-
-
+					<p>
+						Like in the <a href="/DRUMS/writeexample.html">Write Example</a> some parameters must be defined. For simplicity,
+						this time only the folder of the DRUMS-table must be given.
+					</p>
+					<code>GlobalParameters gp = new GlobalParameters(folderOfDRUMS);</code>
+					<p>Now, DRUMS can be opend for reading</p>
+					<code>DRUMS drums = DRUMSInstantiator.openTable(gp);</code>
+					<p>Single Select Example</p>
+					<p>DRUMSIterator (Full Table Scan)</p>
+					<p>Range Select Example</p>
+					<p>Filtering Data
+					<p>
+					<p>To make sure, that all records are persisted, the current DRUMS-instance must be closed.</p>
+					<code>drums.close();</code>
+					<p>
+						For a concrete example please have a look at <a href="https://github.com/mgledi/BioDRUMS">BioDRUMS</a>. This <a
+							href="https://github.com/mgledi/BioDRUMS/blob/master/src/main/java/com/unister/semweb/drum/tutorial/SNPReadTutorial.java">file</a>
+						provides a full functional example for performing the above mentioned operations on a filled DRUMS table.
+					</p>
 				</section>
 			</div>
 			<div style="clear: both"></div>

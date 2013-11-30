@@ -4,11 +4,9 @@
 <head>
 <meta charset='utf-8' />
 <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-<meta name="description"
-	content="DRUMS : DRUMS: Disk Repository with Update Management and Select Option" />
+<meta name="description" content="DRUMS : DRUMS: Disk Repository with Update Management and Select Option" />
 
-<link rel="stylesheet" type="text/css" media="screen"
-	href="stylesheets/stylesheet.css">
+<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
 <title>DRUMS</title>
 </head>
@@ -18,19 +16,15 @@
 	<!-- HEADER -->
 	<div id="header_wrap" class="outer">
 		<header class="inner">
-			<a id="forkme_banner" href="https://github.com/mgledi/DRUMS">View
-				on GitHub</a>
+			<a id="forkme_banner" href="https://github.com/mgledi/DRUMS">View on GitHub</a>
 
 			<h1 id="project_title">DRUMS</h1>
-			<h2 id="project_tagline">DRUMS: Disk Repository with Update
-				Management and Select Option</h2>
+			<h2 id="project_tagline">DRUMS: Disk Repository with Update Management and Select Option</h2>
 
 			<section id="downloads">
-				<a class="zip_download_link"
-					href="https://github.com/mgledi/DRUMS/zipball/master">Download
-					this project as a .zip file</a> <a class="tar_download_link"
-					href="https://github.com/mgledi/DRUMS/tarball/master">Download
-					this project as a tar.gz file</a>
+				<a class="zip_download_link" href="https://github.com/mgledi/DRUMS/zipball/master">Download this project as a
+					.zip file</a> <a class="tar_download_link" href="https://github.com/mgledi/DRUMS/tarball/master">Download this
+					project as a tar.gz file</a>
 			</section>
 		</header>
 	</div>
@@ -39,42 +33,33 @@
 		<div class="inner">
 			<!-- Navigation -->
 			<div id="main_inner_nav_content"">
-				<a href="/DRUMS/index.html">Introduction</a><br> 
-				<a href="/DRUMS/dependencies.html">Dependencies</a><br> 
-				<span>Example</span><br> 
-					<a style="padding-left:1em" href="/DRUMS/writeexample.html">Write Example</a><br> 
-					<a style="padding-left:1em" href="/DRUMS/readexample.html">Read Example</a><br> 
-				<a href="/DRUMS/javadoc/index.html" target="_New">JavaDocs</a>
+				<a href="/DRUMS/index.html">Introduction</a><br> <a href="/DRUMS/dependencies.html">Dependencies</a><br> <span>Tutorials</span><br>
+				<a style="padding-left: 1em" href="/DRUMS/writetutorial.html">Write Tutorial</a><br> <a
+					style="padding-left: 1em" href="/DRUMS/readtutorial.html">Read Tutorial</a><br> <a
+					href="/DRUMS/javadoc/index.html" target="_New">JavaDocs</a>
 			</div>
 			<!-- MAIN CONTENT -->
 			<div id="main_inner_content">
 				<section id="main_content" class="inner">
-					<p>DRUMS is a memory efficient key-value store, which is
-						optimized for:
+					<p>DRUMS is a memory efficient key-value store, which is optimized for:
 					<ol>
-						<li>fast bulk inserts,
+						<li>fast inserts,
 						<li>fast state dependent updates
 						<li>range selects
 					</ol>
-					DRUMS was first developed to store sequence related data, but it
-					can be easily adapted for other problems, e.g. product
-					informations, clickthrough data. To see example usages with
-					biological data please have a look at <a
+					DRUMS was first developed to store sequence related data, but it can be easily adapted for other problems, e.g.
+					product informations, clickthrough data. To see example usages with biological data please have a look at <a
 						href="https://github.com/mgledi/BioDRUMS/">BioDRUMS</a>.
 					</p>
 					<h2>Preconditions</h2>
 					<p>
-						To use DRUMS you must be able to define your records to be all of
-						equal size. It is not possible to store e.g. text records of
-						different length. Futher, it must be possible to define a
-						consistent hash function for your records, e.g. a
-						RangeHashFunction (an implementation is already included in this
-						project). <br>
-						<br> This project provides no out of the box API. You have to
-						integrate this project into your project. Then you can use the
-						provided java-API to create or open a DRUMS-table and to insert,
-						update or select records. Please find all methods described in the
-						<a href="/DRUMS/javadoc/index.html">JavaDoc</a>.
+						To use DRUMS you must be able to define your records to be all of equal size. It is not possible to store e.g.
+						text records of different length. Further, it must be possible to define a consistent hash function for your
+						records, e.g. a <a href="/DRUMS/javadoc/com/unister/semweb/drums/bucket/hashfunction/RangeHashFunction.html">RangeHashFunction</a>
+						(an implementation is already included in this project). <br> <br> This project provides no out of the
+						box API. You have to integrate this project into your java-project. Then you can use the provided java-API to
+						create or open a DRUMS-table and to insert, update or select records. Please find all methods described in the <a
+							href="/DRUMS/javadoc/index.html">JavaDocs</a>.
 					</p>
 				</section>
 			</div>

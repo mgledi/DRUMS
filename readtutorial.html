@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset='utf-8' />
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<meta name="description" content="DRUMS : DRUMS: Disk Repository with Update Management and Select Option" />
+
+<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+<title>DRUMS</title>
+</head>
+
+<body>
+
+	<!-- HEADER -->
+	<div id="header_wrap" class="outer">
+		<header class="inner">
+			<a id="forkme_banner" href="https://github.com/mgledi/DRUMS">View on GitHub</a>
+
+			<h1 id="project_title">DRUMS</h1>
+			<h2 id="project_tagline">DRUMS: Disk Repository with Update Management and Select Option</h2>
+
+			<section id="downloads">
+				<a class="zip_download_link" href="https://github.com/mgledi/DRUMS/zipball/master">Download this project as a
+					.zip file</a> <a class="tar_download_link" href="https://github.com/mgledi/DRUMS/tarball/master">Download this
+					project as a tar.gz file</a>
+			</section>
+		</header>
+	</div>
+
+	<div id="main_content_wrap" class="outer">
+		<div class="inner">
+			<!-- Navigation -->
+			<div id="main_inner_nav_content"">
+				<a href="/DRUMS/index.html">Introduction</a><br> <a href="/DRUMS/dependencies.html">Dependencies</a><br> <span>Tutorials</span><br>
+				<a style="padding-left: 1em" href="/DRUMS/writetutorial.html">Write Tutorial</a><br> <a
+					style="padding-left: 1em" href="/DRUMS/readtutorial.html">Read Tutorial</a><br> <a
+					href="/DRUMS/javadoc/index.html" target="_New">JavaDocs</a>
+			</div>
+			<!-- MAIN CONTENT -->
+			<div id="main_inner_content">
+				<section id="main_content" class="inner">
+					<h1>Read Tutorial</h1>
+					<p>
+						Like in the <a href="/DRUMS/writeexample.html">Write Example</a> some parameters must be defined. For simplicity,
+						this time only the folder of the DRUMS-table must be given.
+					</p>
+					<pre>GlobalParameters gp = new GlobalParameters(folderOfDRUMS);</pre>
+					<p>Now, DRUMS can be opend for reading.</p>
+					<pre>DRUMS drums = DRUMSInstantiator.openTable(gp);</pre>
+					<p>
+						To perform efficient selects, it is recommended to use the <a
+							href="/DRUMS/javadoc/com/unister/semweb/drums/api/DRUMSReader.html">DRUMSReader</a>. Use the factory method
+						<code>#getReader()</code>
+						in the DRUMS-object to get an instance.
+					</p>
+					<pre>DRUMSReader reader = drums.getReader();</pre>
+					<h5>Single selects</h5>
+					<p>
+						Single selects can be performed using
+						<code>#select(keys[]...)</code>
+						from the DRUMS-instance or
+						<code>#get(keys[]...)</code>
+						from the DRUMSReader.
+					</p>
+					<pre> List result = drums.select(key1, key2, ..., keyN);</pre>
+					or
+					<pre> List result = reader.get(key1, key2, ..., keyN); </pre>
+					<h5>Range selects</h5>
+					<p>
+						Range selects can only be performed using the <a
+							href="/DRUMS/javadoc/com/unister/semweb/drums/api/DRUMSReader.html">DRUMSReader</a>. The method
+						<code>#getRange(byte[], byte[])</code>
+						must be used carefully. The returned list might be very large and might need a lot of memory.
+					</p>
+					<pre>List result = reader.getRange(lowerKey, upperKey); </pre>
+					<h5>Iterator</h5>
+					<p>DRUMS provides also the option to use an iterator to scan a large range of the table.</p>
+					<pre>
+DRUMSIterator iterator = drums.getIterator();
+while (iterator.hasNext() ) { // do something };
+iterator.close();</pre>
+					<h5>Filtering data</h5>
+					<p>DRUMS doesn't provide the possibility to formulate detailed select conditions like MySQL (... WHERE ...).
+						Therefore the returned lists of records must be filtered.
+					<p>
+					<pre>
+Iterator iterator = result.iterator();
+while (iterator.hasNext()) {
+    Data record = iterator.next();
+    if (condition is fullfilled) {
+        // add element to a final result list
+    }
+}</pre>
+
+					<pre>drums.close();</pre>
+
+					<h3>Example</h3>
+					<p>
+						For a concrete example please have a look at <a href="https://github.com/mgledi/BioDRUMS">BioDRUMS</a>. This <a
+							href="https://github.com/mgledi/BioDRUMS/blob/master/src/main/java/com/unister/semweb/drum/tutorial/SNPReadTutorial.java">file</a>
+						provides a full functional example for performing the above mentioned operations on a filled DRUMS table.
+					</p>
+
+				</section>
+			</div>
+			<div style="clear: both"></div>
+		</div>
+	</div>
+
+
+	<!-- FOOTER  -->
+	<div id="footer_wrap" class="outer">
+		<footer class="inner">
+			<p class="copyright">
+				DRUMS maintained by <a href="https://github.com/mgledi">mgledi</a>
+			</p>
+		</footer>
+	</div>
+
+</body>
+</html>

@@ -46,7 +46,6 @@ public class BucketSplitterTestLinear {
     @Before
     public void initialise() throws IOException {
         FileUtils.deleteQuietly(new File(TestUtils.gp.DATABASE_DIRECTORY));
-        new File(TestUtils.gp.DATABASE_DIRECTORY).mkdirs();
     }
 
     /**
@@ -59,6 +58,7 @@ public class BucketSplitterTestLinear {
         int numberOfElements = 100;
         RangeHashFunction hashFunction = RangeHashFunctionTestUtils.createTestFunction(1, 100,
                 hashFunctionFilename, TestUtils.gp.getKeySize());
+        hashFunction.writeToFile();
         DummyKVStorable[] testData = createAndFillDRUMS(numberOfElements, hashFunction);
 
         BucketSplitter<DummyKVStorable> splitter = new BucketSplitter<DummyKVStorable>(hashFunction,

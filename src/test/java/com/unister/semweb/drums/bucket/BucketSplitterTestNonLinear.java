@@ -46,7 +46,6 @@ public class BucketSplitterTestNonLinear {
     @Before
     public void initialise() throws IOException {
         FileUtils.deleteQuietly(new File(TestUtils.gp.DATABASE_DIRECTORY));
-        new File(TestUtils.gp.DATABASE_DIRECTORY).mkdirs();
     }
 
     /**

@@ -312,10 +312,10 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Searches for the {@link Data}-records corresponding the given keys within the given indexFile. This is done by
-     * using the {@link IndexForHeaderIndexFile} from the given {@link HeaderIndexFile}. If you want to do this in a
-     * more sequential way, try to use the method {@link #read(int, int, int)} or use an {@link DRUMSIterator}. (
-     * {@link #getIterator()})
+     * Searches for the {@link AbstractKVStorable}-records corresponding the given keys within the given indexFile. This
+     * is done by using the {@link IndexForHeaderIndexFile} from the given {@link HeaderIndexFile}. If you want to do
+     * this in a more sequential way, try to use the method {@link #read(int, int, int)} or use an {@link DRUMSIterator}
+     * . ({@link #getIterator()})
      * 
      * @param indexFile
      *            {@link HeaderIndexFile}, where to search for the keys

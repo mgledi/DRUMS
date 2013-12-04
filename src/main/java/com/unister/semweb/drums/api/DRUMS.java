@@ -284,7 +284,8 @@ public class DRUMS<Data extends AbstractKVStorable> {
         byte[] dataArray = new byte[gp.getElementSize()];
         while (dataBuffer.position() < dataBuffer.limit()) {
             dataBuffer.get(dataArray);
-            Data copy = prototype.fromByteBuffer(ByteBuffer.wrap(dataArray));
+            @SuppressWarnings("unchecked")
+            Data copy = (Data)prototype.fromByteBuffer(ByteBuffer.wrap(dataArray));
             result.add(copy);
         }
         indexFile.close();
@@ -359,7 +360,8 @@ public class DRUMS<Data extends AbstractKVStorable> {
             // read element from workingBuffer
             workingBuffer.position(indexInChunk);
             workingBuffer.get(tmpB);
-            Data copy = prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
+            @SuppressWarnings("unchecked")
+            Data copy = (Data)prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
             result.add(copy);
             if (indexInChunk == -1) {
                 logger.warn("Element with key {} was not found.", key);

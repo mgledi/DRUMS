@@ -4,30 +4,49 @@
 
 	<groupId>com.unister.semweb</groupId>
 	<artifactId>DRUMS</artifactId>
-	<version>0.4.1</version>
 	<packaging>jar</packaging>
-
 	<name>DRUMS</name>
+	<version>0.4.2</version>
 	<description>disk repository with update management and select option</description>
 	<url>http://github.com/mgledi/drums</url>
 
-        <developers>
-                <developer>
-                        <id>martin.nettling</id>
-                        <name>Martin Nettling</name>
-                        <email>mgledi@gmail.com</email>
-                </developer>
-                <developer>
-                        <id>nils.thieme</id>
-                        <name>Nils Thieme</name>
-                        <email>nils.thieme@unister.de</email>
-                </developer>
-        </developers>
-        
+	<licenses>
+		<license>
+			<name>GNU General Public License 2 (GPLv2)</name>
+			<url>http://opensource.org/licenses/GPL-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>martin.nettling</id>
+			<name>Martin Nettling</name>
+			<email>mgledi@gmail.com</email>
+		</developer>
+		<developer>
+			<id>nils.thieme</id>
+			<name>Nils Thieme</name>
+			<email>nils.thieme@unister.de</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git@github.com:mgledi/DRUMS.git</connection>
+		<developerConnection>scm:git:git@github.com:mgledi/DRUMS.git</developerConnection>
+		<url>https://github.com/mgledi/DRUMS</url>
+	</scm>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+
 	<dependencies>
 		<!-- Logging -->
 		<dependency>
@@ -69,6 +88,21 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>utf-8</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.12</version>
 				<dependencies>
@@ -81,22 +115,33 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
 				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>make-my-jar-with-dependencies</id>
+						<phase>package</phase>
 						<goals>
-							<goal>test-jar</goal>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Appending sources -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
 						</goals>
 					</execution>
 				</executions>

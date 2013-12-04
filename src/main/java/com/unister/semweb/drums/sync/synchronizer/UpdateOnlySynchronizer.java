@@ -170,7 +170,8 @@ public class UpdateOnlySynchronizer<Data extends AbstractKVStorable> {
                 workingBuffer.position(indexInChunk);
                 byte[] b = new byte[gp.getElementSize()];
                 workingBuffer.get(b);
-                Data toUpdate = prototype.fromByteBuffer(ByteBuffer.wrap(b));
+                @SuppressWarnings("unchecked")
+                Data toUpdate = (Data)prototype.fromByteBuffer(ByteBuffer.wrap(b));
                 // update the old element and write it
                 toUpdate.update(data);
                 workingBuffer.position(indexInChunk);

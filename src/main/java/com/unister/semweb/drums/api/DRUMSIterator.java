@@ -127,7 +127,8 @@ public class DRUMSIterator<Data extends AbstractKVStorable> implements Iterator<
                 return null;
             }
             readBuffer.get(curDestBuffer);
-            Data record = prototype.fromByteBuffer(ByteBuffer.wrap(curDestBuffer));
+            @SuppressWarnings("unchecked")
+            Data record = (Data)prototype.fromByteBuffer(ByteBuffer.wrap(curDestBuffer));
             countElementsRead++;
             return record;
         } catch (Exception e) {

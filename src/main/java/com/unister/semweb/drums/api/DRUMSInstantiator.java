@@ -31,7 +31,7 @@ import com.unister.semweb.drums.bucket.hashfunction.AbstractHashFunction;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
 
 /**
- * This class provides some factory methods to instantiate a DRUMS-table.
+ * This class provides some factory methods to instantiate {@link DRUMS} by opening or creating a table.
  * 
  * @author Martin Nettling
  * 
@@ -106,7 +106,7 @@ public class DRUMSInstantiator {
         try {
             hashFunction = readHashFunction(gp);
         } catch (ClassNotFoundException e) {
-            throw new IOException("Could not load HashFunction from " + gp.DATABASE_DIRECTORY,e);
+            throw new IOException("Could not load HashFunction from " + gp.DATABASE_DIRECTORY, e);
         }
         return new DRUMS<Data>(hashFunction, accessMode, gp);
     }

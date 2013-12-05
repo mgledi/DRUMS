@@ -51,8 +51,7 @@ public class DRUMSTest {
         long[] ranges = new long[] { 0, 10, 20, 30 };
         byte[][] bRanges = KeyUtils.toByteArray(ranges);
         String[] filenames = new String[] { "1.db", "2.db", "3.db", "4.db" };
-        // FileUtils.deleteQuietly(new File(TestUtils.gp.databaseDirectory));
-        FileUtils.forceDelete(new File(TestUtils.gp.DATABASE_DIRECTORY));
+         FileUtils.deleteQuietly(new File(TestUtils.gp.DATABASE_DIRECTORY));
         hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");
         System.gc();
     }

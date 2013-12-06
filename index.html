@@ -22,9 +22,12 @@
 			<h2 id="project_tagline">DRUMS: Disk Repository with Update Management and Select Option</h2>
 
 			<section id="downloads">
-				<a class="zip_download_link" href="https://github.com/mgledi/DRUMS/zipball/master">Download this project as a
-					.zip file</a> <a class="tar_download_link" href="https://github.com/mgledi/DRUMS/tarball/master">Download this
-					project as a tar.gz file</a>
+				<a class="zip_download_link" href="https://github.com/mgledi/DRUMS/zipball/master"
+					title="Download this project as a .zip file">Download this project as a .zip file</a> <a class="tar_download_link"
+					href="https://github.com/mgledi/DRUMS/tarball/master" title="Download this project as a tar.gz file">Download
+					this project as a tar.gz file</a> <a class="jar_download_link"
+					href="https://github.com/mgledi/DRUMS/releases/download/v0.4.2/DRUMS-0.4.2-jar-with-dependencies.jar"
+					title="Download release 0.4.2 as a .jar library">Download release 0.4.2 as a .jar library</a>
 			</section>
 		</header>
 	</div>
@@ -62,13 +65,27 @@
 							href="/DRUMS/javadoc/index.html">JavaDocs</a>.
 					</p>
 					<h2>Integration into your project</h2>
-					<p>	
-						There are two ways to use DRUMS with your Java Project.
-						<ol>
-							<li>Maven
-							<li>As .jar libary
-						</ol> 
+					<p>There are two ways to use DRUMS with your Java Project.</p>
+					<h5>1) Add Maven Dependency</h5>
+					All releases of DRUMS will be published to <a href="https://oss.sonatype.org/index.html#welcome">Sonatype</a>. If
+					you have installed Maven and configured <a href="https://oss.sonatype.org/index.html#welcome">Sonatype</a> as one
+					of your maven repositories, you just have to add the following depedency to your .pom-file.<br>
+					<pre>
+&lt;dependency&gt;
+  &lt;groupId&gt;com.unister.semweb&lt;/groupId&gt;
+  &lt;artifactId&gt;DRUMS&lt;/artifactId&gt;
+  &lt;version&gt;0.4.2&lt;/version&gt;
+&lt;/dependency&gt;
+							</pre>
+					<h5>2) Add .jar library</h5>
+					<p>
+						You can download the latest release of DRUMS with all dependencies from the <a
+							href="https://github.com/mgledi/DRUMS/releases/">release section on github</a>. Or use the direct link to the
+						current release at the top of this page. Add the downloaded .jar to your libararies. <a
+							href="http://www.wikihow.com/Add-JARs-to-Project-Build-Paths-in-Eclipse-(Java)">Here</a> you can find several
+						suggestions doing this with Eclipse.
 					</p>
+
 				</section>
 			</div>
 			<div style="clear: both"></div>

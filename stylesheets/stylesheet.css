@@ -301,12 +301,22 @@ Full-Width Styles
 
 #downloads {
 	position: absolute;
-	width: 210px;
+	width: 310px;
 	z-index: 10;
 	bottom: -40px;
 	right: 0;
 	height: 70px;
 	background: url('../images/icon_download.png') no-repeat 0% 90%;
+}
+
+.jar_download_link {
+	display: block;
+	float: right;
+	width: 90px;
+	height: 70px;
+	text-indent: -5000px;
+	overflow: hidden;
+	background: url(../images/sprite_download.png) no-repeat bottom right;
 }
 
 .zip_download_link {
@@ -317,6 +327,7 @@ Full-Width Styles
 	text-indent: -5000px;
 	overflow: hidden;
 	background: url(../images/sprite_download.png) no-repeat bottom left;
+	margin-left: 7px;
 }
 
 .tar_download_link {
@@ -326,8 +337,14 @@ Full-Width Styles
 	height: 70px;
 	text-indent: -5000px;
 	overflow: hidden;
-	background: url(../images/sprite_download.png) no-repeat bottom right;
+	background: url(../images/sprite_download.png);
+	background-repeat: no-repeat;
+	background-position: -90px bottom;
 	margin-left: 10px;
+}
+
+.jar_download_link:hover {
+	background: url(../images/sprite_download.png) no-repeat top right;
 }
 
 .zip_download_link:hover {
@@ -335,14 +352,16 @@ Full-Width Styles
 }
 
 .tar_download_link:hover {
-	background: url(../images/sprite_download.png) no-repeat top right;
+	background: url(../images/sprite_download.png);
+	background-repeat: no-repeat;
+	background-position: -90px top;
 }
 
 #main_inner_nav_content {
 	valign: middle;
 	float: left;
 	max-width: 160px;
-	padding-top: 20px;
+	padding-top: 10px;
 	margin-right: 40px;
 }
 
@@ -355,8 +374,8 @@ Full-Width Styles
 	background: #f2f2f2;
 	border-top: 1px solid #111;
 	border-bottom: 1px solid #111;
-	padding-top: 20px;
-	padding-bottom:20px;
+	padding-top: 30px;
+	padding-bottom: 20px;
 }
 
 #footer_wrap {

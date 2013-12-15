@@ -34,7 +34,7 @@ import com.unister.semweb.drums.util.KeyUtils;
  * when there are no write-operations during reading. All files will be locked. Be careful: Opening all files may cost a
  * lot of memory, because all indices are loaded.<br>
  * <br>
- * Please use the factory-method {@link DRUMS#getReader()} get an instance of this class.
+ * Please use the factory-method {@link DRUMS#getReader()} to get an instance of this class.
  * 
  * @author Martin Nettling
  * @param <Data>

@@ -53,10 +53,10 @@ import com.unister.semweb.drums.util.KeyUtils;
  * Use the method {@link #insertOrMerge(AbstractKVStorable...)} to insert or merge records.<br>
  * To update records use the method {@link #update(AbstractKVStorable...)}.<br>
  * Single selects can be performed by the method {@link #select(byte[])}.<br>
- * To perform range selects, a {@link DRUMSReader} should be instantiated ({@link #getReader()}.<br>
- * The whole table is scanned best, using an {@link DRUMSIterator} ({@link #getIterator()}.
+ * To perform range selects, a {@link DRUMSReader} should be instantiated using the method {@link #getReader()}.<br>
+ * The whole table is scanned best, using an {@link DRUMSIterator} obtained by {@link #getIterator()}.
  * 
- * @author Nils Thieme, Martin Nettling
+ * @author Martin Nettling, Nils Thieme
  * 
  * @param <Data>
  *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}
@@ -140,7 +140,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Sets the {@link SynchronizerFactory}.
+     * Expert method. Sets the {@link SynchronizerFactory}.
      * 
      * @param factory
      */
@@ -285,7 +285,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
         while (dataBuffer.position() < dataBuffer.limit()) {
             dataBuffer.get(dataArray);
             @SuppressWarnings("unchecked")
-            Data copy = (Data)prototype.fromByteBuffer(ByteBuffer.wrap(dataArray));
+            Data copy = (Data) prototype.fromByteBuffer(ByteBuffer.wrap(dataArray));
             result.add(copy);
         }
         indexFile.close();
@@ -361,7 +361,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
             workingBuffer.position(indexInChunk);
             workingBuffer.get(tmpB);
             @SuppressWarnings("unchecked")
-            Data copy = (Data)prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
+            Data copy = (Data) prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
             result.add(copy);
             if (indexInChunk == -1) {
                 logger.warn("Element with key {} was not found.", key);
@@ -374,6 +374,8 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
+     * Determines the number of elements in each buckets by opening all files.
+     * 
      * @return the number of elements in the database.
      * @throws IOException
      * @throws FileLockException
@@ -461,7 +463,9 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Joins all the DRUMS-table.
+     * Waits for the internal Threads to die.
+     * 
+     * @see Thread#join()
      * 
      * @throws InterruptedException
      */
@@ -470,7 +474,7 @@ public class DRUMS<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Closes the DRUMS.
+     * Closes this DRUMS.
      * 
      * @throws InterruptedException
      */
@@ -506,17 +510,29 @@ public class DRUMS<Data extends AbstractKVStorable> {
         syncManager.stopForceMode();
     }
 
-    /** @return the size of one record to store in bytes */
+    /**
+     * Retrieves the size of a record stored with this {@link DRUMS} instance.
+     * 
+     * @return the number of needed bytes per record
+     */
     public int getElementSize() {
         return gp.getElementSize();
     }
 
-    /** @return the size of the key of one record */
+    /**
+     * Retrieves the size of the key.
+     * 
+     * @return the number of bytes of the key of a record
+     */
     public int getElementKeySize() {
         return gp.getKeySize();
     }
 
-    /** @return the underlying hash-function */
+    /**
+     * Retrieves the used HashFunction.
+     * 
+     * @return the underlying hash-function
+     */
     public AbstractHashFunction getHashFunction() {
         return this.hashFunction;
     }
@@ -532,17 +548,29 @@ public class DRUMS<Data extends AbstractKVStorable> {
         this.hashFunction = hashfunction;
     }
 
-    /** @return the database-directory */
+    /**
+     * Retrieves the value for the database directory.
+     * 
+     * @return the database-directory
+     */
     public String getDatabaseDirectory() {
         return gp.DATABASE_DIRECTORY;
     }
 
-    /** @return a pointer to the prototype. This is not a clone. */
+    /**
+     * Retrieves the prototype used by this {@link DRUMS} instance.
+     * 
+     * @return a pointer to the internal prototype.
+     */
     public Data getPrototype() {
         return prototype;
     }
 
-    /** @return the {@link DRUMSParameterSet} that are used within the {@link DRUMS} */
+    /**
+     * Retrieves the used {@link DRUMSParameterSet}.
+     * 
+     * @return the {@link DRUMSParameterSet} that are used within this {@link DRUMS} instance.
+     */
     public DRUMSParameterSet<Data> getGlobalParameters() {
         return gp;
     }

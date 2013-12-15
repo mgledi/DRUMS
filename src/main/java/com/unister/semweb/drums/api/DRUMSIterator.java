@@ -31,9 +31,9 @@ import com.unister.semweb.drums.storable.AbstractKVStorable;
 import com.unister.semweb.drums.storable.GeneralStorable;
 
 /**
- * An instance of this class provides a Read-Only-Iterator for a given DRUMS-table. During iteration, no elements should
- * be inserted by another process.
- * 
+ * An instance of this class provides a Read-Only-Iterator for a given DRUMS table. During iteration, no elements should
+ * be inserted by another process. Use {@link DRUMS#getIterator()} to get an {@link DRUMSIterator} instance.
+ *  * 
  * @author Martin Nettling
  * @param <Data>
  *            an implementation of {@link AbstractKVStorable}, e.g. {@link GeneralStorable}

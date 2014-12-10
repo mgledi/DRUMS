@@ -1,15 +1,15 @@
 /* Copyright (C) 2012-2013 Unister GmbH
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
@@ -24,7 +24,7 @@ import com.unister.semweb.drums.util.KeyUtils;
 /**
  * Abstract implementation of interface {@link AbstractKVStorable}. Extend this class to build your own storable
  * objects.
- * 
+ *
  * @author Martin Nettling
  */
 public abstract class AbstractKVStorable implements Serializable, Cloneable {
@@ -43,7 +43,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
 
     /**
      * Sets the value of this object. The given array is not copied, only a pointer will be set
-     * 
+     *
      * @param value
      */
     public void setValue(byte[] value) {
@@ -60,7 +60,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
     /**
      * Sets the key of this object. Be careful by overwriting the old key. The given array is not copied, only a pointer
      * will be set.
-     * 
+     *
      * @param key
      */
     public void setKey(byte[] key) {
@@ -79,7 +79,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
 
     /**
      * Returns the number of bytes needed to store key and value.
-     * 
+     *
      * @return key.length + value.length
      */
     public int getSize() {
@@ -88,21 +88,21 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
 
     /**
      * Converts the object to a {@link ByteBuffer}
-     * 
+     *
      * @return the object as {@link ByteBuffer}
      */
     public abstract ByteBuffer toByteBuffer();
 
     /**
      * Initializes the object from the given {@link ByteBuffer}
-     * 
+     *
      * @param bb
      */
     public abstract void initFromByteBuffer(ByteBuffer bb);
 
     /**
      * Generates a new Object from the given {@link ByteBuffer}.
-     * 
+     *
      * @param bb
      * @return a new instances of this Class
      */
@@ -110,7 +110,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
 
     /**
      * Merges the given {@link AbstractKVStorable} with this one by your implementation.
-     * 
+     *
      * @param element
      * @return a pointer to an {@link AbstractKVStorable}.
      */
@@ -118,14 +118,14 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
 
     /**
      * Updates the given {@link AbstractKVStorable} with values from this one.
-     * 
+     *
      * @param element
      */
     public abstract <Data extends AbstractKVStorable> void update(Data element);
 
     /**
      * This method returns false by default. This method must be overwritten in the concrete class,
-     * 
+     *
      * @return true, if this element is marked as deleted
      */
     public boolean isMarkedAsDeleted() {
@@ -146,10 +146,10 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
 
     /**
      * This method merges all {@link AbstractKVStorable}s in the given array with same keys. The array must been sorted.
-     * 
+     *
      * @param toAdd
      *            this array might contain duplicate entries concerning the key, which must be merged.
-     * 
+     *
      * @return a new array containing unique {@link AbstractKVStorable}s. The array is sorted.
      */
     @SuppressWarnings("unchecked")
@@ -160,10 +160,13 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
         // estimate the number of unique elements and check the precondition, that the array must been sorted
         int count = 1;
         for (int i = 0; i < toAdd.length - 1; i++) {
-            if (KeyUtils.compareKey(toAdd[i].key, toAdd[i + 1].key) <= 0) {
-                count++;
-            } else {
+            int compare = KeyUtils.compareKey(toAdd[i].key, toAdd[i + 1].key);
+            if (compare > 0) {
                 throw new RuntimeException("The given array is not sorted.");
+            } else if(compare < 0) {
+                count++;
+            } else { // if compare == 0
+                // do nothing, elements are equal
             }
         }
 
@@ -181,6 +184,7 @@ public abstract class AbstractKVStorable implements Serializable, Cloneable {
                 first = toAdd[k];
             }
         }
+
         if (count < realToAdd.length && KeyUtils.compareKey(realToAdd[realToAdd.length - 2].key, first.key) != 0) {
             realToAdd[count++] = first;
         }

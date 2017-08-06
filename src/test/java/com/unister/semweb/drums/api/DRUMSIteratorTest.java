@@ -55,9 +55,11 @@ public class DRUMSIteratorTest {
         this.hashFunction = new RangeHashFunction(bRanges, filenames, "/tmp/hash.hs");
 
         // fill with data
+        generatedData = TestUtils.createDummyData(1, 50);
+        TestUtils.gp.SYNC_CHUNK_SIZE = generatedData[0].getSize()*2; 
+        TestUtils.gp.FILE_CHUNK_SIZE = generatedData[0].getSize()*2; 
         table = DRUMSInstantiator.createTable(hashFunction, TestUtils.gp);
         // remember, the element with key 0 is ignored
-        generatedData = TestUtils.createDummyData(1, 50);
         Arrays.sort(generatedData, new AbstractKVStorableComparator());
         table.insertOrMerge(generatedData);
         table.close();
@@ -74,6 +76,15 @@ public class DRUMSIteratorTest {
             // elements should be read in ascending order
         }
         assertEquals(generatedData.length, elements.size());
+        table.close();
+    }
+    
+    @Test
+    public void drumsReaderTest() throws DRUMSException, InterruptedException, IOException, FileLockException {
+        table = DRUMSInstantiator.openTable(DRUMS.AccessMode.READ_ONLY, TestUtils.gp);
+        DRUMSReader<DummyKVStorable> reader = table.getReader();
+        List<DummyKVStorable> range = reader.getRange(Bytes.toBytes(1l), Bytes.toBytes(50l));
+        assertEquals(generatedData.length, range.size());
         table.close();
     }
 }

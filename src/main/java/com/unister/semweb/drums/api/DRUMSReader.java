@@ -21,8 +21,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.carrotsearch.hppc.IntObjectOpenHashMap;
-import com.carrotsearch.hppc.cursors.IntObjectCursor;
 import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.file.HeaderIndexFile;
 import com.unister.semweb.drums.storable.AbstractKVStorable;
@@ -109,61 +107,75 @@ public class DRUMSReader<Data extends AbstractKVStorable> {
     }
 
     /**
-     * Returns all elements between lowerKey and upperKey this function is still BUGGY.<br><br>
-     * TODO: fix this function. @Nils Why is this function buggy?
-     * 
-     * @param lowerKey
-     * @param upperKey
-     * @return a list containing all elements between lowerKey and upperKey
-     * @throws IOException
-     */
-    public List<Data> getRange(byte[] lowerKey, byte[] upperKey) throws IOException {
-        if (!filesAreOpened) {
-            throw new IOException("The files are not opened yet. Use openFiles() to open all files.");
-        }
-        // estimate first and last bucket
-        int lowerBucket = drums.getHashFunction().getBucketId(lowerKey);
-        int upperBucket = drums.getHashFunction().getBucketId(upperKey);
+	 * Returns all elements between lowerKey and upperKey this function is still
+	 * BUGGY.<br>
+	 * <br>
+	 * 
+	 * @param lowerKey
+	 * @param upperKey
+	 * @return a list containing all elements between lowerKey and upperKey
+	 * @throws IOException
+	 */
+	public List<Data> getRange(byte[] lowerKey, byte[] upperKey)
+			throws IOException {
+		if (!filesAreOpened) {
+			throw new IOException(
+					"The files are not opened yet. Use openFiles() to open all files.");
+		}
+		// estimate first and last bucket
+		int lowerBucket = drums.getHashFunction().getBucketId(lowerKey);
+		int upperBucket = drums.getHashFunction().getBucketId(upperKey);
+		if (lowerBucket > upperBucket) {
+			lowerBucket = 0;
+			upperBucket = drums.getHashFunction().getNumberOfBuckets() - 1;
+		}
 
-        // estimate first chunk in the first file
-        long lowerChunkOffset = files[lowerBucket].getIndex().getStartOffsetOfChunkByKey(lowerKey);
-        // estimate last chunk in the last file
-        long upperChunkOffset = files[lowerBucket].getIndex().getStartOffsetOfChunkByKey(upperKey);
-        long filesize, startOffset, endOffset;
-        byte[] tmpB = new byte[elementSize];
+		// estimate first chunk in the first file
+		long lowerChunkOffset = files[lowerBucket].getIndex()
+				.getStartOffsetOfChunkByKey(lowerKey);
+		// estimate last chunk in the last file
+		long upperChunkOffset = files[lowerBucket].getIndex()
+				.getStartOffsetOfChunkByKey(upperKey);
+		long filesize, startOffset, endOffset;
+		byte[] tmpB = new byte[elementSize];
 
-        ArrayList<Data> elements = new ArrayList<Data>();
-        // run over all files
-        OUTER: for (int i = lowerBucket; i <= upperBucket; i++) {
-            HeaderIndexFile<Data> aktFile = files[i];
-            filesize = aktFile.getFilledUpFromContentStart();
+		ArrayList<Data> elements = new ArrayList<Data>();
+		// run over all files
+		OUTER: for (int i = lowerBucket; i <= upperBucket; i++) {
+			HeaderIndexFile<Data> aktFile = files[i];
+			filesize = aktFile.getFilledUpFromContentStart();
 
-            // start reading at lowerChunkOffset in first file, else start reading from beginning
-            startOffset = i == lowerBucket ? lowerChunkOffset : 0;
-            // stop reading at upperChunkOffset in last file, else read till end fo file
-            endOffset = i == upperBucket ? Math.max(upperChunkOffset + aktFile.getChunkSize(), filesize) : filesize;
+			// start reading at lowerChunkOffset in first file, else start
+			// reading from beginning
+			startOffset = i == lowerBucket ? lowerChunkOffset : 0;
+			// stop reading at upperChunkOffset in last file, else read till end
+			// fo file
+			endOffset = i == upperBucket ? Math.max(
+					upperChunkOffset + aktFile.getChunkSize(), filesize)
+					: filesize;
 
-            while (startOffset < endOffset) {
-                destBuffer.clear();
-                aktFile.read(startOffset, destBuffer);
-                destBuffer.flip();
-                while (destBuffer.remaining() > elementSize) {
-                    destBuffer.get(tmpB); // get the element
-                    @SuppressWarnings("unchecked")
-                    Data record = (Data) prototype.fromByteBuffer(ByteBuffer.wrap(tmpB));
-                    if (KeyUtils.compareKey(record.getKey(), lowerKey) >= 0 &&
-                            KeyUtils.compareKey(record.getKey(), upperKey) <= 0) {
-                        elements.add(record);
-                    } else if (KeyUtils.compareKey(record.getKey(), upperKey) > 0) {
-                        // we have read all relevant elements
-                        break OUTER;
-                    }
-                }
-                startOffset += destBuffer.limit();
-            }
-        }
-        return elements;
-    }
+			while (startOffset < endOffset) {
+				destBuffer.clear();
+				aktFile.read(startOffset, destBuffer);
+				destBuffer.flip();
+				while (destBuffer.remaining() >= elementSize) {
+					destBuffer.get(tmpB); // get the element
+					@SuppressWarnings("unchecked")
+					Data record = (Data) prototype.fromByteBuffer(ByteBuffer
+							.wrap(tmpB));
+					if (KeyUtils.compareKey(record.getKey(), lowerKey) >= 0
+							&& KeyUtils.compareKey(record.getKey(), upperKey) <= 0) {
+						elements.add(record);
+					} else if (KeyUtils.compareKey(record.getKey(), upperKey) > 0) {
+						// we have read all relevant elements
+						break OUTER;
+					}
+					startOffset += elementSize;
+				}
+			}
+		}
+		return elements;
+	}
 
     /**
      * Returns the element which has exact the key or is the next smallest element after this key

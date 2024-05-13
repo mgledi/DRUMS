@@ -13,3 +13,4 @@
 *.war
 *.ear
 .mvn/.develocity/
+.mvn

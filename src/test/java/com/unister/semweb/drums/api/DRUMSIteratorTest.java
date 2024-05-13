@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -30,8 +31,10 @@ import org.junit.Test;
 
 import com.unister.semweb.drums.TestUtils;
 import com.unister.semweb.drums.bucket.hashfunction.RangeHashFunction;
+import com.unister.semweb.drums.file.FileLockException;
 import com.unister.semweb.drums.storable.DummyKVStorable;
 import com.unister.semweb.drums.util.AbstractKVStorableComparator;
+import com.unister.semweb.drums.util.Bytes;
 import com.unister.semweb.drums.util.KeyUtils;
 
 /**
